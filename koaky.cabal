@@ -25,7 +25,9 @@ source-repository head
 
 library
   exposed-modules:
-      Lib
+      AST
+      ComputeAST
+      TextToAST
   other-modules:
       Paths_koaky
   autogen-modules:

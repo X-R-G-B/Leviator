@@ -1,6 +1,11 @@
+{-
+--  EPITECH PROJECT, 2023
+--  Main
+--  File description:
+--  Main
+-}
+
 module Main (main) where
 
-import Lib
-
 main :: IO ()
-main = someFunc
+main = putStrLn "Hello, World!"
