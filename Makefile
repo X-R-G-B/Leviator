@@ -23,9 +23,9 @@ all: $(TARGET)
 
 $(TARGET):
 ifeq ($(OS),Windows_NT)
-	./scripts/Build.ps1
+	./scripts/Build.ps1 $(BIN_STACK) $(BIN_TARGET)
 else
-	./scripts/Build.sh
+	./scripts/Build.sh $(BIN_STACK) $(BIN_TARGET)
 endif
 	$(CP) "$(BIN_TARGET)" "$(MARVIN_TARGET)"
 
