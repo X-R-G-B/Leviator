@@ -1,0 +1,80 @@
+name: Compil
+
+on: [push]
+
+jobs:
+  compil-check-job-run:
+    runs-on: ubuntu-latest
+
+    outputs:
+      workflows: ${{ steps.filter.outputs.workflows }}
+      src: ${{ steps.filter.outputs.src }}
+      make: ${{ steps.filter.outputs.make }}
+      combined: ${{ steps.filter.outputs.workflows == 'true' || steps.filter.outputs.src == 'true' || steps.filter.outputs.make == 'true' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check modified files need re run
+        id: filter
+        uses: dorny/paths-filter@v2
+        with:
+          filters: |
+            workflows:
+              - '.github/workflows/**'
+            src:
+              - '*.hs'
+            cmake:
+              - 'Makefile'
+
+  windows-compil:
+    runs-on: windows-latest
+    needs: [compil-check-job-run]
+    if: needs.compil-check-job-run.outputs.combined || github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install winget
+        uses: Cyberboss/install-winget@v1
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install dependencies
+        run: ./scripts/install-deps-windows.ps1
+
+      - name: Compil
+        run: ./scripts/compil.ps1 --no-tidy
+
+  linux-compil:
+    runs-on: ubuntu-latest
+    needs: [compil-check-job-run]
+    if: needs.compil-check-job-run.outputs.combined || github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: sudo ./scripts/install-deps-linux.sh
+
+      - name: Compil
+        run: ./scripts/compil.sh --no-tidy --no-parallel
+
+  macos-compil:
+    runs-on: macos-latest
+    needs: [compil-check-job-run]
+    if: needs.compil-check-job-run.outputs.combined || github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: ./scripts/install-deps-macos.sh
+
+      - name: Compil
+        run: ./scripts/compil.sh --no-tidy
+
