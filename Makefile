@@ -13,6 +13,7 @@ ifeq ($(OS),Windows_NT)
 	RM			=	Remove-Item -Force -Recurse
 	BIN_STACK	=	$(TARGET)-exe.exe
 	BIN_TARGET	=	$(TARGET).exe
+	SHELL		=	command.exe
 else
 	CP			=	cp
 	RM			=	rm -rf
