@@ -8,15 +8,13 @@
 TARGET			=	koaky
 MARVIN_TARGET	=	glados
 
+CP			=	cp
+RM			=	rm -rf
+
 ifeq ($(OS),Windows_NT)
-	CP			=	Copy-Item
-	RM			=	Remove-Item -Force -Recurse
 	BIN_STACK	=	$(TARGET)-exe.exe
 	BIN_TARGET	=	$(TARGET).exe
-	SHELL		=	command.exe
 else
-	CP			=	cp
-	RM			=	rm -rf
 	BIN_STACK	=	$(TARGET)-exe
 	BIN_TARGET	=	$(TARGET)
 endif
@@ -24,11 +22,10 @@ endif
 all: $(TARGET)
 
 $(TARGET):
-	stack build
 ifeq ($(OS),Windows_NT)
-	$(CP) "(stack path --local-install-root)/bin/$(BIN_STACK)" "$(BIN_TARGET)"
+	./scripts/Build.ps1
 else
-	$(CP) "$(shell stack path --local-install-root)/bin/$(BIN_STACK)" "$(BIN_TARGET)"
+	./scripts/Build.sh
 endif
 	$(CP) "$(BIN_TARGET)" "$(MARVIN_TARGET)"
 
