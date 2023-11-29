@@ -24,14 +24,18 @@ all: $(TARGET)
 
 $(TARGET):
 	stack build
-	echo $(shell stack path --local-install-root)
+ifeq ($(OS),Windows_NT)
+	$(CP) "(stack path --local-install-root)/bin/$(BIN_STACK)" "$(BIN_TARGET)"
+else
 	$(CP) "$(shell stack path --local-install-root)/bin/$(BIN_STACK)" "$(BIN_TARGET)"
+endif
 	$(CP) "$(BIN_TARGET)" "$(MARVIN_TARGET)"
 
 clean:
-	stack purge
+	stack clean
 
 fclean: clean
+	stack purge
 	$(RM) "$(BIN_TARGET)"
 	$(RM) "$(MARVIN_TARGET)"
 

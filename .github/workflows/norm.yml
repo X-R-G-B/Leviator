@@ -4,7 +4,7 @@ on: [pull_request]
 
 jobs:
 
-  format:
+  norm:
     runs-on: ubuntu-latest
     image: ghcr.io/epitech/coding-style-checker:latest
 

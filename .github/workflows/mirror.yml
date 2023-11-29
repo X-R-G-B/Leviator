@@ -6,7 +6,7 @@ env:
   MIRROR_URL: git@github.com:EpitechPromo2026/B-FUN-500-TLS-5-2-glados-xavier.mitault.git
 
 jobs:
-  publish:
+  mirror:
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'push' }}
 
