@@ -1,11 +1,16 @@
 {-
---  EPITECH PROJECT, 2023
---  Main
---  File description:
---  Main
+-- EPITECH PROJECT, 2023
+-- Koaky
+-- File description:
+-- Main
 -}
 
-module Main (main) where
+import ComputeAST
+import AST
+
+createDefineTestTree :: Tree
+-- data Tree = Node Symbol (Maybe Tree) (Maybe Tree) | Leaf Atom
+createDefineTestTree = Node "define" (Just (Leaf (Symbol "foo"))) (Just (Leaf (Number 21)))
 
 main :: IO ()
-main = putStrLn "Hello, World!"
+main = computeAST createDefineTestTree
