@@ -31,19 +31,20 @@ jobs:
   windows-compil:
     runs-on: windows-latest
     needs: [compil-check-job-run]
-    if: needs.compil-check-job-run.outputs.combined || github.event_name == 'pull_request'
+    if: needs.compil-check-job-run.outputs.combined
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install winget
-        uses: Cyberboss/install-winget@v1
+      - name: Install Haskell
+        uses: haskell-actions/setup@v2
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          enable-stack: true
+          stack-version: 'latest'
 
       - name: Install dependencies
-        run: ./scripts/install-deps-windows.ps1
+        run: ./scripts/InstallDepsWindows.ps1
 
       - name: Compil
         run: ./scripts/compil.ps1 --no-tidy
@@ -51,30 +52,41 @@ jobs:
   linux-compil:
     runs-on: ubuntu-latest
     needs: [compil-check-job-run]
-    if: needs.compil-check-job-run.outputs.combined || github.event_name == 'pull_request'
+    if: needs.compil-check-job-run.outputs.combined
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install Haskell
+        uses: haskell-actions/setup@v2
+        with:
+          enable-stack: true
+          stack-version: 'latest'
+
       - name: Install dependencies
-        run: sudo ./scripts/install-deps-linux.sh
+        run: sudo ./scripts/InstallDepsLinux.bash
 
       - name: Compil
-        run: ./scripts/compil.sh --no-tidy --no-parallel
+        run: make
 
   macos-compil:
     runs-on: macos-latest
     needs: [compil-check-job-run]
-    if: needs.compil-check-job-run.outputs.combined || github.event_name == 'pull_request'
+    if: needs.compil-check-job-run.outputs.combined
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install Haskell
+        uses: haskell-actions/setup@v2
+        with:
+          enable-stack: true
+          stack-version: 'latest'
+
       - name: Install dependencies
-        run: ./scripts/install-deps-macos.sh
+        run: ./scripts/InstallDepsMacOS.zsh
 
       - name: Compil
-        run: ./scripts/compil.sh --no-tidy
-
+        run: make

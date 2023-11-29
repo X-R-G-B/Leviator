@@ -49,7 +49,7 @@ jobs:
           stack-version: 'latest'
 
       - name: Install dependencies
-        run: .\scripts\InstallDepsWindows.ps1
+        run: ./scripts/InstallDepsWindows.ps1
 
       - name: Build
         run: make
@@ -59,14 +59,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release upload ${{ needs.release-create.outputs.release }} ".\koaky.exe#koaky-windows.exe"
+          gh release upload ${{ needs.release-create.outputs.release }} "./koaky.exe#koaky-windows.exe"
 
       - name: Upload To Artifact
         if: github.ref != 'refs/heads/main'
         uses: actions/upload-artifact@v3
         with:
           name: koaky.exe
-          path: .\koaky.exe
+          path: ./koaky.exe
 
   release-linux:
     runs-on: ubuntu-latest
@@ -83,7 +83,7 @@ jobs:
           stack-version: 'latest'
 
       - name: Install dependencies
-        run: ./scripts/InstallDepsLinux.bash
+        run: sudo ./scripts/InstallDepsLinux.bash
 
       - name: Build
         run: make
