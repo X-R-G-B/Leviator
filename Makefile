@@ -8,20 +8,33 @@
 TARGET			=	koaky
 MARVIN_TARGET	=	glados
 
+ifeq ($(OS),Windows_NT)
+	CP			=	Copy-Item
+	RM			=	Remove-Item -Force -Recurse
+	BIN_STACK	=	$(TARGET)-exe.exe
+	BIN_TARGET	=	$(TARGET).exe
+else
+	CP			=	cp
+	RM			=	rm -rf
+	BIN_STACK	=	$(TARGET)-exe
+	BIN_TARGET	=	$(TARGET)
+endif
+
 all: $(TARGET)
 
 $(TARGET):
 	stack build
-	cp "$(shell stack path --local-install-root)/bin/$(TARGET)-exe" "$(TARGET)"
-	cp "$(TARGET)" "$(MARVIN_TARGET)"
+	echo $(shell stack path --local-install-root)
+	$(CP) "$(shell stack path --local-install-root)/bin/$(BIN_STACK)" "$(BIN_TARGET)"
+	$(CP) "$(BIN_TARGET)" "$(MARVIN_TARGET)"
 
 clean:
 	stack purge
 
 fclean: clean
-	$(RM) "$(TARGET)"
+	$(RM) "$(BIN_TARGET)"
 	$(RM) "$(MARVIN_TARGET)"
 
-re: fclean "$(TARGET)"
+re: fclean $(TARGET)
 
 .PHONY: $(TARGET) fclean re clean all
