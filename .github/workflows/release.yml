@@ -59,7 +59,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release upload ${{ needs.release-create.outputs.release }} "./koaky.exe#koaky-windows.exe"
+          gh release upload ${{ needs.release-create.outputs.release }} "./koaky-exe.exe#koaky-windows.exe"
 
       - name: Upload To Artifact
         if: github.ref != 'refs/heads/main'
@@ -89,7 +89,7 @@ jobs:
         run: make
 
       - name: Rename
-        run: mv koaky koaky-linux
+        run: mv koaky-exe koaky-linux
 
       - name: Upload To Release
         if: github.ref == 'refs/heads/main'
@@ -126,7 +126,7 @@ jobs:
         run: make
 
       - name: Rename
-        run: mv koaky koaky-macos
+        run: mv koaky-exe koaky-macos
 
       - name: Upload To Release
         if: github.ref == 'refs/heads/main'
