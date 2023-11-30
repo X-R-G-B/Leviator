@@ -12,28 +12,36 @@ module ComputeAST
 
 import AST
 
---Defines :
--- <SYMBOL> <EXPRESSION> with <EXPRESSION> being a type Atom or Symbol
---foo 21
---func add (lambda (a b) (+ a b))
-
-type Expression = Atom
+-- Define = <SYMBOL> <EXPRESSION>
 
 data Define = Define {
     symbol :: String,
-    value :: Expression
-}
+    expression :: Atom
+} deriving (Show)
 
 type Defines = [Define]
 
-print
+-- Function to print Defines if needed (debugging)
+printDefines :: Defines -> IO ()
+printDefines [] = return ()
+printDefines (x:xs) = putStrLn output >> printDefines xs
+    where output =
+            ("Symbol: " ++ (symbol x) ++
+            " Expr: " ++ (show (expression x)))
 
-handleDefine :: Tree -> IO ()
-handleDefine (Node "define" (Just (Leaf (Symbol symbol))) (Just (Leaf value))) = putStrLn ("defining: " ++ symbol ++ " as " ++ show value)
-handleDefine _ = putStrLn "Error: Invalid AST"
+-- Register a define in the Defines list
+registerDefine :: Defines -> Tree -> Defines
+registerDefine defines
+        (Node "define"
+        (Just (Leaf (Symbol defSymbol)))
+        (Just (Leaf defexpression)))
+        = defines ++ [Define defSymbol defexpression]
+registerDefine defines _ = defines
 
---data Tree = Node Symbol Tree Tree | Leaf Atom
-
+-- Temporary function to compute defines only
+-- Will be replaced by a function to compute the whole AST
 computeAST :: Tree -> IO ()
-computeAST (Node "define" (Just (Leaf (Symbol symbol))) (Just value)) = handleDefine (Node "define" (Just (Leaf (Symbol symbol))) (Just value))
-computeAST _ = putStrLn "Error: Invalid AST"
+computeAST tree = do
+    let defines = registerDefine [] tree
+    printDefines defines
+    return ()
