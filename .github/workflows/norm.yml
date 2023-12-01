@@ -26,13 +26,13 @@ jobs:
 
       - name: Send coding style message Ok
         uses: mshick/add-pr-comment@v2
-        if: steps.isEmpty.outputs.isEmpty == "true"
+        if: steps.isEmpty.outputs.isEmpty == 'true'
         with:
           message: "No coding style issue"
 
       - name: Send coding style message KO
         uses: mshick/add-pr-comment@v2
-        if: steps.isEmpty.outputs.isEmpty == "false"
+        if: steps.isEmpty.outputs.isEmpty == 'false'
         with:
           message-path: |
             coding-style-reports.log
