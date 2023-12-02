@@ -41,3 +41,9 @@ jobs:
         with:
           message-path: |
             lambdananas-reports.log
+
+      - name: Exit Status
+        run: |
+          if [ ${{ steps.isEmpty.outputs.isEmpty }} == 'false' ]; then
+            exit 1
+          fi
