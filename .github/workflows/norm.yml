@@ -1,0 +1,38 @@
+name: Norm
+
+on: [pull_request]
+
+jobs:
+
+  norm:
+    runs-on: ubuntu-latest
+    image: ghcr.io/epitech/coding-style-checker:latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+ 
+      - name: Format
+        run: code-style-haskell.sh . .
+
+      - name: Is Empty
+        id: isEmpty
+        run: |
+          if [ "$(cat coding-style-reports.log)" == "" ]; then
+            echo "isEmpty=true" >> $GITHUB_OUTPUT
+          else
+            echo "isEmpty=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Send coding style message Ok
+        uses: mshick/add-pr-comment@v2
+        if: ${{ steps.isEmpty.outputs.isEmpty == "true" }}
+        with:
+          message: "No coding style issue"
+
+      - name: Send coding style message KO
+        uses: mshick/add-pr-comment@v2
+        if: ${{ steps.isEmpty.outputs.isEmpty == "false" }}
+        with:
+          message-path: |
+            coding-style-reports.log
