@@ -28,6 +28,7 @@ notSkipableChar x = not (skipableChar x)
 stringIsNumber :: String -> Bool
 stringIsNumber [] = False
 stringIsNumber (x:[]) | Data.Char.isDigit x = True
+                      | otherwise = False
 stringIsNumber (x:xs) | Data.Char.isDigit x = stringIsNumber xs
                       | otherwise = False
 
@@ -45,9 +46,9 @@ stringIsBool :: String -> Bool
 stringIsBool str = str == "#t" || str == "#f"
 
 createBool :: String -> Maybe Tree
-createBool str | str == "#t" = Just (Leaf (Boolean True))
-               | str == "#f" = Just (Leaf (Boolean False))
-               | otherwise = Nothing
+createBool "#t" == "#t" = Just (Leaf (Boolean True))
+createBool "#f" = Just (Leaf (Boolean False))
+createBool _ = Nothing
 
 treeFromAtom :: String -> String -> Maybe Tree
 treeFromAtom [] _ = Nothing
