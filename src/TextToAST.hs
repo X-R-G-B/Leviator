@@ -46,7 +46,7 @@ stringIsBool :: String -> Bool
 stringIsBool str = str == "#t" || str == "#f"
 
 createBool :: String -> Maybe Tree
-createBool "#t" == "#t" = Just (Leaf (Boolean True))
+createBool "#t" = Just (Leaf (Boolean True))
 createBool "#f" = Just (Leaf (Boolean False))
 createBool _ = Nothing
 
