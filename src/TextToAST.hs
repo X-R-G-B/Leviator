@@ -13,7 +13,6 @@ module TextToAST
 import AST
 import Data.Int (Int64)
 import Data.Char (isDigit)
-import Debug.Trace
 
 isFunction :: String -> Bool
 isFunction [] = False

@@ -11,4 +11,4 @@ import AST (showMaybeTree)
 import TextToAST (textToAST)
 
 main :: IO ()
-main = putStrLn (showMaybeTree (textToAST "(define tonpereestGAY #t)"))
+main = putStrLn (showMaybeTree (textToAST "(define javascriptIsGood #f)"))
