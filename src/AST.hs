@@ -1,8 +1,8 @@
 {-
---  EPITECH PROJECT, 2023
---  Abstract Syntax Tree
---  File description:
---  ast
+-- EPITECH PROJECT, 2023
+-- Abstract Syntax Tree
+-- File description:
+-- ast
 -}
 
 module AST
