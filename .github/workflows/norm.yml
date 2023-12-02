@@ -1,24 +1,29 @@
 name: Norm
 
 on: [pull_request]
-
+  # lambdananas -o vera --exclude "Setup.hs:setup.hs:.git:.stack-work:test:tests:bonus" . >> lambdananas-reports.log
 jobs:
 
   norm:
     runs-on: ubuntu-latest
-    container: ghcr.io/epitech/coding-style-checker:latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
+      - name: Install Deps
+        run: |
+          sudo apt-get update && sudo apt-get install -y curl
+          curl -fsSL 'https://github.com/Saverio976/dotfiles/raw/main/.local/bin/lambdananas' > /tmp/lambdananas
+          chmod +x /tmp/lambdananas
  
       - name: Format
-        run: code-style-haskell.sh . .
+        run: /tmp/lambdananas -o vera --exclude "Setup.hs:setup.hs:.git:.stack-work:test:tests:bonus" . >> lambdananas-reports.log
 
       - name: Is Empty
         id: isEmpty
         run: |
-          if [ "$(cat coding-style-reports.log)" == "" ]; then
+          if [ "$(cat lambdananas-reports.log)" == "" ]; then
             echo "isEmpty=true" >> $GITHUB_OUTPUT
           else
             echo "isEmpty=false" >> $GITHUB_OUTPUT
@@ -35,4 +40,4 @@ jobs:
         if: steps.isEmpty.outputs.isEmpty == 'false'
         with:
           message-path: |
-            coding-style-reports.log
+            lambdananas-reports.log
