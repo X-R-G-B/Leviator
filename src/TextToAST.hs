@@ -16,8 +16,8 @@ import Data.Char (isDigit)
 
 isFunction :: String -> Bool
 isFunction [] = False
-isFunction (x:_) | x == '(' = True
-                 | otherwise = False
+isFunction ('(':_) = True
+isFunction _ = False
 
 skipableChar :: Char -> Bool
 skipableChar x = x == ' ' || x == '\t'
@@ -37,10 +37,11 @@ nextToParse [] = []
 nextToParse (x:xs) | skipableChar x = nextToParse xs
 nextToParse str = dropWhile notSkipableChar str
 
-createNode :: Symbol -> String -> Maybe Tree
-createNode [] _ = Nothing
-createNode _ [] = Nothing
-createNode (_:xs) str = Just (Node xs (textToAST str) (textToAST (nextToParse str)))
+createNodeFromFunction :: Symbol -> String -> Maybe Tree
+createNodeFromFunction [] _ = Nothing
+createNodeFromFunction _ [] = Nothing
+createNodeFromFunction (_:xs) str = Just (Node xs (textToAST str)
+                      (textToAST (nextToParse str)))
 
 stringIsBool :: String -> Bool
 stringIsBool str = str == "#t" || str == "#f"
@@ -52,12 +53,15 @@ createBool _ = Nothing
 
 treeFromAtom :: String -> String -> Maybe Tree
 treeFromAtom [] _ = Nothing
-treeFromAtom split _ | stringIsNumber split = Just (Leaf (AST.Number (read split :: Data.Int.Int64)))
+treeFromAtom split _ | stringIsNumber split =
+                        Just (Leaf (AST.Number (read split :: Data.Int.Int64)))
                      | stringIsBool split = createBool split
-treeFromAtom split str | isFunction split = createNode split (init str)
+treeFromAtom split str | isFunction split =
+                          createNodeFromFunction split (init str)
                        | otherwise = Just (Leaf (Symbol split))
 
 textToAST :: String -> Maybe Tree
 textToAST [] = Nothing
 textToAST (x:xs) | skipableChar x = textToAST xs
-textToAST str = treeFromAtom (takeWhile notSkipableChar str) (dropWhile notSkipableChar str)
+textToAST str = treeFromAtom (takeWhile notSkipableChar str)
+                  (dropWhile notSkipableChar str)
