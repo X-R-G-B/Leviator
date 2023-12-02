@@ -61,5 +61,6 @@ test-suite koaky-test
       base >=4.7 && <5
     , koaky
     , tasty
+    , tasty-html
     , tasty-hunit
   default-language: Haskell2010

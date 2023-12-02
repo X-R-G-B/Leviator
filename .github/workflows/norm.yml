@@ -34,6 +34,7 @@ jobs:
         if: steps.isEmpty.outputs.isEmpty == 'true'
         with:
           message: "No coding style issue"
+          refresh-message-position: true
 
       - name: Send coding style message KO
         uses: mshick/add-pr-comment@v2
@@ -41,6 +42,7 @@ jobs:
         with:
           message-path: |
             lambdananas-reports.log
+          refresh-message-position: true
 
       - name: Exit Status
         run: |

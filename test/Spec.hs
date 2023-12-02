@@ -1,10 +1,11 @@
 import Test.Tasty
 import Test.Tasty.HUnit
+import Test.Tasty.Runners.Html
 
 import AST
 
 main :: IO ()
-main = defaultMain tests
+main = defaultMainWithIngredients (htmlRunner : defaultIngredients) tests
 
 tests :: TestTree
 tests = testGroup "Tests" [unitTests]
