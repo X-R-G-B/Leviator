@@ -1,10 +1,10 @@
 name:                koaky
 version:             0.1.0.0
-github:              "githubuser/koaky"
-license:             BSD-3-Clause
-author:              "Author name here"
+github:              "X-R-G-B/koaky"
+license:             MIT
+author:              "@guillaumeAbel, @TTENSHII, @Saverio976"
 maintainer:          "example@example.com"
-copyright:           "2023 Author name here"
+copyright:           "2023 X-R-G-B"
 
 extra-source-files:
 - README.md
@@ -57,3 +57,6 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - koaky
+    - tasty
+    - tasty-hunit
+    - tasty-html

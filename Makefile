@@ -33,4 +33,7 @@ fclean: clean
 
 re: fclean $(TARGET)
 
+tests:
+	stack test
+
 .PHONY: $(TARGET) fclean re clean all
