@@ -76,6 +76,7 @@ jobs:
         with:
           message: "Tests PASSED"
           refresh-message-position: true
+          message-id: tests-cicd
 
       - name: Send Test KO
         uses: mshick/add-pr-comment@v2
@@ -84,3 +85,4 @@ jobs:
           message-path: |
             tests.log
           refresh-message-position: true
+          message-id: tests-cicd

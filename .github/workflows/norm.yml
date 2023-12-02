@@ -35,6 +35,7 @@ jobs:
         with:
           message: "No coding style issue"
           refresh-message-position: true
+          message-id: norm-cicd
 
       - name: Send coding style message KO
         uses: mshick/add-pr-comment@v2
@@ -43,6 +44,7 @@ jobs:
           message-path: |
             lambdananas-reports.log
           refresh-message-position: true
+          message-id: norm-cicd
 
       - name: Exit Status
         run: |
