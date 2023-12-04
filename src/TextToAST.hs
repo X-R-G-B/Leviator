@@ -38,10 +38,14 @@ stringIsNumber :: String -> Bool
 stringIsNumber [] = False
 stringIsNumber [x] | Data.Char.isDigit x = True
                    | otherwise = False
-stringIsNumber str = stringIsNumber' (takeWhile (\x -> notSkipableChar x && x /= ')') str)
+stringIsNumber str =
+    stringIsNumber' (takeWhile (\x -> notSkipableChar x && x /= ')') str)
 
 parseStringNumber :: String -> Atom
-parseStringNumber str = Number (read (takeWhile (\x -> notSkipableChar x && x /= ')') str) :: Data.Int.Int64)
+parseStringNumber str =
+    Number (read
+        (takeWhile (\x -> notSkipableChar x && x /= ')') str)
+        :: Data.Int.Int64)
 
 nextToParse' :: String -> Int -> String
 nextToParse' [] _ = []
@@ -53,15 +57,20 @@ nextToParse' (_:xs) depth = nextToParse' xs depth
 nextToParse :: String -> String
 nextToParse [] = []
 nextToParse ('(':xs) = nextToParse' xs 0
-nextToParse str = dropWhile skipableChar (dropWhile notSkipableChar (dropWhile skipableChar str))
+nextToParse str = dropWhile skipableChar
+    (dropWhile notSkipableChar (dropWhile skipableChar str))
 
 countAtoms :: String -> Int -> Int
 countAtoms str depth | depth >= 2 = 2
-                     | not (null $ takeWhile (/= ')') (dropWhile skipableChar str)) = countAtoms (nextToParse str) (depth + 1)
+                     | not (null $ takeWhile
+                        (/= ')')
+                        (dropWhile skipableChar str)) =
+                            countAtoms (nextToParse str) (depth + 1)
                      | otherwise = depth
 
 createVariadic :: String -> Maybe Tree
-createVariadic str = Just $ Variadic (textToAST str) (textToAST (nextToParse str))
+createVariadic str =
+    Just $ Variadic (textToAST str) (textToAST (nextToParse str))
 
 createNodeFromFunction :: Symbol -> String -> Int -> Maybe Tree
 createNodeFromFunction [] _ _ = Nothing
@@ -103,9 +112,13 @@ treeFromAtom split str | stringIsNumber split =
                             (takeWhile (/= ')') split)
                             str
                             (countAtoms (nextToParse str) 0)
-                       | otherwise = Just (Leaf (Symbol $ takeWhile (/= ')') split))
+                       | otherwise =
+                            Just (Leaf (Symbol $ takeWhile (/= ')') split))
 
 textToAST :: String -> Maybe Tree
 textToAST [] = Nothing
 textToAST (x:xs) | skipableChar x = textToAST xs
-                 | otherwise = treeFromAtom (takeWhile notSkipableChar (x:xs)) (dropWhile notSkipableChar (x:xs))
+                 | otherwise =
+                    treeFromAtom
+                        (takeWhile notSkipableChar (x:xs))
+                        (dropWhile notSkipableChar (x:xs))
