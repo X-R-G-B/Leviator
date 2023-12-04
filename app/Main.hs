@@ -7,10 +7,14 @@
 
 import ComputeAST
 import AST
+import Defines
 
-createDefineTestTree :: Tree
+testTreeDefine :: Tree
 -- data Tree = Node Symbol (Maybe Tree) (Maybe Tree) | Leaf Atom
-createDefineTestTree = Node "define" (Just (Leaf (Symbol "foo"))) (Just (Leaf (Number 21)))
+testTreeDefine = Node "define" (Just (Leaf (Symbol "foo"))) (Just (Leaf (Number 21)))
+
+testTreeDefine2 :: Tree
+testTreeDefine2 = Node "define" (Just (Leaf (Symbol "bar"))) (Just (Leaf (Number 42)))
 
 main :: IO ()
-main = computeAST createDefineTestTree
+main = computeASTs [testTreeDefine, testTreeDefine2]

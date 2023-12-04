@@ -23,3 +23,10 @@ data Tree = Node Symbol (Maybe Tree) (Maybe Tree) | Leaf Atom
 instance Show Atom where
     show (Number n) = show n
     show (Symbol s) = s
+
+--data Variable
+--data Function
+--data Env = Env {
+--    variables :: [Variable],
+--    functions :: [Function]
+--}
