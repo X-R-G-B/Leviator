@@ -27,22 +27,25 @@ skipableChar _ = False
 notSkipableChar :: Char -> Bool
 notSkipableChar x = not (skipableChar x)
 
+stringIsNumber' :: String -> Bool
+stringIsNumber' [] = False
+stringIsNumber' [x] | Data.Char.isDigit x = True
+                    | otherwise = False
+stringIsNumber' (x:xs) | Data.Char.isDigit x = stringIsNumber' xs
+                       | otherwise = False
+
 stringIsNumber :: String -> Bool
 stringIsNumber [] = False
 stringIsNumber [x] | Data.Char.isDigit x = True
                    | otherwise = False
-stringIsNumber (x:xs:xss) | Data.Char.isDigit x && xs == ')' =
-                                stringIsNumber (xs:xss)
-                          | Data.Char.isDigit x = True
-                          | skipableChar x = stringIsNumber (xs:xss)
-                          | otherwise = False
+stringIsNumber str = stringIsNumber' (takeWhile (\x -> notSkipableChar x && x /= ')') str)
 
 parseStringNumber :: String -> Atom
 parseStringNumber str = Number (read (takeWhile (\x -> notSkipableChar x && x /= ')') str) :: Data.Int.Int64)
 
 nextToParse' :: String -> Int -> String
 nextToParse' [] _ = []
-nextToParse' (')':xs) 1 = dropWhile skipableChar xs
+nextToParse' (')':xs) 1 = dropWhile (\x -> skipableChar x || x == ')') xs
 nextToParse' (')':xs) depth = nextToParse' xs (depth - 1)
 nextToParse' ('(':xs) depth = nextToParse' xs (depth + 1)
 nextToParse' (_:xs) depth = nextToParse' xs depth
@@ -54,7 +57,7 @@ nextToParse str = dropWhile skipableChar (dropWhile notSkipableChar (dropWhile s
 
 countAtoms :: String -> Int -> Int
 countAtoms str depth | depth >= 2 = 2
-                     | not (null str) = countAtoms (nextToParse str) (depth + 1)
+                     | not (null $ dropWhile skipableChar str) = countAtoms (nextToParse str) (depth + 1)
                      | otherwise = depth
 
 createVariadic :: String -> Maybe Tree
