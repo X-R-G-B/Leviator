@@ -88,6 +88,20 @@ unitTestsASTParse = testGroup "AST Parse Tests"
           (Just $ Leaf (Boolean True))
         )
         (textToAST "(foo def #t)")
+  , testCase "(foo def #f)" $
+      assertEqual "(foo def #f)"
+        (Just $ Node "foo"
+          (Just $ Leaf (Symbol "def"))
+          (Just $ Leaf (Boolean False))
+        )
+        (textToAST "(foo def #f)")
+  , testCase "(foo #f def)" $
+      assertEqual "(foo #f def)"
+        (Just $ Node "foo"
+          (Just $ Leaf (Boolean False))
+          (Just $ Leaf (Symbol "def"))
+        )
+        (textToAST "(foo #f def)")
   , testCase "(foo def #t #f)" $
       assertEqual "(foo def #t #f)"
         (Just $ Node "foo"
@@ -98,4 +112,14 @@ unitTestsASTParse = testGroup "AST Parse Tests"
           )
         )
         (textToAST "(foo def #t #f)")
+  , testCase "(foo def #f #t)" $
+      assertEqual "(foo def #f #t)"
+        (Just $ Node "foo"
+          (Just $ Leaf (Symbol "def"))
+          (Just $ Variadic
+            (Just $ Leaf (Boolean False))
+            (Just $ Leaf (Boolean True))
+          )
+        )
+        (textToAST "(foo def #f #t)")
   ]

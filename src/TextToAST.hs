@@ -62,8 +62,9 @@ createVariadic str = Just $ Variadic (textToAST str) (textToAST (nextToParse str
 
 createNodeFromFunction :: Symbol -> String -> Int -> Maybe Tree
 createNodeFromFunction [] _ _ = Nothing
+createNodeFromFunction (_:xs) [] 0 = Just (Node xs Nothing Nothing)
+createNodeFromFunction (_:xs) str 0 = Just (Node xs (textToAST str) Nothing)
 createNodeFromFunction _ [] _ = Nothing
-createNodeFromFunction (_:xs) _ 0 = Just (Node xs Nothing Nothing)
 createNodeFromFunction (_:xs) str 1 = Just (Node xs (textToAST str)
     (textToAST (nextToParse str)))
 createNodeFromFunction (_:xs) str 2 =
@@ -73,11 +74,21 @@ createNodeFromFunction _ _ _ = Nothing
 stringIsBool :: String -> Bool
 stringIsBool "#t" = True
 stringIsBool "#f" = True
+stringIsBool ('#':'t':xs) | xs == ")" = True
+                          | dropWhile skipableChar xs == ")" = True
+stringIsBool ('#':'f':xs) | xs == ")" = True
+                          | dropWhile skipableChar xs == ")" = True
 stringIsBool _ = False
 
 createBool :: String -> Maybe Tree
 createBool "#t" = Just (Leaf (Boolean True))
+createBool ('#':'t':xs) | xs == ")" = Just (Leaf (Boolean True))
+                        | dropWhile skipableChar xs == ")" =
+                            Just (Leaf (Boolean True))
 createBool "#f" = Just (Leaf (Boolean False))
+createBool ('#':'f':xs) | xs == ")" = Just (Leaf (Boolean False))
+                        | dropWhile skipableChar xs == ")" =
+                            Just (Leaf (Boolean False))
 createBool _ = Nothing
 
 treeFromAtom :: String -> String -> Maybe Tree
@@ -85,8 +96,10 @@ treeFromAtom [] _ = Nothing
 treeFromAtom split str | stringIsNumber split =
                             Just (Leaf (parseStringNumber split))
                        | stringIsBool split = createBool split
-                       | isFunction split =
-                            createNodeFromFunction split str (countAtoms (nextToParse str) 0)
+                       | isFunction split = createNodeFromFunction
+                            (takeWhile (/= ')') split)
+                            str
+                            (countAtoms (nextToParse str) 0)
                        | otherwise = Just (Leaf (Symbol $ takeWhile (/= ')') split))
 
 textToAST :: String -> Maybe Tree
