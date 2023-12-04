@@ -57,7 +57,7 @@ nextToParse str = dropWhile skipableChar (dropWhile notSkipableChar (dropWhile s
 
 countAtoms :: String -> Int -> Int
 countAtoms str depth | depth >= 2 = 2
-                     | not (null $ dropWhile skipableChar str) = countAtoms (nextToParse str) (depth + 1)
+                     | not (null $ takeWhile (/= ')') (dropWhile skipableChar str)) = countAtoms (nextToParse str) (depth + 1)
                      | otherwise = depth
 
 createVariadic :: String -> Maybe Tree
