@@ -86,21 +86,25 @@ createNodeFromFunction _ _ _ = Nothing
 stringIsBool :: String -> Bool
 stringIsBool "#t" = True
 stringIsBool "#f" = True
-stringIsBool ('#':'t':xs) | xs == ")" = True
-                          | dropWhile skipableChar xs == ")" = True
-stringIsBool ('#':'f':xs) | xs == ")" = True
-                          | dropWhile skipableChar xs == ")" = True
+stringIsBool "#f)" = True
+stringIsBool "#t)" = True
+stringIsBool ('#':'t':xs) | dropWhile skipableChar xs == ")" = True
+                          | otherwise = False
+stringIsBool ('#':'f':xs) | dropWhile skipableChar xs == ")" = True
+                          | otherwise = False
 stringIsBool _ = False
 
 createBool :: String -> Maybe Tree
-createBool "#t" = Just (Leaf (Boolean True))
-createBool ('#':'t':xs) | xs == ")" = Just (Leaf (Boolean True))
-                        | dropWhile skipableChar xs == ")" =
-                            Just (Leaf (Boolean True))
 createBool "#f" = Just (Leaf (Boolean False))
-createBool ('#':'f':xs) | xs == ")" = Just (Leaf (Boolean False))
-                        | dropWhile skipableChar xs == ")" =
+createBool "#t" = Just (Leaf (Boolean True))
+createBool "#f)" = Just (Leaf (Boolean False))
+createBool "#t)" = Just (Leaf (Boolean True))
+createBool ('#':'t':xs) | dropWhile skipableChar xs == ")" =
+                            Just (Leaf (Boolean True))
+                        | otherwise = Nothing
+createBool ('#':'f':xs) | dropWhile skipableChar xs == ")" =
                             Just (Leaf (Boolean False))
+                        | otherwise = Nothing
 createBool _ = Nothing
 
 treeFromAtom :: String -> String -> Maybe Tree
