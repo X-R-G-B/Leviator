@@ -122,4 +122,17 @@ unitTestsASTParse = testGroup "AST Parse Tests"
           )
         )
         (textToAST "(foo def #f #t)")
+  , testCase "(fst 1 (scd 2 3 4))" $
+      assertEqual "(fst 1 (scd 2 3 4))"
+        (Just $ Node "fst"
+          (Just $ Leaf (Number 1))
+          (Just $ Node "scd"
+            (Just $ Leaf (Number 2))
+            (Just $ Variadic
+              (Just $ Leaf (Number 3))
+              (Just $ Leaf (Number 4))
+            )
+          )
+        )
+        (textToAST "(fst 1 (scd 2 3 4))")
   ]
