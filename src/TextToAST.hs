@@ -30,9 +30,15 @@ notSkipableChar x = not (skipableChar x)
 stringIsNumber :: String -> Bool
 stringIsNumber [] = False
 stringIsNumber [x] | Data.Char.isDigit x = True
-                      | otherwise = False
-stringIsNumber (x:xs) | Data.Char.isDigit x = stringIsNumber xs
-                      | otherwise = False
+                   | otherwise = False
+stringIsNumber (x:xs:xss) | Data.Char.isDigit x && xs == ')' =
+                                stringIsNumber (xs:xss)
+                          | Data.Char.isDigit x = True
+                          | skipableChar x = stringIsNumber (xs:xss)
+                          | otherwise = False
+
+parseStringNumber :: String -> Atom
+parseStringNumber str = Number (read (takeWhile (\x -> notSkipableChar x && x /= ')') str) :: Data.Int.Int64)
 
 nextToParse' :: String -> Int -> String
 nextToParse' [] _ = []
@@ -76,11 +82,11 @@ createBool _ = Nothing
 
 treeFromAtom :: String -> String -> Maybe Tree
 treeFromAtom [] _ = Nothing
-treeFromAtom split _ | stringIsNumber split =
-                        Just (Leaf (AST.Number (read split :: Data.Int.Int64)))
-                     | stringIsBool split = createBool split
-treeFromAtom split str | isFunction split =
-                          createNodeFromFunction split str (countAtoms (nextToParse str) 0)
+treeFromAtom split str | stringIsNumber split =
+                            Just (Leaf (parseStringNumber split))
+                       | stringIsBool split = createBool split
+                       | isFunction split =
+                            createNodeFromFunction split str (countAtoms (nextToParse str) 0)
                        | otherwise = Just (Leaf (Symbol $ takeWhile (/= ')') split))
 
 textToAST :: String -> Maybe Tree
