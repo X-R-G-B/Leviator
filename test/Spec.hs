@@ -28,5 +28,5 @@ unitTestsASTEqual = testGroup "AST Equal Tests"
 unitTestsASTParse :: TestTree
 unitTestsASTParse = testGroup "AST Parse Tests"
   [ testCase "Basic AST creation 0" $
-      assertEqual (textToAST "(foo abc def hij)") (Just $ (Node "foo" (Leaf (Symbol "abc"))) (Varidadic (Leaf (Symbol "def") (Leaf (Symbol "hij")))))
+      assertEqual "(foo abc def hij)" (textToAST "(foo abc def hij)") (Just $ (Node "foo" (Just $ Leaf (Symbol "abc"))) (Just $ Variadic (Just $ Leaf (Symbol "def")) (Just $ Leaf (Symbol "hij"))))
   ]

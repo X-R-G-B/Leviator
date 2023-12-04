@@ -34,9 +34,16 @@ stringIsNumber [x] | Data.Char.isDigit x = True
 stringIsNumber (x:xs) | Data.Char.isDigit x = stringIsNumber xs
                       | otherwise = False
 
+nextToParse' :: String -> Int -> String
+nextToParse' [] _ = []
+nextToParse' (')':xs) 1 = dropWhile skipableChar xs
+nextToParse' (')':xs) depth = nextToParse' xs (depth - 1)
+nextToParse' ('(':xs) depth = nextToParse' xs (depth + 1)
+nextToParse' (_:xs) depth = nextToParse' xs depth
+
 nextToParse :: String -> String
 nextToParse [] = []
-nextToParse ('(':xs) = xs
+nextToParse ('(':xs) = nextToParse' xs 0
 nextToParse str = dropWhile skipableChar (dropWhile notSkipableChar (dropWhile skipableChar str))
 
 countAtoms :: String -> Int -> Int
@@ -52,7 +59,7 @@ createNodeFromFunction [] _ _ = Nothing
 createNodeFromFunction _ [] _ = Nothing
 createNodeFromFunction (_:xs) _ 0 = Just (Node xs Nothing Nothing)
 createNodeFromFunction (_:xs) str 1 = Just (Node xs (textToAST str)
-    (checkNextToParse textToAST (nextToParse str)))
+    (textToAST (nextToParse str)))
 createNodeFromFunction (_:xs) str 2 =
     Just (Node xs (textToAST str) (createVariadic (nextToParse str)))
 createNodeFromFunction _ _ _ = Nothing
@@ -74,7 +81,7 @@ treeFromAtom split _ | stringIsNumber split =
                      | stringIsBool split = createBool split
 treeFromAtom split str | isFunction split =
                           createNodeFromFunction split str (countAtoms (nextToParse str) 0)
-                       | otherwise = Just (Leaf (Symbol split))
+                       | otherwise = Just (Leaf (Symbol $ takeWhile (/= ')') split))
 
 textToAST :: String -> Maybe Tree
 textToAST [] = Nothing
