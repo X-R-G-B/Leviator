@@ -7,5 +7,8 @@
 
 module Main (main) where
 
+import AST (showMaybeTree)
+import TextToAST (textToAST)
+
 main :: IO ()
-main = putStrLn "Hello, World!"
+main = putStrLn (showMaybeTree (textToAST "(define javascriptIsGood #f 42)"))
