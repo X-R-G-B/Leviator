@@ -29,32 +29,33 @@ notSkipableChar x = not (skipableChar x)
 
 stringIsNumber :: String -> Bool
 stringIsNumber [] = False
-stringIsNumber (x:[]) | Data.Char.isDigit x = True
+stringIsNumber [x] | Data.Char.isDigit x = True
                       | otherwise = False
 stringIsNumber (x:xs) | Data.Char.isDigit x = stringIsNumber xs
                       | otherwise = False
 
 nextToParse :: String -> String
 nextToParse [] = []
-nextToParse ('(':xs)
-nextToParse str = dropWhile skipableChar (dropWhile notSkipableChar (dropWhile skipableChar (x:xs))
+nextToParse ('(':xs) = xs
+nextToParse str = dropWhile skipableChar (dropWhile notSkipableChar (dropWhile skipableChar str))
 
 countAtoms :: String -> Int -> Int
 countAtoms str depth | depth >= 2 = 2
-                     | len str > 0 = countAtoms (nextToParse str) (depth + 1)
+                     | not (null str) = countAtoms (nextToParse str) (depth + 1)
                      | otherwise = depth
 
-createVariadic :: String -> Variadic
-createVariadic str = Variadic (textToAST str) (textToAST (nextToParse str))
+createVariadic :: String -> Maybe Tree
+createVariadic str = Just $ Variadic (textToAST str) (textToAST (nextToParse str))
 
 createNodeFromFunction :: Symbol -> String -> Int -> Maybe Tree
 createNodeFromFunction [] _ _ = Nothing
 createNodeFromFunction _ [] _ = Nothing
-createNodeFromFunction (_:xs) str 0 = Just (Node xs Nothing Nothing)
+createNodeFromFunction (_:xs) _ 0 = Just (Node xs Nothing Nothing)
 createNodeFromFunction (_:xs) str 1 = Just (Node xs (textToAST str)
     (checkNextToParse textToAST (nextToParse str)))
 createNodeFromFunction (_:xs) str 2 =
-    Just (Node xs (textToAST str) (createVariadic (nextToparse str)))
+    Just (Node xs (textToAST str) (createVariadic (nextToParse str)))
+createNodeFromFunction _ _ _ = Nothing
 
 stringIsBool :: String -> Bool
 stringIsBool "#t" = True

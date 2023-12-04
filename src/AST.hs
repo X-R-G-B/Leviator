@@ -9,7 +9,7 @@ module AST
     (
         Symbol,
         Atom (Number, Symbol, Boolean),
-        Tree (Node, Leaf, Variadic)
+        Tree (Node, Leaf, Variadic),
         showMaybeTree
     ) where
 
