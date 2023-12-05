@@ -72,13 +72,13 @@ unitTestsASTParse = testGroup "AST Parse Tests"
         (textToAST "foo")
   , testCase "(foo)" $
       assertEqual "(foo)"
-        (Just $ Node "foo" Nothing Nothing)
+        (Just $ Leaf (Symbol "foo"))
         (textToAST "(foo)")
   , testCase "(foo def)" $
       assertEqual "(foo def)"
         (Just $ Node "foo"
           (Just $ Leaf (Symbol "def"))
-          Nothing
+          (Just $ Empty)
         )
         (textToAST "(foo def)")
   , testCase "(foo def #t)" $
@@ -135,18 +135,41 @@ unitTestsASTParse = testGroup "AST Parse Tests"
           )
         )
         (textToAST "(fst 1 (scd 2 3 4))")
+  , testCase "(fst 1 (scd 2 3 4) 12)" $
+      assertEqual "(fst 1 (scd 2 3 4) 12)"
+        (Just $ Node "fst"
+          (Just $ Leaf (Number 1))
+          (Just $ Variadic
+            (Just $ Node "scd"
+              (Just $ Leaf (Number 2))
+              (Just $ Variadic
+                (Just $ Leaf (Number 3))
+                (Just $ Leaf (Number 4))
+              )
+            )
+            (Just $ Leaf (Number 12))
+          )
+        )
+        (textToAST "(fst 1 (scd 2 3 4) 12)")
   , testCase "(foo 42 )" $
       assertEqual "(foo 42 )"
         (Just $ Node "foo"
           (Just $ Leaf (Number 42))
-          Nothing
+          (Just $ Empty)
         )
         (textToAST "(foo 42 )")
   , testCase "(foo def )" $
-      assertEqual "(foo 42 )"
+      assertEqual "(foo def )"
         (Just $ Node "foo"
           (Just $ Leaf (Symbol "def"))
-          Nothing
+          (Just $ Empty)
         )
         (textToAST "(foo def )")
+  , testCase "(foo ((def)) #t)" $
+      assertEqual "(foo ((def)) #t)"
+        (Just $ Node "foo"
+          (Just $ Leaf (Symbol "(def"))
+          (Just $ Leaf (Boolean True))
+        )
+        (textToAST "(foo ((def)) #t)")
   ]
