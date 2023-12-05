@@ -27,6 +27,7 @@ library
   exposed-modules:
       AST
       ComputeAST
+      Defines
       TextToAST
   other-modules:
       Paths_koaky

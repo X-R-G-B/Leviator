@@ -1,10 +1,6 @@
 {-
 -- EPITECH PROJECT, 2023
-<<<<<<< HEAD
 -- Koaky
-=======
--- Main
->>>>>>> main
 -- File description:
 -- Main
 -}
