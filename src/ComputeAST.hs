@@ -73,12 +73,14 @@ computeNode _ _ = 0
 
 ------------ Resolve deepest ------------
 
--- Compute the deepest node of the tree, it is when right node is a leaf and not a node
+-- Compute the deepest node of the tree, it is when right and left node are a leaf and not a node
 resolveDeepestNode :: Env -> Tree -> Tree
-resolveDeepestNode env (Node symbol left (Just (Leaf right))) = Leaf (Number (computeNode env (Node symbol left (Just (Leaf right)))))
-resolveDeepestNode env (Node symbol left (Just right)) = Node symbol left (Just $ resolveDeepestNode env right)
+resolveDeepestNode env (Node symbol (Just (Leaf left)) (Just (Leaf right))) = Leaf (Number (computeNode env (Node symbol (Just (Leaf left)) (Just (Leaf right)))))
+resolveDeepestNode env (Node symbol (Just (Leaf left)) (Just right)) = Node symbol (Just (Leaf left)) (Just $ resolveDeepestNode env right)
+resolveDeepestNode env (Node symbol (Just left) (Just (Leaf right))) = Node symbol (Just $ resolveDeepestNode env left) (Just (Leaf right))
+resolveDeepestNode env (Node symbol (Just left) (Just right)) = Node symbol (Just $ resolveDeepestNode env left) (Just $ resolveDeepestNode env right)
 -- TODO: Error handling
-resolveDeepestNode _ _ = Leaf (Number 0)
+resolveDeepestNode _ _ = (Leaf (Number 0))
 
 ------------ COMPUTE TREE ----------
 
