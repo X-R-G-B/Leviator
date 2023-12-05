@@ -67,7 +67,7 @@ cutAtClose (x:xs) = (x:cutAtClose xs)
 
 nextToParse :: String -> String
 nextToParse [] = []
-nextToParse ('(':xs) = nextToParse' xs 0
+nextToParse ('(':xs) = nextToParse' xs 1
 nextToParse str | skipableChar (head str) = nextToParse (dropWhile skipableChar str)
                 | (last str) == ')' = nextToParse (popBackPrths str)
                 | otherwise = dropWhile skipableChar
