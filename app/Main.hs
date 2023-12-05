@@ -10,8 +10,11 @@ import AST
 import Defines
 
 -- Foo = 42
+test0 :: Tree
+test0 = Node "define" (Just (Leaf (Symbol "foo"))) (Just (Leaf (Number 42)))
+
 test1 :: Tree
-test1 = Node "define" (Just (Leaf (Symbol "foo"))) (Just (Leaf (Number 42)))
+test1 = Leaf (Symbol "foo")
 
 -- Bar = 21
 test2 :: Tree
@@ -46,15 +49,4 @@ test9 :: Tree
 test9 = Node "+" (Just (Node "*" (Just (Leaf (Number 2))) (Just (Leaf (Number 5))))) (Just (Node "/" (Just (Leaf (Symbol "foo"))) (Just (Leaf (Number 2)))))
 
 main :: IO ()
-main = computeAllAST (Env [])
-    [   
-        test1,
-        test2,
-        test3,
-        test4,
-        test5,
-        test6,
-        test7,
-        test8,
-        test9
-    ]
+main = putStrLn $ show $ computeAllAST (Env []) [test0, test1, test2, test3, test4, test5, test6, test7, test8, test9]

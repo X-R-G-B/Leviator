@@ -84,30 +84,20 @@ resolveDeepestNode _ _ = (Leaf (Number 0))
 
 ------------ COMPUTE TREE ----------
 
--- Call recursively resolveDeepestNode until the tree is fully resolved (node is a leaf)
-computeTree :: Env -> Tree -> IO Env
--- One node remaining symbol
-computeTree env (Leaf (Symbol symbol)) = do
-    let result = getSymbolValue env symbol
-    putStrLn $ show result
-    return env
--- One node remaining number
-computeTree env (Leaf (Number number)) = do
-    putStrLn $ show number
-    return env
--- More than one node remaining, call resolveDeepestNode on the tree
+computeTree :: Env -> Tree -> Atom
+computeTree env (Leaf (Symbol symbol)) = Number (getSymbolValue env symbol)
+computeTree _ (Leaf (Number number)) = Number number
 computeTree env tree = computeTree env (resolveDeepestNode env tree)
 
 ------------ COMPUTE AST ------------
 
 -- Call appropriate function depending on the node
-computeAST :: Env -> Tree -> IO Env
-computeAST env tree@(Node "define" _ _) = return $ registerDefine env tree
-computeAST env tree = computeTree env tree
+computeAST :: Env -> [Atom] -> Tree -> (Env, [Atom])
+computeAST env atoms tree@(Node "define" _ _) = (registerDefine env tree, atoms)
+computeAST env atoms tree = (env, atoms ++ [computeTree env tree])
 
 -- Call computeAST on every tree in the list
-computeAllAST :: Env -> [Tree] -> IO ()
-computeAllAST _ [] = return ()
-computeAllAST env (tree:rest) = do
-    updatedEnv <- computeAST env tree
-    computeAllAST updatedEnv rest
+computeAllAST :: Env -> [Tree] -> [Atom]
+computeAllAST _ [] = []
+computeAllAST env (tree:rest) = atoms ++ computeAllAST newEnv rest
+    where (newEnv, atoms) = computeAST env [] tree

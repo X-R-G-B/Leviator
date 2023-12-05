@@ -4,12 +4,14 @@ import Test.Tasty.Runners.Html
 
 import AST
 import TextToAST
+import ComputeAST
+import Defines
 
 main :: IO ()
 main = defaultMainWithIngredients (htmlRunner : defaultIngredients) tests
 
 tests :: TestTree
-tests = testGroup "Tests" [unitTestsASTEqual, unitTestsASTParse]
+tests = testGroup "Tests" [unitTestsASTEqual, unitTestsASTParse, unitTestASTCompute]
 
 unitTestsASTEqual :: TestTree
 unitTestsASTEqual = testGroup "AST Equal Tests"
@@ -150,3 +152,15 @@ unitTestsASTParse = testGroup "AST Parse Tests"
         )
         (textToAST "(foo def )")
   ]
+
+unitTestASTCompute :: TestTree
+unitTestASTCompute = testGroup "AST compute Tests"
+    [ testCase "test1" $
+        assertEqual "number 21 + number 21 = 42"
+          [Number 42]
+          (computeAllAST (Env []) [Node "+" (Just (Leaf (Number 21))) (Just (Leaf (Number 21)))])
+    , testCase "test2" $
+        assertEqual "define foo 42 and tree with leaf foo"
+          [Number 42]
+          (computeAllAST (Env []) [(Node "define" (Just (Leaf (Symbol "foo"))) (Just (Leaf (Number 42)))), (Leaf (Symbol "foo"))])
+    ]
