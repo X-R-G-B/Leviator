@@ -10,31 +10,41 @@ import AST
 import Defines
 
 -- Foo = 42
-testTreeDefine :: Tree
-testTreeDefine = Node "define" (Just (Leaf (Symbol "foo"))) (Just (Leaf (Number 42)))
+test1 :: Tree
+test1 = Node "define" (Just (Leaf (Symbol "foo"))) (Just (Leaf (Number 42)))
 
 -- Bar = 21
-testTreeDefine2 :: Tree
-testTreeDefine2 = Node "define" (Just (Leaf (Symbol "bar"))) (Just (Leaf (Number 21)))
+test2 :: Tree
+test2 = Node "define" (Just (Leaf (Symbol "bar"))) (Just (Leaf (Number 21)))
 
 -- 21 + 21 (result = 42)
-testTreeAddition :: Tree
-testTreeAddition = Node "+" (Just (Leaf (Number 21))) (Just (Leaf (Number 21)))
+test3 :: Tree
+test3 = Node "+" (Just (Leaf (Number 21))) (Just (Leaf (Number 21)))
 
 -- Foo + 42 (result = 42 + 42 = 84)
-testTreeAdditiondefine :: Tree
-testTreeAdditiondefine = Node "+" (Just (Leaf (Symbol "foo"))) (Just (Leaf (Number 42)))
+test4 :: Tree
+test4 = Node "+" (Just (Leaf (Symbol "foo"))) (Just (Leaf (Number 42)))
 
 -- Foo + Bar (result = 42 + 21 = 63)
-testTreeAdditiondefine2 :: Tree
-testTreeAdditiondefine2 = Node "+" (Just (Leaf (Symbol "foo"))) (Just (Leaf (Symbol "bar")))
+test5 :: Tree
+test5 = Node "+" (Just (Leaf (Symbol "foo"))) (Just (Leaf (Symbol "bar")))
+
+-- 2 + (5 * 2) (result = 12)
+test6 :: Tree
+test6 = Node "+" (Just (Leaf (Number 2))) (Just (Node "*" (Just (Leaf (Number 5))) (Just (Leaf (Number 2)))))
+
+-- 2 + (foo / 2) (result = 23)
+test7 :: Tree
+test7 = Node "+" (Just (Leaf (Number 2))) (Just (Node "/" (Just (Leaf (Symbol "foo"))) (Just (Leaf (Number 2)))))
 
 main :: IO ()
-main = computeASTs (Env [])
+main = computeAllAST (Env [])
     [   
-        testTreeDefine,
-        testTreeDefine2,
-        testTreeAddition,
-        testTreeAdditiondefine,
-        testTreeAdditiondefine2
+        test1,
+        test2,
+        test3,
+        test4,
+        test5,
+        test6,
+        test7
     ]
