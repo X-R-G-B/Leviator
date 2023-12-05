@@ -9,7 +9,7 @@ module AST
     (
         Symbol,
         Atom (Number, Symbol, Boolean),
-        Tree (Node, Leaf, Variadic),
+        Tree (Node, Leaf, Variadic, Empty),
         showMaybeTree
     ) where
 
@@ -19,7 +19,7 @@ type Symbol = String
 
 data Atom = Number Int64 | Symbol Symbol | Boolean Bool
 
-data Tree = Node Symbol (Maybe Tree) (Maybe Tree) | Leaf Atom | Variadic (Maybe Tree) (Maybe Tree)
+data Tree = Node Symbol (Maybe Tree) (Maybe Tree) | Leaf Atom | Variadic (Maybe Tree) (Maybe Tree) | Empty
 
 showMaybeTree :: Maybe Tree -> String
 showMaybeTree Nothing = "Nothing"
@@ -40,9 +40,11 @@ instance Eq Tree where
     Node a fst_ scd == Node b bfst bscd = a == b && fst_ == bfst && scd == bscd
     Leaf a == Leaf b = a == b
     Variadic fst_ scd == Variadic bfst bscd = fst_ == bfst && scd == bscd
+    Empty == Empty = True
     _ == _ = False
 
 instance Show Tree where
     show (Node value fst_ scd) = "Node:'" ++ value ++ "' first: '{" ++ showMaybeTree fst_ ++ "} second: {" ++ showMaybeTree scd ++ "}'"
     show (Leaf value) = "Leaf:'" ++ show value ++ "'"
     show (Variadic fst_ scd) = "Variadic first: {" ++ showMaybeTree fst_ ++ "} second: {" ++ showMaybeTree scd ++ "}"
+    show (Empty) = "Empty"

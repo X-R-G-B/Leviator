@@ -11,4 +11,4 @@ import AST (showMaybeTree)
 import TextToAST (textToAST)
 
 main :: IO ()
-main = putStrLn (showMaybeTree (textToAST "(define javascriptIsGood #f 42)"))
+main = putStrLn (showMaybeTree (textToAST "(fst 1 (scd 2 3 4) 12)"))
