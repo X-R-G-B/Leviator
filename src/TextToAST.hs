@@ -67,7 +67,8 @@ cutAtClose (x:xs) = (x:cutAtClose xs)
 nextToParse :: String -> String
 nextToParse [] = []
 nextToParse ('(':xs) = nextToParse' xs 1
-nextToParse str | skipableChar (head str) = nextToParse (dropWhile skipableChar str)
+nextToParse str | skipableChar (head str) = nextToParse
+                    (dropWhile skipableChar str)
                 | (last str) == ')' = nextToParse (popBackPrths str)
                 | otherwise = dropWhile skipableChar
     (dropWhile notSkipableChar (dropWhile skipableChar str))
@@ -87,7 +88,8 @@ createVariadic str =
 createNodeFromFunction :: Symbol -> String -> String -> Int -> Maybe Tree
 createNodeFromFunction [] _ _ _ = Nothing
 createNodeFromFunction (_:xs) [] _ 0 = Just (Leaf (Symbol xs))
-createNodeFromFunction (_:xs) str _ 0 = Just (Node xs (textToAST str) (Just Empty))
+createNodeFromFunction (_:xs) str _ 0 = Just (Node xs (textToAST str)
+                                      (Just Empty))
 createNodeFromFunction _ [] _ _ = Nothing
 createNodeFromFunction (_:xs) str tail_ 1 = Just (Node xs (textToAST str)
     (textToAST tail_))
