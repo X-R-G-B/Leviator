@@ -172,4 +172,30 @@ unitTestsASTParse = testGroup "AST Parse Tests"
           (Just $ Leaf (Boolean True))
         )
         (textToAST "(foo ((def)) #t)")
+  , testCase "(do (re (mi)) 12)" $
+      assertEqual "(do (re (mi)) 12)"
+        (Just $ Node "do"
+          (Just $ Node "re"
+            (Just $ Leaf (Symbol "mi"))
+            (Just $ Empty)
+          )
+          (Just $ Leaf (Number 12))
+        )
+        (textToAST "(do (re (mi)) 12)")
+  , testCase "(do (re (mi)) 12 (re (mi)))" $
+      assertEqual "(do (re (mi)) 12 (re (mi)))"
+        (Just $ Node "do"
+          (Just $ Node "re"
+            (Just $ Leaf (Symbol "mi"))
+            (Just $ Empty)
+          )
+          (Just $ Variadic
+            (Just $ Leaf (Number 12))
+            (Just $ Node "re"
+              (Just $ Leaf (Symbol "mi"))
+              (Just $ Empty)
+            )
+          )
+        )
+        (textToAST "(do (re (mi)) 12 (re (mi)))")
   ]

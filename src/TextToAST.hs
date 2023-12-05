@@ -10,7 +10,6 @@ module TextToAST
         textToAST
     ) where
 
-import Debug.Trace
 import AST
 import Data.Int (Int64)
 import Data.Char (isDigit)
@@ -68,16 +67,17 @@ cutAtClose (x:xs) = (x:cutAtClose xs)
 nextToParse :: String -> String
 nextToParse [] = []
 nextToParse ('(':xs) = nextToParse' xs 1
-nextToParse str | skipableChar (head str) = nextToParse (dropWhile skipableChar str)
+nextToParse str | skipableChar (head str) = nextToParse
+                    (dropWhile skipableChar str)
                 | (last str) == ')' = nextToParse (popBackPrths str)
                 | otherwise = dropWhile skipableChar
     (dropWhile notSkipableChar (dropWhile skipableChar str))
 
 countAtoms :: String -> Int -> Int
-countAtoms str depth | depth >= 2 = trace ("maxdepth") $ 2
+countAtoms str depth | depth >= 2 = 2
                      | not (null $ takeWhile
                         (/= ')')
-                        (dropWhile skipableChar str)) = trace ("+1atom, str: " ++ str ++ " parseRes: " ++ (nextToParse str)) $
+                        (dropWhile skipableChar str)) =
                             countAtoms (nextToParse str) (depth + 1)
                      | otherwise = depth
 
@@ -88,7 +88,8 @@ createVariadic str =
 createNodeFromFunction :: Symbol -> String -> String -> Int -> Maybe Tree
 createNodeFromFunction [] _ _ _ = Nothing
 createNodeFromFunction (_:xs) [] _ 0 = Just (Leaf (Symbol xs))
-createNodeFromFunction (_:xs) str _ 0 = Just (Node xs (textToAST str) (Just Empty))
+createNodeFromFunction (_:xs) str _ 0 = Just (Node xs (textToAST str)
+                                      (Just Empty))
 createNodeFromFunction _ [] _ _ = Nothing
 createNodeFromFunction (_:xs) str tail_ 1 = Just (Node xs (textToAST str)
     (textToAST tail_))
