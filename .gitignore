@@ -171,3 +171,7 @@ tags
 
 *.log
 *.exe
+
+/make.exe
+/libssp-0.dll
+lambdananas-reports.log

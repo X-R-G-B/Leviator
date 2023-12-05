@@ -1,0 +1,53 @@
+name: Norm
+
+on: [pull_request]
+  # lambdananas -o vera --exclude "Setup.hs:setup.hs:.git:.stack-work:test:tests:bonus" . >> lambdananas-reports.log
+jobs:
+
+  norm:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install Deps
+        run: |
+          sudo apt-get update && sudo apt-get install -y curl
+          curl -fsSL 'https://github.com/Saverio976/dotfiles/raw/main/.local/bin/lambdananas' > /tmp/lambdananas
+          chmod +x /tmp/lambdananas
+ 
+      - name: Format
+        run: /tmp/lambdananas -o vera --exclude "Setup.hs:setup.hs:.git:.stack-work:test:tests:bonus" . >> lambdananas-reports.log
+
+      - name: Is Empty
+        id: isEmpty
+        run: |
+          if [ "$(cat lambdananas-reports.log)" == "" ]; then
+            echo "isEmpty=true" >> $GITHUB_OUTPUT
+          else
+            echo "isEmpty=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Send coding style message Ok
+        uses: mshick/add-pr-comment@v2
+        if: steps.isEmpty.outputs.isEmpty == 'true'
+        with:
+          message: "No coding style issue"
+          refresh-message-position: true
+          message-id: norm-cicd
+
+      - name: Send coding style message KO
+        uses: mshick/add-pr-comment@v2
+        if: steps.isEmpty.outputs.isEmpty == 'false'
+        with:
+          message-path: |
+            lambdananas-reports.log
+          refresh-message-position: true
+          message-id: norm-cicd
+
+      - name: Exit Status
+        run: |
+          if [ ${{ steps.isEmpty.outputs.isEmpty }} == 'false' ]; then
+            exit 1
+          fi

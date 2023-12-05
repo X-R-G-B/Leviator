@@ -1,0 +1,23 @@
+[book]
+title = "Koaky (Yet Another Programming Language)"
+authors = ["@Saverio976", "@TTENSHII", "@guillaumeAbel"]
+description = "Documentation of Koaky"
+src = "docs"
+
+[build]
+build-dir = "book"
+create-missing = false
+use-default-preprocessors = true
+
+[output.html]
+git-repository-url = "https://github.com/X-R-G-B/koak"
+edit-url-template = "https://github.com/X-R-G-B/koak/edit/main/{path}"
+
+[output.html.search]
+enable = true
+use-boolean-and = true
+limit-results = 15
+
+[output.html.print]
+enable = true
+page-break = true

@@ -1,8 +1,8 @@
 {-
---  EPITECH PROJECT, 2023
---  Abstract Syntax Tree
---  File description:
---  Ast
+-- EPITECH PROJECT, 2023
+-- Koaky
+-- File description:
+-- Abstract Syntax Tree
 -}
 
 module AST
@@ -18,8 +18,22 @@ type Symbol = String
 
 data Atom = Number Int64 | Symbol Symbol
 
-data Tree = Node Symbol (Maybe Tree) (Maybe Tree) | Leaf Atom
+data Tree = Node Symbol [Tree] | Leaf Atom
+
+instance Eq Atom where
+    Number a == Number b = a == b
+    Symbol a == Symbol b = a == b
+    _ == _ = False
 
 instance Show Atom where
-    show (Number n) = show n
-    show (Symbol s) = s
+    show (Number a) = "Number:'" ++ show a ++ "'"
+    show (Symbol a) = "Symbol:'" ++ a ++ "'"
+
+instance Eq Tree where
+    Node a as == Node b bs = a == b && as == bs
+    Leaf a == Leaf b = a == b
+    _ == _ = False
+
+instance Show Tree where
+    show (Node a as) = "Node:'" ++ a ++ "'{" ++ show as ++ "}"
+    show (Leaf a) = "Leaf:'" ++ show a ++ "'"
