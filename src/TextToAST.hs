@@ -10,7 +10,6 @@ module TextToAST
         textToAST
     ) where
 
-import Debug.Trace
 import AST
 import Data.Int (Int64)
 import Data.Char (isDigit)
@@ -74,10 +73,10 @@ nextToParse str | skipableChar (head str) = nextToParse (dropWhile skipableChar 
     (dropWhile notSkipableChar (dropWhile skipableChar str))
 
 countAtoms :: String -> Int -> Int
-countAtoms str depth | depth >= 2 = trace ("maxdepth") $ 2
+countAtoms str depth | depth >= 2 = 2
                      | not (null $ takeWhile
                         (/= ')')
-                        (dropWhile skipableChar str)) = trace ("+1atom, str: " ++ str ++ " parseRes: " ++ (nextToParse str)) $
+                        (dropWhile skipableChar str)) =
                             countAtoms (nextToParse str) (depth + 1)
                      | otherwise = depth
 
