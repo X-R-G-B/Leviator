@@ -22,7 +22,8 @@ computeNode :: Env -> Tree -> Int64
 computeNode env tree@(Node "+" _ _) = additionTree env tree
 computeNode env tree@(Node "-" _ _) = substactionTree env tree
 computeNode env tree@(Node "*" _ _) = multiplicationTree env tree
-computeNode env tree@(Node "/" _ _) = divisionTree env tree
+computeNode env tree@(Node "div" _ _) = divisionTree env tree
+computeNode env tree@(Node "mod" _ _) = moduloTree env tree
 -- TODO: Error handling
 computeNode _ _ = 0
 

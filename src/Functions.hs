@@ -10,14 +10,15 @@ module Functions
         additionTree,
         substactionTree,
         multiplicationTree,
-        divisionTree
+        divisionTree,
+        moduloTree
     ) where
 
 import AST
 import Defines
 import Data.Int (Int64)
 
--- Compute a "+ - / *" node, using defines if needed
+-- Compute a "+ - div * mod" node, using defines if needed
 -- Todo: See for an error handling and division by 0
 
 additionTree :: Env -> Tree -> Int64
@@ -57,13 +58,25 @@ multiplicationTree env (Node "*" (Just (Leaf (Symbol left)))
 multiplicationTree _ _ = 0
 
 divisionTree :: Env -> Tree -> Int64
-divisionTree _ (Node "/" (Just (Leaf (Number left)))
+divisionTree _ (Node "div" (Just (Leaf (Number left)))
     (Just (Leaf (Number right)))) = left `div` right
-divisionTree env (Node "/" (Just (Leaf (Number left)))
+divisionTree env (Node "div" (Just (Leaf (Number left)))
     (Just (Leaf (Symbol right)))) = left `div` getSymbolValue env right
-divisionTree env (Node "/" (Just (Leaf (Symbol left)))
+divisionTree env (Node "div" (Just (Leaf (Symbol left)))
     (Just (Leaf (Number right)))) = getSymbolValue env left `div` right
-divisionTree env (Node "/" (Just (Leaf (Symbol left)))
+divisionTree env (Node "div" (Just (Leaf (Symbol left)))
     (Just (Leaf (Symbol right)))) =
         getSymbolValue env left `div` getSymbolValue env right
 divisionTree _ _ = 0
+
+moduloTree :: Env -> Tree -> Int64
+moduloTree _ (Node "mod" (Just (Leaf (Number left)))
+    (Just (Leaf (Number right)))) = left `mod` right
+moduloTree env (Node "mod" (Just (Leaf (Number left)))
+    (Just (Leaf (Symbol right)))) = left `mod` getSymbolValue env right
+moduloTree env (Node "mod" (Just (Leaf (Symbol left)))
+    (Just (Leaf (Number right)))) = getSymbolValue env left `mod` right
+moduloTree env (Node "mod" (Just (Leaf (Symbol left)))
+    (Just (Leaf (Symbol right)))) =
+        getSymbolValue env left `mod` getSymbolValue env right
+moduloTree _ _ = 0

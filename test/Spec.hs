@@ -186,9 +186,13 @@ unitTestASTCompute = testGroup "AST compute Tests"
     , testCase "test8" $
         assertEqual "(2 * 5) + (foo / 2) (result = 10 + 21 = 31)"
           [Number 31]
-          (computeAllAST (Env []) [(Node "define" (Just (Leaf (Symbol "foo"))) (Just (Leaf (Number 42)))), Node "+" (Just (Node "*" (Just (Leaf (Number 2))) (Just (Leaf (Number 5))))) (Just (Node "/" (Just (Leaf (Symbol "foo"))) (Just (Leaf (Number 2)))))])
+          (computeAllAST (Env []) [(Node "define" (Just (Leaf (Symbol "foo"))) (Just (Leaf (Number 42)))), Node "+" (Just (Node "*" (Just (Leaf (Number 2))) (Just (Leaf (Number 5))))) (Just (Node "div" (Just (Leaf (Symbol "foo"))) (Just (Leaf (Number 2)))))])
     , testCase "test9" $
         assertEqual "2 + 2 + (5 * 2) (result = 14)"
           [Number 14]
           (computeAllAST (Env []) [(Node "+" (Just (Leaf (Number 2))) (Just (Node "+" (Just (Leaf (Number 2))) (Just (Node "*" (Just (Leaf (Number 5))) (Just (Leaf (Number 2))))))))])
+    , testCase "test10" $
+        assertEqual "14 mod 5 (result = 4)"
+          [Number 4]
+          (computeAllAST (Env []) [(Node "mod" (Just (Leaf (Number 14))) (Just (Leaf (Number 5))))])
     ]
