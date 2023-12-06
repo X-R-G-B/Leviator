@@ -15,7 +15,11 @@ module Parser
         parseAnd,
         parseAndWhith,
         parseMany,
-        parseSome
+        parseSome,
+        parseUInt,
+        parseInt,
+        parsePair,
+        parseList,
     ) where
 
 type Parser a = String -> Maybe (a, String)
@@ -70,4 +74,67 @@ parseSome p str = case p str of
                         case parseMany p xs of
                             Just (x', xs') -> Just (x:x', xs')
                             Nothing -> Just ([x], xs)
+                    Nothing -> Nothing
+
+parseUInt :: Parser Int
+parseUInt str = case parseSome (parseAnyChar "0123456789") str of
+                Just (x, xs) -> Just (read x :: Int, xs)
+                Nothing -> Nothing
+
+parseSign :: Parser Int
+parseSign str = case parseMany (parseAnyChar "+-") str of
+                    Just (x, xs) | even (length (filter (== '-') x))
+                                    -> Just (1, xs)
+                                 | otherwise
+                                    -> Just (-1, xs)
+                    Nothing -> Nothing
+
+parseInt :: Parser Int
+parseInt = parseAndWhith (flip (*)) parseSign parseUInt
+-- Same as:
+-- parseInt str = parseAndWhith (\signCoef n -> n * signCoef) parseSign parseUInt str
+
+parsePair :: Parser a -> Parser (a , a)
+parsePair _ [] = Nothing
+parsePair p str = case parseChar '(' str of
+                    Just (_, xs) ->
+                        case p xs of
+                            Just (x, xs') ->
+                                case parseSome (parseChar ' ') xs' of
+                                    Just (_, xs'') ->
+                                        case p xs'' of
+                                            Just (x', xs''') ->
+                                                case parseChar ')' xs''' of
+                                                    Just (_, xs'''') -> 
+                                                        Just ((x, x'), xs'''')
+                                                    Nothing -> Nothing
+                                            Nothing -> Nothing
+                                    Nothing -> Nothing
+                            Nothing -> Nothing
+                    Nothing -> Nothing
+
+parseList' :: Parser a -> Parser [a]
+parseList' _ [] = Nothing
+parseList' p str =
+    case parseChar ')' str of
+        Just (_, xs)
+            -> Just ([], xs)
+        Nothing
+            -> case parseSome (parseChar ' ') str of
+                Just (_, xs)
+                    -> parseList' p xs
+                Nothing
+                    -> case p str of
+                        Just (x, xs)
+                            -> case parseList' p xs of
+                                Just (x', xs')
+                                    -> Just (x:x', xs')
+                                Nothing
+                                    -> Nothing
+                        Nothing
+                            -> Nothing
+
+parseList :: Parser a -> Parser [a]
+parseList p str = case parseChar '(' str of
+                    Just (_, xs) -> parseList' p xs
                     Nothing -> Nothing
