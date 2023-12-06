@@ -28,6 +28,7 @@ library
       AST
       ComputeAST
       Defines
+      Functions
       TextToAST
   other-modules:
       Paths_koaky
