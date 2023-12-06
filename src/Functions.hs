@@ -28,7 +28,8 @@ additionTree env (Node "+" (Just (Leaf (Number left)))
 additionTree env (Node "+" (Just (Leaf (Symbol left)))
     (Just (Leaf (Number right)))) = getSymbolValue env left + right
 additionTree env (Node "+" (Just (Leaf (Symbol left)))
-    (Just (Leaf (Symbol right)))) = getSymbolValue env left + getSymbolValue env right
+    (Just (Leaf (Symbol right)))) =
+        getSymbolValue env left + getSymbolValue env right
 additionTree _ _ = 0
 
 substactionTree :: Env -> Tree -> Int64
@@ -39,7 +40,8 @@ substactionTree env (Node "-" (Just (Leaf (Number left)))
 substactionTree env (Node "-" (Just (Leaf (Symbol left)))
     (Just (Leaf (Number right)))) = getSymbolValue env left - right
 substactionTree env (Node "-" (Just (Leaf (Symbol left)))
-    (Just (Leaf (Symbol right)))) = getSymbolValue env left - getSymbolValue env right
+    (Just (Leaf (Symbol right)))) =
+        getSymbolValue env left - getSymbolValue env right
 substactionTree _ _ = 0
 
 multiplicationTree :: Env -> Tree -> Int64
@@ -50,7 +52,8 @@ multiplicationTree env (Node "*" (Just (Leaf (Number left)))
 multiplicationTree env (Node "*" (Just (Leaf (Symbol left)))
     (Just (Leaf (Number right)))) = getSymbolValue env left * right
 multiplicationTree env (Node "*" (Just (Leaf (Symbol left)))
-    (Just (Leaf (Symbol right)))) = getSymbolValue env left * getSymbolValue env right
+    (Just (Leaf (Symbol right)))) =
+        getSymbolValue env left * getSymbolValue env right
 multiplicationTree _ _ = 0
 
 divisionTree :: Env -> Tree -> Int64
@@ -61,5 +64,6 @@ divisionTree env (Node "/" (Just (Leaf (Number left)))
 divisionTree env (Node "/" (Just (Leaf (Symbol left)))
     (Just (Leaf (Number right)))) = getSymbolValue env left `div` right
 divisionTree env (Node "/" (Just (Leaf (Symbol left)))
-    (Just (Leaf (Symbol right)))) = getSymbolValue env left `div` getSymbolValue env right
+    (Just (Leaf (Symbol right)))) =
+        getSymbolValue env left `div` getSymbolValue env right
 divisionTree _ _ = 0
