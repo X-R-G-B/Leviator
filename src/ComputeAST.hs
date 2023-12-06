@@ -29,10 +29,20 @@ computeNode _ _ = 0
 ------------ Resolve deepest ------------
 
 resolveDeepestNode :: Env -> Tree -> Tree
-resolveDeepestNode env (Node symbol (Just (Leaf left)) (Just (Leaf right))) = Leaf (Number (computeNode env (Node symbol (Just (Leaf left)) (Just (Leaf right)))))
-resolveDeepestNode env (Node symbol (Just (Leaf left)) (Just right)) = Node symbol (Just (Leaf left)) (Just $ resolveDeepestNode env right)
-resolveDeepestNode env (Node symbol (Just left) (Just (Leaf right))) = Node symbol (Just $ resolveDeepestNode env left) (Just (Leaf right))
-resolveDeepestNode env (Node symbol (Just left) (Just right)) = Node symbol (Just $ resolveDeepestNode env left) (Just $ resolveDeepestNode env right)
+-- Node [Leaf] [Leaf]
+resolveDeepestNode env (Node symbol (Just (Leaf left)) (Just (Leaf right))) =
+    Leaf (Number (computeNode env
+        (Node symbol (Just (Leaf left)) (Just (Leaf right)))))
+-- Node [Leaf] [Node]
+resolveDeepestNode env (Node symbol (Just (Leaf left)) (Just right)) =
+    Node symbol (Just (Leaf left)) (Just $ resolveDeepestNode env right)
+-- Node [Node] [Leaf]
+resolveDeepestNode env (Node symbol (Just left) (Just (Leaf right))) =
+    Node symbol (Just $ resolveDeepestNode env left) (Just (Leaf right))
+-- Node [Node] [Node]
+resolveDeepestNode env (Node symbol (Just left) (Just right)) =
+    Node symbol (Just $ resolveDeepestNode env left)
+        (Just $ resolveDeepestNode env right)
 -- TODO: Error handling
 resolveDeepestNode _ _ = (Leaf (Number 0))
 
