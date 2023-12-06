@@ -9,7 +9,7 @@ module Defines
     (
         Define (Define),
         Env (Env),
-        registerDefine,
+        --registerDefine,
         getSymbolValue
     ) where
 
@@ -19,7 +19,7 @@ import Data.Int (Int64)
 -- Define = <SYMBOL> <EXPRESSION>
 data Define = Define {
     symbol :: String,
-    expression :: Atom
+    expression :: Tree
 } deriving (Show)
 
 -- used to store defines, and more in the future
@@ -39,10 +39,10 @@ getSymbolValue (Env ((Define symbl value):rest)) symbolToFind
     | otherwise = getSymbolValue (Env rest) symbolToFind
 
 -- Register a define in the Defines list
-registerDefine :: Env -> Tree -> Env
-registerDefine env
-        (Node "define"
-        (Just (Leaf (Symbol defSymbol)))
-        (Just (Leaf defexpression)))
-        = env { defines = defines env ++ [Define defSymbol defexpression] }
-registerDefine env _ = env
+--registerDefine :: Env -> Tree -> Env
+--registerDefine env
+--        (Node "define"
+--        (Just (Leaf (Symbol defSymbol)))
+--        (Just (Leaf defexpression)))
+--        = env { defines = defines env ++ [Define defSymbol defexpression] }
+--registerDefine env _ = env

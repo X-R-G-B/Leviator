@@ -5,8 +5,5 @@
 -- Main
 -}
 
-import AST
-import TextToAST
-
 main :: IO ()
-main = putStrLn (showMaybeTree (textToAST "(fst 1 (scd 2 3 4) 12)"))
+main = putStrLn ("Hello, World!")
