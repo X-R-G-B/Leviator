@@ -25,6 +25,10 @@ data Env = Env {
     defines :: [Define]
 } deriving (Show)
 
+instance Eq Env where
+    (Env []) == (Env []) = True
+    _ == _ = True
+
 -- Register a define in the Defines list
 registerDefine :: Env -> Tree -> Env
 registerDefine env

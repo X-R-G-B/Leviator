@@ -7,6 +7,7 @@
 
 module ComputeAST
     (
+        computeAST,
         computeAllAST
     ) where
 
@@ -92,12 +93,14 @@ computeTree env tree = computeTree env (resolveDeepestNode env tree)
 ------------ COMPUTE AST ------------
 
 -- Call appropriate function depending on the node
-computeAST :: Env -> [Atom] -> Tree -> (Env, [Atom])
-computeAST env atoms tree@(Node "define" _ _) = (registerDefine env tree, atoms)
-computeAST env atoms tree = (env, atoms ++ [computeTree env tree])
+computeAST :: Env -> Tree -> (Env, Maybe Atom)
+computeAST env tree@(Node "define" _ _) = (registerDefine env tree, Nothing)
+computeAST env tree = (env, Just (computeTree env tree))
 
 -- Call computeAST on every tree in the list
 computeAllAST :: Env -> [Tree] -> [Atom]
 computeAllAST _ [] = []
-computeAllAST env (tree:rest) = atoms ++ computeAllAST newEnv rest
-    where (newEnv, atoms) = computeAST env [] tree
+computeAllAST env (tree:rest) = case atom of
+    Just atom -> atom : computeAllAST newEnv rest
+    Nothing -> computeAllAST newEnv rest
+    where (newEnv, atom) = computeAST env tree
