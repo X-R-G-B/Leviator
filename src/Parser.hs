@@ -11,22 +11,55 @@ module Parser
         parseChar,
         -- parseAnyChar1,
         parseAnyChar,
-        parseOr,
-        parseAnd,
-        parseAndWith,
-        parseMany,
-        parseSome,
         parseUInt,
         parseInt,
         parsePair,
         parseList,
     ) where
 
--- type Parser a = String -> Maybe (a, String)
+import Control.Applicative
 
 data Parser a = Parser {
     runParser :: String -> Maybe (a, String)
 }
+
+instance Functor Parser where
+    fmap fct parser = Parser f
+        where
+            f str = case runParser parser str of
+                        Just (x, xs) -> Just (fct x, xs)
+                        Nothing -> Nothing
+
+instance Applicative Parser where
+    pure x = Parser f
+        where
+            f str = Just (x, str)
+    p1 <*> p2 = Parser f
+        where
+            f str = case runParser p1 str of
+                        Just (x, xs) ->
+                            case runParser p2 xs of
+                                Just (y, ys) -> Just (x y, ys)
+                                Nothing -> Nothing
+                        Nothing -> Nothing
+
+instance Alternative Parser where
+    empty = Parser f
+        where
+            f _ = Nothing
+    p1 <|> p2 = Parser f
+        where
+            f str = case runParser p1 str of
+                        Just (x, xs) -> Just (x, xs)
+                        Nothing -> runParser p2 str
+
+instance Monad Parser where
+    parser >>= fct = Parser f
+        where
+            f str = case runParser parser str of
+                        Just (x, xs) -> runParser (fct x) xs
+                        Nothing -> Nothing
+    return = pure
 
 parseChar :: Char -> Parser Char
 parseChar c = Parser f
@@ -42,68 +75,19 @@ parseAnyChar str = Parser f
         f (x:xs) | x `elem` str = Just (x, xs)
                  | otherwise = Nothing
 
-parseOr :: Parser a -> Parser a -> Parser a
-parseOr p1 p2 = Parser f
-    where
-        f str = case runParser p1 str of
-                    Just (x, xs) -> Just (x, xs)
-                    Nothing -> runParser p2 str
-
-parseAnd :: Parser a -> Parser b -> Parser (a,b)
-parseAnd p1 p2 = Parser f
-    where
-        f str = case runParser p1 str of
-                    Just (x, xs) ->
-                        case runParser p2 xs of
-                            Just (y, ys) -> Just ((x,y), ys)
-                            Nothing -> Nothing
-                    Nothing -> Nothing
-
-parseAndWith :: (a -> b -> c) -> Parser a -> Parser b -> Parser c
-parseAndWith f p1 p2 = Parser f'
-    where
-        f' str = case runParser (parseAnd p1 p2) str of
-                    Just ((x, y), xs) -> Just (f x y, xs)
-                    Nothing -> Nothing
-
-parseMany :: Parser a -> Parser [a]
-parseMany p = Parser f
-    where
-        f str = case runParser p str of
-                    Just (x, xs) ->
-                        case runParser (parseMany p) xs of
-                            Just (ys, zs) -> Just (x:ys, zs)
-                            Nothing -> Just ([x], xs)
-                    Nothing -> Just ([], str)
-
-parseSome :: Parser a -> Parser [a]
-parseSome p = Parser f
-    where
-        f str = case runParser p str of
-                    Just (x, xs) ->
-                        case runParser (parseMany p) xs of
-                            Just (ys, zs) -> Just (x:ys, zs)
-                            Nothing -> Just ([x], xs)
-                    Nothing -> Nothing
-
 parseUInt :: Parser Int
-parseUInt = Parser f
-    where
-        f [] = Nothing
-        f str = case runParser (parseSome (parseAnyChar "0123456789")) str of
-                    Just (x, xs) -> Just (read x, xs)
-                    Nothing -> Nothing
+parseUInt = read <$> some (parseAnyChar "0123456789")
 
 parseSign :: Parser Int
 parseSign = Parser f
     where
-        f str = case runParser (parseMany (parseAnyChar "+-")) str of
+        f str = case runParser (many (parseAnyChar "+-")) str of
             Just (x, xs) | even (length (filter (== '-') x)) -> Just (1, xs)
                          | otherwise -> Just (-1, xs)
             Nothing -> Nothing
 
 parseInt :: Parser Int
-parseInt = parseAndWith (*) parseSign parseUInt
+parseInt = (*) <$> parseSign <*> parseUInt
 
 parsePair :: Parser a -> Parser b -> Parser (a,b)
 parsePair p1 p2 = Parser f
@@ -112,13 +96,13 @@ parsePair p1 p2 = Parser f
                     Just (_, xs) ->
                         case runParser p1 xs of
                             Just (x, xs') ->
-                                case runParser (parseMany (parseChar ' ')) xs' of
+                                case runParser (many (parseChar ' ')) xs' of
                                     Just (_, xs'') ->
                                         case runParser p2 xs'' of
-                                            Just (y, ys) ->
-                                                case runParser (parseChar ')') ys of
-                                                    Just (_, ys') -> Just ((x,y), ys')
-                                                    Nothing -> Nothing
+                                            Just (x', xs''') ->
+                                                runParser
+                                                    ((x, x') <$ parseChar ')')
+                                                    xs'''
                                             Nothing -> Nothing
                                     Nothing -> Nothing
                             Nothing -> Nothing
@@ -131,11 +115,9 @@ parseList' p = Parser f
                     Just (_, xs) -> Just ([], xs)
                     Nothing -> case runParser p str of
                         Just (x, xs) ->
-                            case runParser (parseMany (parseChar ' ')) xs of
+                            case runParser (many (parseChar ' ')) xs of
                                 Just (_, xs') ->
-                                    case runParser (parseList' p) xs' of
-                                        Just (ys, ys') -> Just (x:ys, ys')
-                                        Nothing -> Nothing
+                                    runParser ((x :) <$> parseList' p) xs'
                                 Nothing -> Nothing
                         Nothing -> Nothing
 
