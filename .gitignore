@@ -170,6 +170,7 @@ tags
 /glados
 
 *.log
+*.exe
 
 /make.exe
 /libssp-0.dll
