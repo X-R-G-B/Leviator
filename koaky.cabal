@@ -27,6 +27,7 @@ library
   exposed-modules:
       AST
       ComputeAST
+      Parser
       TextToAST
   other-modules:
       Paths_koaky
