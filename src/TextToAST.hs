@@ -47,6 +47,11 @@ parseStringNumber str =
         (takeWhile (\x -> notSkipableChar x && x /= ')') str)
         :: Data.Int.Int64)
 
+popBackPrths :: String -> String
+popBackPrths [] = []
+popBackPrths [')'] = []
+popBackPrths (x:xs) = (x:popBackPrths xs)
+
 nextToParse' :: String -> Int -> String
 nextToParse' [] _ = []
 nextToParse' (')':xs) 1 = dropWhile (\x -> skipableChar x || x == ')') xs
@@ -54,10 +59,18 @@ nextToParse' (')':xs) depth = nextToParse' xs (depth - 1)
 nextToParse' ('(':xs) depth = nextToParse' xs (depth + 1)
 nextToParse' (_:xs) depth = nextToParse' xs depth
 
+cutAtClose :: String -> String
+cutAtClose [] = []
+cutAtClose (')':_) = []
+cutAtClose (x:xs) = (x:cutAtClose xs)
+
 nextToParse :: String -> String
 nextToParse [] = []
-nextToParse ('(':xs) = nextToParse' xs 0
-nextToParse str = dropWhile skipableChar
+nextToParse ('(':xs) = nextToParse' xs 1
+nextToParse str | skipableChar (head str) = nextToParse
+                    (dropWhile skipableChar str)
+                | (last str) == ')' = nextToParse (popBackPrths str)
+                | otherwise = dropWhile skipableChar
     (dropWhile notSkipableChar (dropWhile skipableChar str))
 
 countAtoms :: String -> Int -> Int
@@ -72,16 +85,17 @@ createVariadic :: String -> Maybe Tree
 createVariadic str =
     Just $ Variadic (textToAST str) (textToAST (nextToParse str))
 
-createNodeFromFunction :: Symbol -> String -> Int -> Maybe Tree
-createNodeFromFunction [] _ _ = Nothing
-createNodeFromFunction (_:xs) [] 0 = Just (Node xs Nothing Nothing)
-createNodeFromFunction (_:xs) str 0 = Just (Node xs (textToAST str) Nothing)
-createNodeFromFunction _ [] _ = Nothing
-createNodeFromFunction (_:xs) str 1 = Just (Node xs (textToAST str)
-    (textToAST (nextToParse str)))
-createNodeFromFunction (_:xs) str 2 =
-    Just (Node xs (textToAST str) (createVariadic (nextToParse str)))
-createNodeFromFunction _ _ _ = Nothing
+createNodeFromFunction :: Symbol -> String -> String -> Int -> Maybe Tree
+createNodeFromFunction [] _ _ _ = Nothing
+createNodeFromFunction (_:xs) [] _ 0 = Just (Leaf (Symbol xs))
+createNodeFromFunction (_:xs) str _ 0 = Just (Node xs (textToAST str)
+                                      (Just Empty))
+createNodeFromFunction _ [] _ _ = Nothing
+createNodeFromFunction (_:xs) str tail_ 1 = Just (Node xs (textToAST str)
+    (textToAST tail_))
+createNodeFromFunction (_:xs) str tail_ 2 =
+    Just (Node xs (textToAST str) (createVariadic tail_))
+createNodeFromFunction _ _ _ _ = Nothing
 
 stringIsBool :: String -> Bool
 stringIsBool "#t" = True
@@ -114,7 +128,8 @@ treeFromAtom split str | stringIsNumber split =
                        | stringIsBool split = createBool split
                        | isFunction split = createNodeFromFunction
                             (takeWhile (/= ')') split)
-                            str
+                            (cutAtClose str)
+                            (nextToParse str)
                             (countAtoms (nextToParse str) 0)
                        | otherwise =
                             Just (Leaf (Symbol $ takeWhile (/= ')') split))
@@ -122,7 +137,6 @@ treeFromAtom split str | stringIsNumber split =
 textToAST :: String -> Maybe Tree
 textToAST [] = Nothing
 textToAST (x:xs) | skipableChar x = textToAST xs
-                 | otherwise =
-                    treeFromAtom
+                 | otherwise = treeFromAtom
                         (takeWhile notSkipableChar (x:xs))
                         (dropWhile notSkipableChar (x:xs))
