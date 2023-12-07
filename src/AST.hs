@@ -16,7 +16,7 @@ import Data.Int (Int64)
 
 type Symbol = String
 
-data Tree = Number Int64 | Symbol Symbol | Boolean Bool | List [Maybe Tree]
+data Tree = Number Int64 | Symbol Symbol | Boolean Bool | List [Tree]
 
 showMaybeTree :: Maybe Tree -> String
 showMaybeTree Nothing = "Nothing"
