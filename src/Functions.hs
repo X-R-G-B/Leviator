@@ -14,9 +14,9 @@ module Functions
         --moduloTree
     ) where
 
-import AST
-import Defines
-import Data.Int (Int64)
+--import AST
+--import Defines
+--import Data.Int (Int64)
 
 -- Compute a "+ - div * mod" node, using defines if needed
 -- Todo: See for an error handling and division by 0

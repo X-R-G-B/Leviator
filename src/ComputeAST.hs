@@ -11,10 +11,9 @@ module ComputeAST
         --computeAllAST
     ) where
 
-import AST
-import Defines
-import Data.Int (Int64)
-import Functions
+--import AST
+--import Data.Int (Int64)
+--import Functions
 
 ------------ ComputeNode ------------
 

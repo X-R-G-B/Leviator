@@ -17,8 +17,8 @@ unitTestsASTEqual :: TestTree
 unitTestsASTEqual = testGroup "AST Equal Tests"
   [ testCase "Basic AST creation 0" $
       assertEqual "define x 42"
-        (List [Symbol "define", Symbol "x", Number 42])
-        (List [Symbol "define", Symbol "x", Number 42])
+        (List [Just (Symbol "define"), Just (Symbol "x"), Just (Number 42)])
+        (List [Just (Symbol "define"), Just (Symbol "x"), Just (Number 42)])
   , testCase "Basic AST creation 1" $
       assertEqual "foo"
         (Symbol "foo")
@@ -106,32 +106,42 @@ unitTestsASTEqual = testGroup "AST Equal Tests"
 --    [ testCase "test1" $
 --        assertEqual "number 21 + number 21 = 42"
 --          [Number 42]
+--          computeAllAST (Env []) [(List [Just (Symbol "+"), Just (Number 21), Just (Number 21)])]
 --    , testCase "test2" $
---        assertEqual "define foo 42 and tree with leaf foo"
+--        assertEqual "define foo 42 and tree with Symbol foo"
 --          [Number 42]
+--          computeAllAST (Env []) [(List [Just (Symbol "define"), Just (Symbol "foo"), Just (Number 42)]), (Symbol "foo")]
 --    , testCase "test3" $
 --        assertEqual "define foo 42 and do foo + 42"
 --          [Number 84]
+--          computeAllAST (Env []) [(List [Just (Symbol "define"), Just (Symbol "foo"), Just (Number 42)]), (List [Just (Symbol "+"), Just (Symbol "foo"), Just (Number 42)])]
 --    , testCase "test3" $
 --        assertEqual "define foo 42 and do 42 + foo"
 --          [Number 84]
+--          computeAllAST (Env []) [(List [Just (Symbol "define"), Just (Symbol "foo"), Just (Number 42)]), (List [Just (Symbol "+"), Just (Number 42), Just (Symbol "foo")])]
 --    , testCase "test5" $
 --        assertEqual "define foo 42 and do foo + foo"
 --          [Number 84]
+--          computeAllAST (Env []) [(List [Just (Symbol "define"), Just (Symbol "foo"), Just (Number 42)]), (List [Symbol, "+", Symbol "foo", Symbol "foo"])]
 --    , testCase "test6" $
 --        assertEqual "define foo 42 and bar 21 and do foo + bar"
 --          [Number 63]
+--          computeAllAST (Env []) [(List [Just (Symbol "define"), Just (Symbol "foo"), Just (Number 42)]), (List [Just (Symbol "define"), Just (Symbol "bar"), Just (Number 21)]), (List [Just (Symbol "+"), Just (Symbol "foo"), Just (Symbol "bar")])]
 --    , testCase "test7" $
 --        assertEqual "2 + (5 * 2) (result = 12)"
 --          [Number 12]
+--          computeAllAST (Env []) [(List [Just (Symbol "+"), Just (Number 2), Just (List [Just (Symbol "*"), Just (Number 5), Just (Number 2)])])]
 --    , testCase "test8" $
---        assertEqual "(2 * 5) + (foo / 2) (result = 10 + 21 = 31)"
+--        assertEqual "define foo 42 and (2 * 5) + (foo / 2) (result = 10 + 21 = 31)"
 --          [Number 31]
+--          computeAllAST (Env []) [(List [Just (Symbol "define"), Just (Symbol "foo"), Just (Number 42)]), (List [Just (Symbol "+"), Just (List [Just (Symbol "*"), Just (Number 2), Just (Number 5)]), Just (List [Just (Symbol "/"), Just (Symbol "foo"), Just (Number 2)])])]
 --    , testCase "test9" $
 --        assertEqual "2 + 2 + (5 * 2) (result = 14)"
 --          [Number 14]
+--          computeAllAST (Env []) [(List [Just (Symbol "+"), Just (List [Just (Symbol "+"), Just (Number 2), Just (Number 2)]), Just (List [Just (Symbol "*"), Just (Number 5), Just (Number 2)])])]
 --    , testCase "test10" $
 --        assertEqual "14 mod 5 (result = 4)"
 --          [Number 4]
+--          computeAllAST (Env []) [(List [Just (Symbol "mod"), Just (Number 14), Just (Number 5)])]
 --    ]
 --
