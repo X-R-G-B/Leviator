@@ -86,3 +86,9 @@ jobs:
             tests.log
           refresh-message-position: true
           message-id: tests-cicd
+
+      - name: Exit Status
+        run: |
+          if [ ${{ steps.failedTest.outputs.failedTest }} == 'true' ]; then
+            exit 1
+          fi
