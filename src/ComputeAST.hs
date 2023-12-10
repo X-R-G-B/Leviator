@@ -13,8 +13,7 @@ module ComputeAST
 import Types
 import Errors
 import Defines
-
---import Functions
+import Functions
 
 ------------ ComputeNode ------------
 
@@ -46,29 +45,56 @@ import Defines
 --        (Just $ resolveDeepestNode env right)
 ---- TODO: Error handling
 --resolveDeepestNode _ _ = (Leaf (Number 0))
---
+
+
 -------------- COMPUTE TREE ----------
---
+
 --computeTree :: Env -> Tree -> Atom
 --computeTree env (Leaf (Symbol symbol)) = Number (getSymbolValue env symbol)
 --computeTree _ (Leaf (Number number)) = Number number
 --computeTree _ (Leaf (Boolean value)) = Boolean value
 --computeTree env tree = computeTree env (resolveDeepestNode env tree)
 
---data Tree = Number Int64 | Symbol Symbol | Boolean Bool | List [Tree]
+--computeTree :: Env -> Tree -> Atom
+--computeTree env (Leaf (Symbol symbol)) = Number (getSymbolValue env symbol)
+--computeTree _ (Leaf (Number number)) = Number number
+--computeTree _ (Leaf (Boolean value)) = Boolean value
+--computeTree env tree = computeTree env (resolveDeepestNode env tree)
 
--------------- COMPUTE AST ------------
-computeAST :: Env -> Tree -> (Env, Maybe Result)
--- Defines
-computeAST env (List [Symbol "define", Symbol symbol, expression])
-    = (registerDefine env symbol expression, Nothing)
-computeAST env (List (Symbol "define" : _))
-    = (registerError env "Define must be 'define' symbol expression", Nothing)
--- No list in the AST
-computeAST env (Number number) = (env, Just (Number number))
-computeAST env (Boolean value) = (env, Just (Boolean value))
-computeAST env (Symbol symbol)
+doesListContainsList :: [Tree] -> Bool
+doesListContainsList _ = False
+
+-------------- HANDLE LISTS ------------
+
+handleSimpleList :: Env -> [Tree] -> (Env, Maybe Result)
+handleSimpleList env (Symbol "+" : rest) = addition env rest
+
+handleDeepList :: Env -> [Tree] -> (Env, Maybe Result)
+handleDeepList env _ = (env, Nothing)
+
+-------------- COMPUTE NO LIST ------------
+
+handleNoList :: Env -> Tree -> (Env, Maybe Result)
+handleNoList env (Number number) = (env, Just (Number number))
+handleNoList env (Boolean value) = (env, Just (Boolean value))
+handleNoList env (Symbol symbol)
     | Nothing <- value = (env, Nothing)
     | Just result <- value = (env, Just result)
         where (_, value) = getSymbolValue env symbol
+
+-------------- COMPUTE DEFINE ------------
+
+handleDefine :: Env -> Tree -> (Env, Maybe Result)
+handleDefine env (List [Symbol _, Symbol symbol, expression])
+    = (registerDefine env symbol expression, Nothing)
+handleDefine env _ = (registerError env "Bad define", Nothing)
+
+-------------- COMPUTE AST ------------
+computeAST :: Env -> Tree -> (Env, Maybe Result)
+computeAST env tree@(List (Symbol "define" : _)) = handleDefine env tree
+computeAST env tree@(List list)
+    | doesListContainsList list = handleDeepList env list
+    | otherwise = handleSimpleList env list
+computeAST env tree = handleNoList env tree
+
 -- List in the AST

@@ -2,82 +2,39 @@
 -- EPITECH PROJECT, 2023
 -- Koaky
 -- File description:
--- ComputeAST
+-- Functions
 -}
 
 module Functions
     (
-        --additionTree,
+        addition,
         --substactionTree,
         --multiplicationTree,
         --divisionTree,
         --moduloTree
     ) where
 
---import AST
---import Defines
---import Data.Int (Int64)
+import Types
+import Errors
+import Defines
 
--- Compute a "+ - div * mod" node, using defines if needed
--- Todo: See for an error handling and division by 0
+-- Compute a "+ - div * mod" list, using defines if needed
 
---additionTree :: Env -> Tree -> Int64
---additionTree _ (Node "+" (Just (Leaf (Number left)))
---    (Just (Leaf (Number right)))) = left + right
---additionTree env (Node "+" (Just (Leaf (Number left)))
---    (Just (Leaf (Symbol right)))) = left + getSymbolValue env right
---additionTree env (Node "+" (Just (Leaf (Symbol left)))
---    (Just (Leaf (Number right)))) = getSymbolValue env left + right
---additionTree env (Node "+" (Just (Leaf (Symbol left)))
---    (Just (Leaf (Symbol right)))) =
---        getSymbolValue env left + getSymbolValue env right
---additionTree _ _ = 0
---
---substactionTree :: Env -> Tree -> Int64
---substactionTree _ (Node "-" (Just (Leaf (Number left)))
---    (Just (Leaf (Number right)))) = left - right
---substactionTree env (Node "-" (Just (Leaf (Number left)))
---    (Just (Leaf (Symbol right)))) = left - getSymbolValue env right
---substactionTree env (Node "-" (Just (Leaf (Symbol left)))
---    (Just (Leaf (Number right)))) = getSymbolValue env left - right
---substactionTree env (Node "-" (Just (Leaf (Symbol left)))
---    (Just (Leaf (Symbol right)))) =
---        getSymbolValue env left - getSymbolValue env right
---substactionTree _ _ = 0
---
---multiplicationTree :: Env -> Tree -> Int64
---multiplicationTree _ (Node "*" (Just (Leaf (Number left)))
---    (Just (Leaf (Number right)))) = left * right
---multiplicationTree env (Node "*" (Just (Leaf (Number left)))
---    (Just (Leaf (Symbol right)))) = left * getSymbolValue env right
---multiplicationTree env (Node "*" (Just (Leaf (Symbol left)))
---    (Just (Leaf (Number right)))) = getSymbolValue env left * right
---multiplicationTree env (Node "*" (Just (Leaf (Symbol left)))
---    (Just (Leaf (Symbol right)))) =
---        getSymbolValue env left * getSymbolValue env right
---multiplicationTree _ _ = 0
---
---divisionTree :: Env -> Tree -> Int64
---divisionTree _ (Node "div" (Just (Leaf (Number left)))
---    (Just (Leaf (Number right)))) = left `div` right
---divisionTree env (Node "div" (Just (Leaf (Number left)))
---    (Just (Leaf (Symbol right)))) = left `div` getSymbolValue env right
---divisionTree env (Node "div" (Just (Leaf (Symbol left)))
---    (Just (Leaf (Number right)))) = getSymbolValue env left `div` right
---divisionTree env (Node "div" (Just (Leaf (Symbol left)))
---    (Just (Leaf (Symbol right)))) =
---        getSymbolValue env left `div` getSymbolValue env right
---divisionTree _ _ = 0
---
---moduloTree :: Env -> Tree -> Int64
---moduloTree _ (Node "mod" (Just (Leaf (Number left)))
---    (Just (Leaf (Number right)))) = left `mod` right
---moduloTree env (Node "mod" (Just (Leaf (Number left)))
---    (Just (Leaf (Symbol right)))) = left `mod` getSymbolValue env right
---moduloTree env (Node "mod" (Just (Leaf (Symbol left)))
---    (Just (Leaf (Number right)))) = getSymbolValue env left `mod` right
---moduloTree env (Node "mod" (Just (Leaf (Symbol left)))
---    (Just (Leaf (Symbol right)))) =
---        getSymbolValue env left `mod` getSymbolValue env right
---moduloTree _ _ = 0
---
+addition :: Env -> [Tree] -> (Env, Maybe Result)
+addition env [Number a, Number b] = (env, Just (Number (a + b)))
+addition env [Number a, Symbol b]
+    | (_, Just (Number symbolValue)) <- getSymbolValue env b =
+        (env, Just (Number (a + symbolValue)))
+    | otherwise = (registerError env "Symbol not found", Nothing)
+addition env [Symbol a, Number b]
+    | (_, Just (Number symbolValue)) <- getSymbolValue env a =
+        (env, Just (Number (symbolValue + b)))
+    | otherwise = (registerError env "Symbol not found", Nothing)
+addition env [Symbol a, Symbol b]
+    | (_, Just (Number symbolValueA)) <- getSymbolValue env a
+    , (_, Just (Number symbolValueB)) <- getSymbolValue env b =
+        (env, Just (Number (symbolValueA + symbolValueB)))
+    | otherwise = (registerError env "Symbol not found", Nothing)
+addition env list
+    | length list /= 2 = (registerError env "Addition need 2 params", Nothing)
+    | otherwise = (registerError env "Bad types in addition", Nothing)

@@ -42,8 +42,9 @@ instance Eq Tree where
     _ == _ = False
 
 instance Eq Env where
-    Env { defines = def1, errors = err1 } == Env { defines = def2, errors = err2 }
-        = def1 == def2 && err1 == err2
+    Env { defines = def1, errors = err1 } 
+        == Env { defines = def2, errors = err2 }
+            = def1 == def2 && err1 == err2
 
 instance Eq Define where
     Define smb expr == Define smb2 expr2
