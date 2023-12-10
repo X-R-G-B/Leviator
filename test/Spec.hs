@@ -92,6 +92,10 @@ unitTestsComputeDefines = testGroup "Tests Compute defines"
         assertEqual "define x 42; define y 84; x; y"
           (Env {defines = [Define {symbol = "x", expression = Number 42}, Define {symbol = "y", expression = Number 84}], errors = []}, [Just (Number 42), Just (Number 84)])
           (computeAllAST (Env {defines = [], errors = []}) [(List [Symbol "define", Symbol "x", Number 42]), (List [Symbol "define", Symbol "y", Number 84]), (Symbol "x"), (Symbol "y")])
+    , testCase "define x (42 + 6); x" $
+        assertEqual "define x (42 + 6); x"
+          (Env {defines = [Define {symbol = "x", expression = List [Symbol "+", Number 42, Number 6]}], errors = []}, [Just (Number 48)])
+          (computeAllAST (Env {defines = [], errors = []}) [(List [Symbol "define", Symbol "x", (List [Symbol "+", Number 42, Number 6])]), (Symbol "x")])
   ]
 
 unitTestsComputeSimpleFunctions :: TestTree
@@ -128,4 +132,8 @@ unitTestsComputeBasics = testGroup "Tests compute basics"
         assertEqual "2 + 2 * 5"
           (Env {defines = [], errors = []}, [Just (Number 12)])
           (computeAllAST (Env {defines = [], errors = []}) [(List [Symbol "+", Number 2, (List [Symbol "*", Number 2, Number 5])])])
+    , testCase "2 + 2 * (foo + 10) = 106" $
+        assertEqual "2 + 2 * (foo + 10) = 106"
+          (Env {defines = [Define {symbol = "foo", expression = Number 42}], errors = []}, [Just (Number 106)])
+          (computeAllAST (Env {defines = [], errors = []}) [(List [Symbol "define", Symbol "foo", Number 42]), (List [Symbol "+", Number 2, (List [Symbol "*", Number 2, (List [Symbol "+", Symbol "foo", Number 10])])])])
   ]
