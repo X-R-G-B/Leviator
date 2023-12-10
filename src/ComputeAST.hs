@@ -7,12 +7,11 @@
 
 module ComputeAST
     (
-        computeAST,
-        computeAllAST
+        computeAST
     ) where
 
-import AST
-import Data.Int (Int64)
+import Types
+import Errors
 import Defines
 
 --import Functions
@@ -56,7 +55,6 @@ import Defines
 --computeTree _ (Leaf (Boolean value)) = Boolean value
 --computeTree env tree = computeTree env (resolveDeepestNode env tree)
 
-
 --data Tree = Number Int64 | Symbol Symbol | Boolean Bool | List [Tree]
 
 -------------- COMPUTE AST ------------
@@ -64,17 +62,13 @@ computeAST :: Env -> Tree -> (Env, Maybe Result)
 -- Defines
 computeAST env (List [Symbol "define", Symbol symbol, expression])
     = (registerDefine env symbol expression, Nothing)
-computeAST env (List (Symbol "define" : _)) = (env, Just (Integer 84))
---computeAST env tree = (env, Just (computeTree env tree))
--- One element
-computeAST env tree@(Symbol symbol) = (env, Just (Integer (getSymbolValue env symbol)))
-computeAST env tree@(Number number) = (env, Just (Integer number))
-computeAST env tree@(Boolean value) = (env, Just (Bool value))
-
--- Call computeAST on every tree in the list
-computeAllAST :: Env -> [Tree] -> [Result]
-computeAllAST _ [] = []
-computeAllAST env (tree:rest) = case atom' of
-   Just atom -> atom : computeAllAST newEnv rest
-   Nothing -> computeAllAST newEnv rest
-   where (newEnv, atom') = computeAST env tree
+computeAST env (List (Symbol "define" : _))
+    = (registerError env "Define must be 'define' symbol expression", Nothing)
+-- No list in the AST
+computeAST env (Number number) = (env, Just (Number number))
+computeAST env (Boolean value) = (env, Just (Boolean value))
+computeAST env (Symbol symbol)
+    | Nothing <- value = (env, Nothing)
+    | Just result <- value = (env, Just result)
+        where (_, value) = getSymbolValue env symbol
+-- List in the AST

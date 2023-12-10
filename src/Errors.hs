@@ -15,7 +15,7 @@ module Errors
         printLastError
     ) where
 
-import Defines
+import Types
 
 -- Add a new error to env
 registerError :: Env -> String -> Env

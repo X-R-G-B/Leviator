@@ -2,10 +2,8 @@ import Test.Tasty
 import Test.Tasty.HUnit
 import Test.Tasty.Runners.Html
 
-import AST
---import TextToAST
 import ComputeAST
-import Defines
+import Types
 
 main :: IO ()
 main = defaultMainWithIngredients (htmlRunner : defaultIngredients) tests
