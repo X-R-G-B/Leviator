@@ -62,6 +62,9 @@ import Functions
 --computeTree env tree = computeTree env (resolveDeepestNode env tree)
 
 doesListContainsList :: [Tree] -> Bool
+doesListContainsList [] = False
+doesListContainsList (List _ : _) = True
+doesListContainsList (_ : rest) = doesListContainsList rest
 doesListContainsList _ = False
 
 -------------- HANDLE LISTS ------------
