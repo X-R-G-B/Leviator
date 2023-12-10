@@ -61,8 +61,11 @@ import Defines
 
 -------------- COMPUTE AST ------------
 computeAST :: Env -> Tree -> (Env, Maybe Result)
-computeAST env (List (Symbol "define":xs)) = (registerDefine env xs, Nothing)
-computeAST env ree@(Symbol symbol) = (env, Just (Integer 42))
+computeAST env (List [Symbol "define", Symbol symbol, expression])
+    = (registerDefine env symbol expression, Nothing)
+computeAST env (List (Symbol "define" : _)) = (env, Just (Integer 45))
+
+computeAST env tree@(Symbol symbol) = (env, Just (Integer 42))
 --computeAST env tree = (env, Just (computeTree env tree))
 
 -- Call computeAST on every tree in the list

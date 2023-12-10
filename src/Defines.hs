@@ -47,7 +47,7 @@ data Env = Env {
 --    | otherwise = getSymbolValue (Env rest) symbolToFind
 
 -- Register a define in the Defines list
-registerDefine :: Env -> [Tree] -> Env
-registerDefine env ((List [Symbol "define", Symbol symbol, expression])) =
-    Env {defines = (Define symbol expression):(defines env), errors = (errors env)} 
-registerDefine env _ = env
+registerDefine :: Env -> Symbol -> Tree -> Env
+registerDefine env symbol value = Env (defines env ++ [Define symbol value]) (errors env)
+
+--[(List [Symbol "define", Symbol "x", Number 42])
