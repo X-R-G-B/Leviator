@@ -11,7 +11,7 @@ module Defines
         Error (Error),
         Env (Env, defines, errors),
         registerDefine,
-        --getSymbolValue
+        getSymbolValue
     ) where
 
 import AST
@@ -36,18 +36,17 @@ data Env = Env {
 } deriving (Show)
 
 -- TODO: Handle case where the define is a lambda / not defined
---getSymbolValue :: Env -> String -> Int64
---getSymbolValue (Env []) _ = 0
---getSymbolValue (Env ((Define symbl value):rest)) symbolToFind
---    | symbl == symbolToFind = case value of
---        (Number number) -> number
---        (Boolean True) -> 1
---        (Boolean False) -> 0
---        (Symbol _) -> 0
---    | otherwise = getSymbolValue (Env rest) symbolToFind
+getSymbolValue :: Env -> String -> Int64
+getSymbolValue (Env { defines = [], errors = _ }) _ = 0
+getSymbolValue (Env { defines = (Define symbl value):rest, errors = _ }) symbolToFind
+    | symbl == symbolToFind = case value of
+        (Number number) -> number
+        (Boolean True) -> 1
+        (Boolean False) -> 0
+        (Symbol _) -> 0
+    | otherwise = getSymbolValue (Env { defines = rest, errors = [] }) symbolToFind
 
 -- Register a define in the Defines list
 registerDefine :: Env -> Symbol -> Tree -> Env
-registerDefine env symbol value = Env (defines env ++ [Define symbol value]) (errors env)
-
---[(List [Symbol "define", Symbol "x", Number 42])
+registerDefine env symbol value =
+    Env (defines env ++ [Define symbol value]) (errors env)
