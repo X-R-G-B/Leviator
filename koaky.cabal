@@ -28,6 +28,7 @@ library
       AST
       ComputeAST
       Defines
+      Errors
       Functions
       TextToAST
   other-modules:
