@@ -8,7 +8,7 @@
 module Functions
     (
         addition,
-        substactionTree,
+        subtraction,
         multiplication,
         --divisionTree,
         --moduloTree
