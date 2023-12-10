@@ -7,12 +7,14 @@
 
 module ComputeAST
     (
-        --computeAST,
-        --computeAllAST
+        computeAST,
+        computeAllAST
     ) where
 
---import AST
---import Data.Int (Int64)
+import AST
+import Data.Int (Int64)
+import Defines
+
 --import Functions
 
 ------------ ComputeNode ------------
@@ -53,18 +55,20 @@ module ComputeAST
 --computeTree _ (Leaf (Number number)) = Number number
 --computeTree _ (Leaf (Boolean value)) = Boolean value
 --computeTree env tree = computeTree env (resolveDeepestNode env tree)
---
+
+
+--data Tree = Number Int64 | Symbol Symbol | Boolean Bool | List [Tree]
+
 -------------- COMPUTE AST ------------
---
---computeAST :: Env -> Tree -> (Env, Maybe Atom)
---computeAST env tree@(Node "define" _ _) = (registerDefine env tree, Nothing)
+computeAST :: Env -> Tree -> (Env, Maybe Result)
+computeAST env (List (Symbol "define":xs)) = (registerDefine env xs, Nothing)
+computeAST env ree@(Symbol symbol) = (env, Just (Integer 42))
 --computeAST env tree = (env, Just (computeTree env tree))
---
----- Call computeAST on every tree in the list
---computeAllAST :: Env -> [Tree] -> [Atom]
---computeAllAST _ [] = []
---computeAllAST env (tree:rest) = case atom' of
---    Just atom -> atom : computeAllAST newEnv rest
---    Nothing -> computeAllAST newEnv rest
---    where (newEnv, atom') = computeAST env tree
---
+
+-- Call computeAST on every tree in the list
+computeAllAST :: Env -> [Tree] -> [Result]
+computeAllAST _ [] = []
+computeAllAST env (tree:rest) = case atom' of
+   Just atom -> atom : computeAllAST newEnv rest
+   Nothing -> computeAllAST newEnv rest
+   where (newEnv, atom') = computeAST env tree

@@ -4,14 +4,14 @@ import Test.Tasty.Runners.Html
 
 import AST
 --import TextToAST
---import ComputeAST
---import Defines
+import ComputeAST
+import Defines
 
 main :: IO ()
 main = defaultMainWithIngredients (htmlRunner : defaultIngredients) tests
 
 tests :: TestTree
-tests = testGroup "Tests" [unitTestsASTEqual]--, unitTestsASTParse, unitTestASTCompute]
+tests = testGroup "Tests" [unitTestsASTEqual, unitTestsComputeAst]--, unitTestsASTParse, unitTestASTCompute]
 
 unitTestsASTEqual :: TestTree
 unitTestsASTEqual = testGroup "AST Equal Tests"
@@ -35,6 +35,34 @@ unitTestsASTEqual = testGroup "AST Equal Tests"
       assertEqual "#t"
         (Boolean True)
         (Boolean True)
+  ]
+
+unitTestsComputeAst :: TestTree
+unitTestsComputeAst = testGroup "AST Compute Tests"
+  [ testCase "Basic AST compute 0" $
+      assertEqual "define x 42"
+        [Integer 42]
+        (computeAllAST (Env {defines = [], errors = []}) [(List [Symbol "define", Symbol "x", Number 42]), (Symbol "x")])
+    --, testCase "Basic AST compute 1" $
+    --    assertEqual "add 42 and 42"
+    --      [Number 84]
+    --      (computeAllAST (Env []) [(List [Symbol "+", Number 42, Number 42])])
+    --, testCase "Basic AST compute 2" $
+    --    assertEqual "define x 42 and do x + 42"
+    --      [Number 84]
+    --      (computeAllAST (Env []) [(List [Symbol "define", Symbol "x", Number 42]), (List [Symbol "+", Symbol "x", Number 42])])
+    --, testCase "Basic AST compute 3" $
+    --    assertEqual "define x 42 and do 42 + x"
+    --      [Number 84]
+    --      (computeAllAST (Env []) [(List [Symbol "define", Symbol "x", Number 42]), (List [Symbol "+", Number 42, Symbol "x"])])
+    --, testCase "Basic AST compute 4" $
+    --    assertEqual "define x 42 and do x + x"
+    --      [Number 84]
+    --      (computeAllAST (Env []) [(List [Symbol "define", Symbol "x", Number 42]), (List [Symbol "+", Symbol "x", Symbol "x"])])
+    --, testCase "Basic AST compute 5" $
+    --    assertEqual "define x 42 and y 21 and do x + y"
+    --      [Number 63]
+    --      (computeAllAST (Env []) [(List [Symbol "define", Symbol "x", Number 42]), (List [Symbol "define", Symbol "y", Number 21]), (List [Symbol "+", Symbol "x", Symbol "y"])])
   ]
 
 --unitTestsASTParse :: TestTree
