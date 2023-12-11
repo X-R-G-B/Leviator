@@ -28,8 +28,13 @@ library
       AST
       ComputeAST
       TextToAST
+      ComputeDeepLists
+      ComputeLists
       Defines
+      Errors
       Functions
+      TextToAST
+      Types
   other-modules:
       Paths_koaky
   hs-source-dirs:
