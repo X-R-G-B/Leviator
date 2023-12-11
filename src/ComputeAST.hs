@@ -29,6 +29,9 @@ doesListContainsList _ = False
 computeDeepest :: Env -> [Tree] -> (Env, Maybe Result)
 computeDeepest env (Symbol "+" : rest) = addition env rest
 computeDeepest env (Symbol "*" : rest) = multiplication env rest
+computeDeepest env (Symbol "-" : rest) = subtraction env rest
+computeDeepest env (Symbol "/" : rest) = division env rest
+computeDeepest env (Symbol "%" : rest) = modulo env rest
 computeDeepest env _ = (env, Nothing)
 
 -- Find and resolve nested lists
@@ -55,7 +58,11 @@ resolveNestedLists env resolvedList (Symbol symbol : rest) =
 -- Compute simple lists
 handleSimpleList :: Env -> [Tree] -> (Env, Maybe Result)
 handleSimpleList env (Symbol "+" : rest) = addition env rest
-handleSimpleList env (Symbol "*" : rest) =  multiplication env rest
+handleSimpleList env (Symbol "*" : rest) = multiplication env rest
+handleSimpleList env (Symbol "-" : rest) = subtraction env rest
+handleSimpleList env (Symbol "/" : rest) = division env rest
+handleSimpleList env (Symbol "%" : rest) = modulo env rest
+handleSimpleList env _ = (env, Nothing)
 
 -- Compute nested lists
 handleDeepList :: Env -> [Tree] -> (Env, Maybe Result)
@@ -73,6 +80,7 @@ handleNoList env (Number number) = (env, Just (Number number))
 handleNoList env (Boolean value) = (env, Just (Boolean value))
 handleNoList env (Symbol symbol)
     | Nothing <- value = (env, Nothing)
+    | Just (List list) <- value = computeAST env (List list)
     | Just result <- value = (env, Just result)
         where (_, value) = getSymbolValue env symbol
 
