@@ -40,6 +40,6 @@ tests-coverage:
 	stack test --coverage
 
 tests-coverage-html-path:
-	echo "$(stack path --local-hpc-root)"
+	@stack path --local-hpc-root
 
 .PHONY: $(TARGET) fclean re clean all

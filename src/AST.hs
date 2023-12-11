@@ -1,8 +1,8 @@
 {-
 -- EPITECH PROJECT, 2023
--- Abstract Syntax Tree
+-- Koaky
 -- File description:
--- ast
+-- Abstract Syntax Tree
 -}
 
 module AST

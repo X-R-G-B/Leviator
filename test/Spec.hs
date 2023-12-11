@@ -4,12 +4,14 @@ import Test.Tasty.Runners.Html
 
 import AST
 import TextToAST
+import ComputeAST
+import Defines
 
 main :: IO ()
 main = defaultMainWithIngredients (htmlRunner : defaultIngredients) tests
 
 tests :: TestTree
-tests = testGroup "Tests" [unitTestsASTEqual, unitTestsASTParse]
+tests = testGroup "Tests" [unitTestsASTEqual, unitTestsASTParse, unitTestASTCompute]
 
 unitTestsASTEqual :: TestTree
 unitTestsASTEqual = testGroup "AST Equal Tests"
@@ -199,3 +201,47 @@ unitTestsASTParse = testGroup "AST Parse Tests"
         )
         (textToAST "(do (re (mi)) 12 (re (mi)))")
   ]
+
+unitTestASTCompute :: TestTree
+unitTestASTCompute = testGroup "AST compute Tests"
+    [ testCase "test1" $
+        assertEqual "number 21 + number 21 = 42"
+          [Number 42]
+          (computeAllAST (Env []) [Node "+" (Just (Leaf (Number 21))) (Just (Leaf (Number 21)))])
+    , testCase "test2" $
+        assertEqual "define foo 42 and tree with leaf foo"
+          [Number 42]
+          (computeAllAST (Env []) [(Node "define" (Just (Leaf (Symbol "foo"))) (Just (Leaf (Number 42)))), (Leaf (Symbol "foo"))])
+    , testCase "test3" $
+        assertEqual "define foo 42 and do foo + 42"
+          [Number 84]
+          (computeAllAST (Env []) [(Node "define" (Just (Leaf (Symbol "foo"))) (Just (Leaf (Number 42)))), (Node "+" (Just (Leaf (Symbol "foo"))) (Just (Leaf (Number 42))))])
+    , testCase "test3" $
+        assertEqual "define foo 42 and do 42 + foo"
+          [Number 84]
+          (computeAllAST (Env []) [(Node "define" (Just (Leaf (Symbol "foo"))) (Just (Leaf (Number 42)))), (Node "+" (Just (Leaf (Number 42))) (Just (Leaf (Symbol "foo"))))])
+    , testCase "test5" $
+        assertEqual "define foo 42 and do foo + foo"
+          [Number 84]
+          (computeAllAST (Env []) [(Node "define" (Just (Leaf (Symbol "foo"))) (Just (Leaf (Number 42)))), (Node "+" (Just (Leaf (Symbol "foo"))) (Just (Leaf (Symbol "foo"))))])
+    , testCase "test6" $
+        assertEqual "define foo 42 and bar 21 and do foo + bar"
+          [Number 63]
+          (computeAllAST (Env []) [(Node "define" (Just (Leaf (Symbol "foo"))) (Just (Leaf (Number 42)))), (Node "define" (Just (Leaf (Symbol "bar"))) (Just (Leaf (Number 21)))), (Node "+" (Just (Leaf (Symbol "foo"))) (Just (Leaf (Symbol "bar"))))])
+    , testCase "test7" $
+        assertEqual "2 + (5 * 2) (result = 12)"
+          [Number 12]
+          (computeAllAST (Env []) [(Node "+" (Just (Leaf (Number 2))) (Just (Node "*" (Just (Leaf (Number 5))) (Just (Leaf (Number 2))))))])
+    , testCase "test8" $
+        assertEqual "(2 * 5) + (foo / 2) (result = 10 + 21 = 31)"
+          [Number 31]
+          (computeAllAST (Env []) [(Node "define" (Just (Leaf (Symbol "foo"))) (Just (Leaf (Number 42)))), Node "+" (Just (Node "*" (Just (Leaf (Number 2))) (Just (Leaf (Number 5))))) (Just (Node "div" (Just (Leaf (Symbol "foo"))) (Just (Leaf (Number 2)))))])
+    , testCase "test9" $
+        assertEqual "2 + 2 + (5 * 2) (result = 14)"
+          [Number 14]
+          (computeAllAST (Env []) [(Node "+" (Just (Leaf (Number 2))) (Just (Node "+" (Just (Leaf (Number 2))) (Just (Node "*" (Just (Leaf (Number 5))) (Just (Leaf (Number 2))))))))])
+    , testCase "test10" $
+        assertEqual "14 mod 5 (result = 4)"
+          [Number 4]
+          (computeAllAST (Env []) [(Node "mod" (Just (Leaf (Number 14))) (Just (Leaf (Number 5))))])
+    ]
