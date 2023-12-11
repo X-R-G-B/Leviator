@@ -89,6 +89,9 @@ parseSign = Parser f
 parseInt :: Parser Int
 parseInt = (*) <$> parseSign <*> parseUInt
 
+parseSymbol :: Parse Symbol
+parseSymbol = some (parseAnyChar ['a'..'z'] ++ ['A'..'Z'] ++ ['0'..'9'] ++ "*/+=-_!<>")
+
 parsePair :: Parser a -> Parser b -> Parser (a,b)
 parsePair p1 p2 = Parser f
     where
@@ -127,3 +130,6 @@ parseList p = Parser f
         f str = case runParser (parseChar '(') str of
                     Just (_, xs) -> runParser (parseList' p) xs
                     Nothing -> Nothing
+
+parseAtom :: Parser Atom
+parseAtom = (parseList parseAtom) <|> (parseInt) <|> (parseBool) <|> (parseSymbol)
