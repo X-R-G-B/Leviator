@@ -27,6 +27,8 @@ library
   exposed-modules:
       AST
       ComputeAST
+      ComputeDeepLists
+      ComputeLists
       Defines
       Errors
       Functions

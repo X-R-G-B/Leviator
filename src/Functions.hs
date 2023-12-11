@@ -93,7 +93,7 @@ division env [Number a, Symbol b]
         (env, Just (Number (a `div` symbolValue)))
     | otherwise = (registerError env "Symbol not found", Nothing)
 division env [Symbol a, Symbol b]
-    | (_, Just (Number symbolValueA)) <- getSymbolValue env a
+    | (_, Just (Number _)) <- getSymbolValue env a
     , (_, Just (Number symbolValueB)) <- getSymbolValue env b
     , symbolValueB == 0 = (registerError env "Division by 0", Nothing)
     | (_, Just (Number symbolValueA)) <- getSymbolValue env a
@@ -120,7 +120,7 @@ modulo env [Number a, Symbol b]
         (env, Just (Number (a `mod` symbolValue)))
     | otherwise = (registerError env "Symbol not found", Nothing)
 modulo env [Symbol a, Symbol b]
-    | (_, Just (Number symbolValueA)) <- getSymbolValue env a
+    | (_, Just (Number _)) <- getSymbolValue env a
     , (_, Just (Number symbolValueB)) <- getSymbolValue env b
     , symbolValueB == 0 = (registerError env "Modulo by 0", Nothing)
     | (_, Just (Number symbolValueA)) <- getSymbolValue env a
