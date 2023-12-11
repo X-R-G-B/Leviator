@@ -6,4 +6,4 @@
 -}
 
 main :: IO ()
-main = putStrLn ("Hello, World!")
+main = print "KoaKy"
