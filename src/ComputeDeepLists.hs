@@ -21,11 +21,13 @@ resolveNestedLists env resolvedList (List list : rest)
     | not (doesListContainsList list) =
         case handleSimpleList env list of
             (newEnv, Nothing) -> (newEnv, Nothing)
-            (newEnv, Just resolved) -> resolveNestedLists newEnv (resolvedList ++ [resolved]) rest
+            (newEnv, Just resolved) ->
+                resolveNestedLists newEnv (resolvedList ++ [resolved]) rest
     | otherwise =
         case resolveNestedLists env [] list of
             (newEnv, Nothing) -> (newEnv, Nothing)
-            (newEnv, Just resolved) -> resolveNestedLists newEnv (resolvedList ++ [List resolved]) rest
+            (newEnv, Just rvd)
+                -> resolveNestedLists newEnv (resolvedList ++ [List rvd]) rest
 resolveNestedLists env resolvedList (Number number : rest) =
     resolveNestedLists env (resolvedList ++ [Number number]) rest
 resolveNestedLists env resolvedList (Boolean value : rest) =
