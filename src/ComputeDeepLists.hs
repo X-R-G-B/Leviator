@@ -23,8 +23,7 @@ resolveNestedLists env resolvedList (List list : rest)
             (newEnv, Nothing) -> (newEnv, Nothing)
             (newEnv, Just resolved) ->
                 resolveNestedLists newEnv (resolvedList ++ [resolved]) rest
-    | otherwise =
-        case resolveNestedLists env [] list of
+    | otherwise = case resolveNestedLists env [] list of
             (newEnv, Nothing) -> (newEnv, Nothing)
             (newEnv, Just rvd)
                 -> resolveNestedLists newEnv (resolvedList ++ [List rvd]) rest
