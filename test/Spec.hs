@@ -116,6 +116,14 @@ unitTestsComputeSimpleFunctions = testGroup "Tests compute + - div mod"
       assertEqual "bool + number"
         (Env {defines = [], errors = ["Bad types in addition"]}, Nothing)
         (computeAST (Env {defines = [], errors = []}) (List [Symbol "+", Boolean True, Number 42]))
+    , testCase "20 / 2 + 3 * 5 - 10" $
+      assertEqual "20 / 2 + 3 * 5 - 10"
+        (Env {defines = [], errors = []}, Just (Number 15))
+        (computeAST (Env {defines = [], errors = []}) (List [Symbol "-", (List [Symbol "+", (List [Symbol "div", Number 20, Number 2]), (List [Symbol "*", Number 3, Number 5])]), Number 10]))
+    , testCase "11 mod 3" $
+      assertEqual "11 mod 3"
+        (Env {defines = [], errors = []}, Just (Number 2))
+        (computeAST (Env {defines = [], errors = []}) (List [Symbol "mod", Number 11, Number 3]))
   ]
 
 unitTestsComputeBasics :: TestTree

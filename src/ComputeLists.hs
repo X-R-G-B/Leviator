@@ -24,6 +24,6 @@ handleSimpleList :: Env -> [Tree] -> (Env, Maybe Result)
 handleSimpleList env (Symbol "+" : rest) = addition env rest
 handleSimpleList env (Symbol "*" : rest) = multiplication env rest
 handleSimpleList env (Symbol "-" : rest) = subtraction env rest
-handleSimpleList env (Symbol "/" : rest) = division env rest
-handleSimpleList env (Symbol "%" : rest) = modulo env rest
+handleSimpleList env (Symbol "div" : rest) = division env rest
+handleSimpleList env (Symbol "mod" : rest) = modulo env rest
 handleSimpleList env _ = (env, Nothing)
