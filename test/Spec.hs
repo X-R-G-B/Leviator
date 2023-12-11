@@ -136,4 +136,8 @@ unitTestsComputeBasics = testGroup "Tests compute basics"
         assertEqual "2 + 2 * (foo + 10) = 106"
           (Env {defines = [Define {symbol = "foo", expression = Number 42}], errors = []}, [Just (Number 106)])
           (computeAllAST (Env {defines = [], errors = []}) [(List [Symbol "define", Symbol "foo", Number 42]), (List [Symbol "+", Number 2, (List [Symbol "*", Number 2, (List [Symbol "+", Symbol "foo", Number 10])])])])
+    , testCase "2 + 3 * (8 + (5* ( 2 + 3))) = 107" $
+        assertEqual "2 + 3 * (8 + (5* ( 2 + 3))) = 107"
+          (Env {defines = [], errors = []}, [Just (Number 101)])
+          (computeAllAST (Env {defines = [], errors = []}) [(List [Symbol "+", Number 2, (List [Symbol "*", Number 3, (List [Symbol "+", Number 8, (List [Symbol "*", Number 5, (List [Symbol "+", Number 2, Number 3])])])])])])
   ]

@@ -10,8 +10,8 @@ module Functions
         addition,
         subtraction,
         multiplication,
-        --divisionTree,
-        --moduloTree
+        division,
+        modulo
     ) where
 
 import Types
@@ -76,3 +76,57 @@ subtraction env [Symbol a, Symbol b]
 subtraction env list
     | length list /= 2 = (registerError env "- need 2 params", Nothing)
     | otherwise = (registerError env "Bad types in subtraction", Nothing)
+
+division :: Env -> [Tree] -> (Env, Maybe Result)
+division env [Number a, Number b]
+    | b == 0 = (registerError env "Division by 0", Nothing)
+    | otherwise = (env, Just (Number (a `div` b)))
+division env [Symbol a, Number b]
+    | b == 0 = (registerError env "Division by 0", Nothing)
+    | (_, Just (Number symbolValue)) <- getSymbolValue env a =
+        (env, Just (Number (symbolValue `div` b)))
+    | otherwise = (registerError env "Symbol not found", Nothing)
+division env [Number a, Symbol b]
+    | (_, Just (Number symbolValue)) <- getSymbolValue env b
+    , symbolValue == 0 = (registerError env "Division by 0", Nothing)
+    | (_, Just (Number symbolValue)) <- getSymbolValue env b =
+        (env, Just (Number (a `div` symbolValue)))
+    | otherwise = (registerError env "Symbol not found", Nothing)
+division env [Symbol a, Symbol b]
+    | (_, Just (Number symbolValueA)) <- getSymbolValue env a
+    , (_, Just (Number symbolValueB)) <- getSymbolValue env b
+    , symbolValueB == 0 = (registerError env "Division by 0", Nothing)
+    | (_, Just (Number symbolValueA)) <- getSymbolValue env a
+    , (_, Just (Number symbolValueB)) <- getSymbolValue env b =
+        (env, Just (Number (symbolValueA `div` symbolValueB)))
+    | otherwise = (registerError env "Symbol not found", Nothing)
+division env list
+    | length list /= 2 = (registerError env "/ need 2 params", Nothing)
+    | otherwise = (registerError env "Bad types in division", Nothing)
+
+modulo :: Env -> [Tree] -> (Env, Maybe Result)
+modulo env [Number a, Number b]
+    | b == 0 = (registerError env "Modulo by 0", Nothing)
+    | otherwise = (env, Just (Number (a `mod` b)))
+modulo env [Symbol a, Number b]
+    | b == 0 = (registerError env "Modulo by 0", Nothing)
+    | (_, Just (Number symbolValue)) <- getSymbolValue env a =
+        (env, Just (Number (symbolValue `mod` b)))
+    | otherwise = (registerError env "Symbol not found", Nothing)
+modulo env [Number a, Symbol b]
+    | (_, Just (Number symbolValue)) <- getSymbolValue env b
+    , symbolValue == 0 = (registerError env "Modulo by 0", Nothing)
+    | (_, Just (Number symbolValue)) <- getSymbolValue env b =
+        (env, Just (Number (a `mod` symbolValue)))
+    | otherwise = (registerError env "Symbol not found", Nothing)
+modulo env [Symbol a, Symbol b]
+    | (_, Just (Number symbolValueA)) <- getSymbolValue env a
+    , (_, Just (Number symbolValueB)) <- getSymbolValue env b
+    , symbolValueB == 0 = (registerError env "Modulo by 0", Nothing)
+    | (_, Just (Number symbolValueA)) <- getSymbolValue env a
+    , (_, Just (Number symbolValueB)) <- getSymbolValue env b =
+        (env, Just (Number (symbolValueA `mod` symbolValueB)))
+    | otherwise = (registerError env "Symbol not found", Nothing)
+modulo env list
+    | length list /= 2 = (registerError env "% need 2 params", Nothing)
+    | otherwise = (registerError env "Bad types in modulo", Nothing)
