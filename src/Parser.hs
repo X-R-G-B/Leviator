@@ -15,9 +15,12 @@ module Parser
         parseInt,
         parsePair,
         parseList,
+        parseTree
     ) where
 
+import Types
 import Control.Applicative
+import Data.Int (Int64)
 
 data Parser a = Parser {
     runParser :: String -> Maybe (a, String)
@@ -75,10 +78,10 @@ parseAnyChar str = Parser f
         f (x:xs) | x `elem` str = Just (x, xs)
                  | otherwise = Nothing
 
-parseUInt :: Parser Int
+parseUInt :: Parser Int64
 parseUInt = read <$> some (parseAnyChar "0123456789")
 
-parseSign :: Parser Int
+parseSign :: Parser Int64
 parseSign = Parser f
     where
         f str = case runParser (many (parseAnyChar "+-")) str of
@@ -86,11 +89,20 @@ parseSign = Parser f
                          | otherwise -> Just (-1, xs)
             Nothing -> Nothing
 
-parseInt :: Parser Int
+parseInt :: Parser Int64
 parseInt = (*) <$> parseSign <*> parseUInt
 
-parseSymbol :: Parse Symbol
-parseSymbol = some (parseAnyChar ['a'..'z'] ++ ['A'..'Z'] ++ ['0'..'9'] ++ "*/+=-_!<>")
+parseSymbol :: Parser Symbol
+parseSymbol = some (parseAnyChar (['a'..'z'] ++ ['A'..'Z'] ++ ['0'..'9'] ++ "*/+=-_!<>"))
+
+stringToBool :: String -> Bool
+stringToBool "#t" = True
+stringToBool "#f" = False
+stringToBool _ = False
+
+parseBool :: Parser Bool
+parseBool = stringToBool <$> ((:) <$> (parseChar '#') <*> ((\x -> x:[]) <$> (parseAnyChar "tf")))
+
 
 parsePair :: Parser a -> Parser b -> Parser (a,b)
 parsePair p1 p2 = Parser f
@@ -131,5 +143,8 @@ parseList p = Parser f
                     Just (_, xs) -> runParser (parseList' p) xs
                     Nothing -> Nothing
 
-parseAtom :: Parser Atom
-parseAtom = (parseList parseAtom) <|> (parseInt) <|> (parseBool) <|> (parseSymbol)
+parseTree :: Parser Tree
+parseTree = ((\x -> List x) <$> (parseList parseTree))
+    <|> ((\x -> Number x) <$> (parseInt))
+    <|> ((\x -> Boolean x) <$> (parseBool))
+    <|> ((\x -> Symbol x) <$> (parseSymbol))
