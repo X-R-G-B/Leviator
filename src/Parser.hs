@@ -103,7 +103,6 @@ stringToBool _ = False
 parseBool :: Parser Bool
 parseBool = stringToBool <$> ((:) <$> (parseChar '#') <*> ((\x -> x:[]) <$> (parseAnyChar "tf")))
 
-
 parsePair :: Parser a -> Parser b -> Parser (a,b)
 parsePair p1 p2 = Parser f
     where
