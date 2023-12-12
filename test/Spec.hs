@@ -17,7 +17,8 @@ tests = testGroup "Tests"
     unitTestsComputeDefines,
     unitTestsComputeSimpleFunctions,
     unitTestsComputeBasics,
-    unitTestsASTParse
+    unitTestsASTParse,
+    unitTestsComputeFunctions
   ]
 
 unitTestsASTEqual :: TestTree
@@ -197,4 +198,14 @@ unitTestsComputeBasics = testGroup "Tests compute basics"
         assertEqual "2 + 3 * (8 + (5* ( 2 + 3))) = 107"
           (Env {defines = [], errors = []}, [Just (Number 101)])
           (computeAllAST (Env {defines = [], errors = []}) [(List [Symbol "+", Number 2, (List [Symbol "*", Number 3, (List [Symbol "+", Number 8, (List [Symbol "*", Number 5, (List [Symbol "+", Number 2, Number 3])])])])])])
+  ]
+
+unitTestsComputeFunctions :: TestTree
+unitTestsComputeFunctions = testGroup "Tests compute functions"
+  [ testCase "(define add (lambda (a b) (+ a b))), (add 1 2)" $
+      assertEqual "(define add (lambda (a b) (+ a b))); (add 1 2)"
+                                                                    --empty if no parameters
+      [(List [Symbol "define", Symbol "add", List [Symbol "lambda", List [Symbol "a", Symbol "b" ], List [Symbol "+", Symbol "a", Symbol "b"]]]), (List [Symbol "add", Number 1, Number 2])]
+    , testCase "(define func (lambda (a b) (define foo a) (+ foo b))), (func 1 2)" $
+    [(List [Symbol "define", Symbol "func", List [Symbol "lambda", List [Symbol "a", Symbol "b" ], List [Symbol "define", Symbol "foo", Symbol "a"], List [Symbol "+", Symbol "foo", Symbol "b"]]]), (List [Symbol "func", Number 1, Number 2])]
   ]
