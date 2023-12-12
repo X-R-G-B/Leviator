@@ -8,13 +8,6 @@
 module Parser
     (
         Parser (Parser, runParser),
-        parseChar,
-        -- parseAnyChar1,
-        parseAnyChar,
-        parseUInt,
-        parseInt,
-        parsePair,
-        parseList,
         parseTree
     ) where
 
@@ -93,7 +86,8 @@ parseInt :: Parser Int64
 parseInt = (*) <$> parseSign <*> parseUInt
 
 parseSymbol :: Parser Symbol
-parseSymbol = some (parseAnyChar (['a'..'z'] ++ ['A'..'Z'] ++ ['0'..'9'] ++ "*/+=-_!<>"))
+parseSymbol = some
+  (parseAnyChar (['a'..'z'] ++ ['A'..'Z'] ++ ['0'..'9'] ++ "*/+=-_!<>"))
 
 stringToBool :: String -> Bool
 stringToBool "#t" = True
@@ -101,39 +95,26 @@ stringToBool "#f" = False
 stringToBool _ = False
 
 parseBool :: Parser Bool
-parseBool = stringToBool <$> ((:) <$> (parseChar '#') <*> ((\x -> x:[]) <$> (parseAnyChar "tf")))
+parseBool = stringToBool
+  <$> ((:) <$> (parseChar '#') <*> ((\x -> x:[]) <$> (parseAnyChar "tf")))
 
-parsePair :: Parser a -> Parser b -> Parser (a,b)
-parsePair p1 p2 = Parser f
-    where
-        f str = case runParser (parseChar '(') str of
-                    Just (_, xs) ->
-                        case runParser p1 xs of
-                            Just (x, xs') ->
-                                case runParser (many (parseChar ' ')) xs' of
-                                    Just (_, xs'') ->
-                                        case runParser p2 xs'' of
-                                            Just (x', xs''') ->
-                                                runParser
-                                                    ((x, x') <$ parseChar ')')
-                                                    xs'''
-                                            Nothing -> Nothing
-                                    Nothing -> Nothing
-                            Nothing -> Nothing
-                    Nothing -> Nothing
+parseList'' :: Parser a -> Parser [a]
+parseList'' p = Parser f
+  where
+    f str = case runParser p str of
+      Just (x, xs) ->
+          case runParser (many (parseChar ' ')) xs of
+              Just (_, xs') ->
+                  runParser ((x :) <$> parseList' p) xs'
+              Nothing -> Nothing
+      Nothing -> Nothing
 
 parseList' :: Parser a -> Parser [a]
 parseList' p = Parser f
     where
         f str = case runParser (parseChar ')') str of
                     Just (_, xs) -> Just ([], xs)
-                    Nothing -> case runParser p str of
-                        Just (x, xs) ->
-                            case runParser (many (parseChar ' ')) xs of
-                                Just (_, xs') ->
-                                    runParser ((x :) <$> parseList' p) xs'
-                                Nothing -> Nothing
-                        Nothing -> Nothing
+                    Nothing -> runParser (parseList'' p) str
 
 parseList :: Parser a -> Parser [a]
 parseList p = Parser f
