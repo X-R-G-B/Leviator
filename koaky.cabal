@@ -1,0 +1,73 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.35.2.
+--
+-- see: https://github.com/sol/hpack
+
+name:           koaky
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/githubuser/koaky#readme>
+homepage:       https://github.com/X-R-G-B/koaky#readme
+bug-reports:    https://github.com/X-R-G-B/koaky/issues
+author:         @guillaumeAbel, @TTENSHII, @Saverio976
+maintainer:     example@example.com
+copyright:      2023 X-R-G-B
+license:        MIT
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    CHANGELOG.md
+
+source-repository head
+  type: git
+  location: https://github.com/X-R-G-B/koaky
+
+library
+  exposed-modules:
+      AST
+      ComputeAST
+      ComputeDeepLists
+      ComputeLists
+      Defines
+      Errors
+      Functions
+      Parser
+      TextToAST
+      Types
+  other-modules:
+      Paths_koaky
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -Wdefault -W -Woperator-whitespace
+  build-depends:
+      base >=4.7 && <5
+  default-language: Haskell2010
+
+executable koaky-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_koaky
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -Wdefault -W -Woperator-whitespace -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , koaky
+  default-language: Haskell2010
+
+test-suite koaky-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_koaky
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -Wdefault -W -Woperator-whitespace -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , koaky
+    , tasty
+    , tasty-html
+    , tasty-hunit
+  default-language: Haskell2010
