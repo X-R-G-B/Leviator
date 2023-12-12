@@ -4,6 +4,7 @@ import Test.Tasty.Runners.Html
 
 import ComputeAST
 import Types
+import Parser
 
 main :: IO ()
 main = defaultMainWithIngredients (htmlRunner : defaultIngredients) tests
@@ -15,7 +16,8 @@ tests = testGroup "Tests"
     unitTestComputeTypes,
     unitTestsComputeDefines,
     unitTestsComputeSimpleFunctions,
-    unitTestsComputeBasics
+    unitTestsComputeBasics,
+    unitTestsASTParse
   ]
 
 unitTestsASTEqual :: TestTree
@@ -42,7 +44,54 @@ unitTestsASTEqual = testGroup "AST Equal Tests"
         (Boolean True)
   ]
 
--- data Tree = Number Int64 | Symbol Symbol | Boolean Bool | List [Tree]
+testParser :: String -> Tree -> IO ()
+testParser str tree = case runParser (parseTree) str of
+  Nothing -> assertFailure "Parsing failed"
+  Just (t, _) -> assertEqual str tree t
+
+unitTestsASTParse :: TestTree
+unitTestsASTParse = testGroup "AST Parse Tests"
+  [ testCase "(foo abc def hij)" $
+       testParser "(foo abc def hij)" (List [Symbol "foo", Symbol "abc", Symbol "def", Symbol "hij"])
+  , testCase "(define x 42)" $
+       testParser "(define x 42)" (List [Symbol "define", Symbol "x", Number 42])
+  , testCase "42" $
+       testParser "42" (Number 42)
+  , testCase "#f" $
+       testParser "#f" (Boolean False)
+  , testCase "#t" $
+       testParser "#t" (Boolean True)
+  , testCase "foo" $
+       testParser "foo" (Symbol "foo")
+  , testCase "(foo)" $
+       testParser "(foo)" (List [Symbol "foo"])
+  , testCase "(foo def)" $
+       testParser "(foo def)" (List [Symbol "foo", Symbol "def"])
+  , testCase "(foo def #t)" $
+       testParser "(foo def #t)" (List [Symbol "foo", Symbol "def", Boolean True])
+  , testCase "(foo def #f)" $
+       testParser "(foo def #f)" (List [Symbol "foo", Symbol "def", Boolean False])
+  , testCase "(foo #f def)" $
+       testParser "(foo #f def)" (List [Symbol "foo", Boolean False, Symbol "def"])
+  , testCase "(foo def #t #f)" $
+       testParser "(foo def #t #f)" (List [Symbol "foo", Symbol "def", Boolean True, Boolean False])
+  , testCase "(foo def #f #t)" $
+       testParser "(foo def #f #t)" (List [Symbol "foo", Symbol "def", Boolean False, Boolean True])
+  , testCase "(fst 1 (scd 2 3 4))" $
+       testParser "(fst 1 (scd 2 3 4))" (List [Symbol "fst", Number 1, List [Symbol "scd", Number 2, Number 3, Number 4]])
+  , testCase "(fst 1 (scd 2 3 4) 12)" $
+       testParser "(fst 1 (scd 2 3 4) 12)" (List [Symbol "fst", Number 1, List [Symbol "scd", Number 2, Number 3, Number 4], Number 12])
+  , testCase "(foo 42 )" $
+       testParser "(foo 42 )" (List [Symbol "foo", Number 42])
+  , testCase "(foo def )" $
+       testParser "(foo def )" (List [Symbol "foo", Symbol "def"])
+  , testCase "(foo ((def)) #t)" $
+       testParser "(foo ((def)) #t)" (List [Symbol "foo", List [List [Symbol "def"]], Boolean True])
+  , testCase "(do (re (mi)) 12)" $
+       testParser "(do (re (mi)) 12)" (List [Symbol "do", List [Symbol "re", List [Symbol "mi"]], Number 12])
+  , testCase "(do (re (mi)) 12 (re (mi)))" $
+       testParser "(do (re (mi)) 12 (re (mi)))" (List [Symbol "do", List [Symbol "re", List [Symbol "mi"]], Number 12, List [Symbol "re", List [Symbol "mi"]]])
+  ]
 
 computeAllAST :: Env -> [Tree] -> (Env, [Maybe Result])
 computeAllAST env [] = (env, [])
