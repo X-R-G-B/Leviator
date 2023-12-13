@@ -18,7 +18,7 @@ import Data.Int (Int64)
 
 type Symbol = String
 
-data Tree = Number Int64 | Symbol Symbol | Boolean Bool | List [Tree] | Empty
+data Tree = Number Int64 | Symbol Symbol | Boolean Bool | List [Tree]
 
 data Define = Define {
     symbol :: String,
@@ -39,7 +39,6 @@ instance Eq Tree where
     Symbol a == Symbol b = a == b
     Boolean a == Boolean b = a == b
     List a == List b = a == b
-    Empty == Empty = True
     _ == _ = False
 
 instance Eq Env where
@@ -58,7 +57,6 @@ instance Show Tree where
     show (Symbol a) = "S:'" ++ a ++ "'"
     show (Boolean value) = "B: " ++ show value
     show (List list) = "L: " ++ show list
-    show Empty = "Empty"
 
 instance Show Env where
     show (Env { defines = def, errors = err }) =

@@ -11,8 +11,10 @@ import Types
 import System.IO
 
 printErrors :: (Env) -> IO ()
-printErrors (Env defines_ []) = printErrors (Env defines_ ["Unable to compute"])
-printErrors (Env defines_ errors_) = mapM_ putStrLn errors_ >> handleInput (Env defines_ [])
+printErrors (Env defines_ []) =
+  printErrors (Env defines_ ["Unable to compute"])
+printErrors (Env defines_ errors_) =
+  mapM_ putStrLn errors_ >> handleInput (Env defines_ [])
 
 checkComputing :: (Env, Maybe Result) -> IO ()
 checkComputing (env, Nothing) = printErrors env
