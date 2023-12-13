@@ -90,15 +90,32 @@ replaceFunctionParams env params body args
     | length params /= length args = (registerError env "Mismatched number of arguments", Nothing)
     | otherwise =
         let replacement = zip params args
-            replacedBody = foldl (\b (p, a) -> replaceSymbol b p a) body replacement
-        in (env, Just replacedBody)
+            replacedbody = foldl (\acc (param, arg) -> replaceSymbol acc param arg) body replacement
+        in (env, Just replacedbody)
 
-
-computeFunction :: Env -> Function -> [Tree] -> (Env, Maybe Result)
-computeFunction env (Function name params body) args =
-    case replaceFunctionParams env params body args of
+computeFunction' :: Env -> Function -> [Tree] -> (Env, Maybe Result)
+computeFunction' env (Function _ _ []) _ = (env, Nothing)
+computeFunction' env (Function name params (x:_)) args =
+    case replaceFunctionParams env params x args of
         (newEnv, Nothing) -> (newEnv, Nothing)
         (newEnv, Just replaced) -> computeAST newEnv replaced
+
+computeFunction :: Env -> Function -> [Tree] -> (Env, Maybe Result)
+computeFunction env (Function _ _ []) _ = (env, Nothing)
+computeFunction env (Function name params (x:xs:rest)) args =
+    case computeFunction' env (Function name params [x]) args of
+        (newEnv, Nothing) -> computeFunction newEnv (Function name params (xs:rest)) args
+        (newEnv, Just replaced) -> (registerError newEnv "Return needs to be the last statement", Nothing)
+computeFunction env (Function name params (x:_)) args =
+    case computeFunction' env (Function name params [x]) args of
+        (newEnv, Nothing) -> (registerError newEnv "Missing return in function", Nothing)
+        (newEnv, Just replaced) -> computeAST newEnv replaced
+
+-- computeFunction :: Env -> Function -> [Tree] -> (Env, Maybe Result)
+-- computeFunction env (Function name params bodies) args =
+--     case replaceFunctionParams env params bodies args of
+--         (newEnv, Nothing) -> (newEnv, Nothing)
+--         (newEnv, Just replaced) -> computeAST newEnv replaced
 
 -- Compute simple lists (no nested lists)
 handleSimpleList :: Env -> [Tree] -> (Env, Maybe Result)
@@ -107,15 +124,15 @@ handleSimpleList env (Symbol "*" : rest) = multiplication env rest
 handleSimpleList env (Symbol "-" : rest) = subtraction env rest
 handleSimpleList env (Symbol "div" : rest) = division env rest
 handleSimpleList env (Symbol "mod" : rest) = modulo env rest
-handleSimpleList env (Symbol smbl : rest)
-    | isAFunction env smbl = case getFunctionByName env smbl of
-        Just func -> computeFunction env func rest
+handleSimpleList env (Symbol smbl : rest) =
+    case getFunctionByName env smbl of
+        Just func ->
+            let (_, result) = computeFunction env func rest
+            in case result of
+                Just res -> (env, Just res)
+                Nothing  -> (env, Nothing)
         Nothing   -> (registerError env ("Function " ++ smbl ++ " not found"), Nothing)
-    | otherwise = (registerError env ("Symbol " ++ smbl ++ " not found"), Nothing)
 handleSimpleList env _ = (registerError env "Bad function call", Nothing)
-
-
-
 
 
 
@@ -147,11 +164,11 @@ handleNoList env _ = (env, Nothing)
 
 -- Handle AST that register a define
 handleDefine :: Env -> Tree -> (Env, Maybe Result)
-handleDefine env (List [Symbol _, Symbol smbl, List [Symbol "lambda", List params, List body]])
-    = (registerFunction env smbl (List params) (List body), Nothing)
-handleDefine env (List [Symbol _, Symbol smbl, expr])
-    = (registerDefine env smbl expr, Nothing)
+handleDefine env (List [Symbol _, Symbol smbl, List (Symbol "lambda": List params : bodies)]) = (registerFunction env smbl (List params) bodies, Nothing)
+handleDefine env (List [Symbol _, Symbol smbl, expr]) = (registerDefine env smbl expr, Nothing)
 handleDefine env _ = (registerError env "Bad define", Nothing)
+
+--(List [Symbol "define", Symbol "func", List [Symbol "lambda", List [Symbol "a", Symbol "b" ], List [Symbol "define", Symbol "foo", Symbol "a"], List [Symbol "+", Symbol "foo", Symbol "b"]]])
 
 -- Compute entire AST
 computeAST :: Env -> Tree -> (Env, Maybe Result)

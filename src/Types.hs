@@ -29,7 +29,7 @@ data Define = Define {
 data Function = Function {
     name :: String,
     params :: [String],
-    body :: Tree
+    bodies :: [Tree]
 } deriving (Show)
 
 data Env = Env {
