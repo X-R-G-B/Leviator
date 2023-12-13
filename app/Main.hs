@@ -8,6 +8,7 @@
 import Computing.ComputeAST
 import Parsing.Parser
 import Types
+import System.IO
 
 printErrors :: (Env) -> IO ()
 printErrors (Env defines_ []) = printErrors (Env defines_ ["Unable to compute"])
@@ -25,8 +26,12 @@ checkInput :: String -> Env -> IO ()
 checkInput ":q" _ = return ()
 checkInput input env = checkParsing (runParser (parseTree) input) env
 
+checkEOF :: Env -> Bool -> IO ()
+checkEOF _ True = return ()
+checkEOF env False = getLine >>= (\x -> checkInput x env)
+
 handleInput :: Env -> IO ()
-handleInput env = getLine >>= (\x -> checkInput x env)
+handleInput env = isEOF >>= (\x -> checkEOF env x)
 
 main :: IO ()
 main = handleInput (Env [] [])
