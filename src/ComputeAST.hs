@@ -14,6 +14,7 @@ import Types
 import Defines
 import Errors
 import Functions
+import Debug.Trace
 
 -- Find nested lists and resolve them
 resolveNestedLists :: Env -> [Tree] -> [Tree] -> (Env, Maybe [Tree])
@@ -43,10 +44,6 @@ handleDeepList env list
         case resolveNestedLists env [] list of
             (newEnv, Nothing) -> (newEnv, Nothing)
             (newEnv, Just resolvedList) -> handleDeepList newEnv resolvedList
-
-
-
-
 
 
 
@@ -172,9 +169,16 @@ handleDefine env _ = (registerError env "Bad define", Nothing)
 --(List [Symbol "define", Symbol "func", List [Symbol "lambda", List [Symbol "a", Symbol "b" ], List [Symbol "define", Symbol "foo", Symbol "a"], List [Symbol "+", Symbol "foo", Symbol "b"]]])
 --(List [List [Symbol "lambda", List [Symbol "a", Symbol "b"], List [Symbol "+", Symbol "a", Symbol "b"]], List [Number 1, Number2]]
 
+handleLambda :: Env -> Tree -> (Env, Maybe Result)
+handleLambda env (List (List (Symbol "lambda" : List params : bodies): (List args): _))
+    = computeFunction env (Function "" (getParams (List params)) bodies) args
+handleLambda env _ = (registerError env "Bad lambda", Nothing)
+
 -- Compute entire AST
 computeAST :: Env -> Tree -> (Env, Maybe Result)
 computeAST env tree@(List (Symbol "define" : _)) = handleDefine env tree
+--(List [List [Symbol "lambda", L
+computeAST env tree@(List (List (Symbol "lambda" : _) : _)) = handleLambda env tree
 computeAST env (List list)
     | doesListContainsList list = handleDeepList env list
     | otherwise = handleSimpleList env list

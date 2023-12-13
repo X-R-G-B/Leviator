@@ -9,7 +9,8 @@ module Defines
     (
         registerDefine,
         registerFunction,
-        getSymbolValue
+        getSymbolValue,
+        getParams
     ) where
 
 import Types
