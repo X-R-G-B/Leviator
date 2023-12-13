@@ -12,7 +12,8 @@ module Functions
         multiplication,
         division,
         modulo,
-        isAFunction
+        isAFunction,
+        getFunctionByName
     ) where
 
 import Types
@@ -26,6 +27,12 @@ isAFunction (Env { functions = [] }) _ = False
 isAFunction (Env { functions = (Function name _ _):xs }) expr
     | name == expr = True
     | otherwise = isAFunction (Env { functions = xs }) expr
+
+getFunctionByName :: Env -> String -> Maybe Function
+getFunctionByName (Env { functions = [] }) _ = Nothing
+getFunctionByName (Env { functions = (Function name params body):xs }) expr
+    | name == expr = Just (Function name params body)
+    | otherwise = getFunctionByName (Env { functions = xs }) expr
 
 -- Compute a "+ - div * mod" list, using defines if needed
 
