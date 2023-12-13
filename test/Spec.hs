@@ -210,18 +210,15 @@ unitTestsComputeFunctions = testGroup "Tests compute functions"
       assertEqual "(define sub (lambda (a b) (- a b))); (sub 84 42)"
       (Env {defines = [], errors = [], functions = [Function {name = "sub", params = ["a", "b"], body = (List [Symbol "-", Symbol "a", Symbol "b"])}]}, [Just (Number 42)])
       (computeAllAST (Env {defines = [], errors = [], functions = []}) [(List [Symbol "define", Symbol "sub", List [Symbol "lambda", List [Symbol "a", Symbol "b" ], List [Symbol "-", Symbol "a", Symbol "b"]]]), (List [Symbol "sub", Number 84, Number 42])])
+    , testCase "(define sub (lambda (a b c d e) (+ a (+ b (* 8 (+ d e))); (sub 84 42 1 2 3)" $
+      assertEqual "(define sub (lambda (a b c d e) (+ a (+ b (* 8 (+ d e))); (sub 84 42 1 2 3)"
+      (Env {defines = [], errors = [], functions = [Function {name = "sub", params = ["a", "b", "c", "d", "e"], body = (List [Symbol "+", Symbol "a", (List [Symbol "+", Symbol "b", (List [Symbol "*", Number 8, (List [Symbol "+", Symbol "d", Symbol "e"])])])])}]}, [Just (Number 166)])
+      (computeAllAST (Env {defines = [], errors = [], functions = []}) [(List [Symbol "define", Symbol "sub", List [Symbol "lambda", List [Symbol "a", Symbol "b", Symbol "c", Symbol "d", Symbol "e" ], List [Symbol "+", Symbol "a", (List [Symbol "+", Symbol "b", (List [Symbol "*", Number 8, (List [Symbol "+", Symbol "d", Symbol "e"])])])]]]), (List [Symbol "sub", Number 84, Number 42, Number 1, Number 2, Number 3])])
+    
   ]
-
-
 -- unitTestsComputeFunctions :: TestTree
 -- unitTestsComputeFunctions = testGroup "Tests compute functions"
---   [ testCase "(define add (lambda (a b) (+ a b))), (add 1 2)" $
---       assertEqual "(define add (lambda (a b) (+ a b))); (add 1 2)"
-
---     --[(List [Symbol "define", Symbol "add", List [Symbol "lambda", List [Symbol "a", Symbol "b" ], List [Symbol "+", Symbol "a", Symbol "b"]]]), (List [Symbol "add", Number 1, Number 2])]
-
 --     --, testCase "(define func (lambda (a b) (define foo a) (+ foo b))), (func 1 2)" $
-
 --     -- [(List [Symbol "define", Symbol "func", List [Symbol "lambda", List [Symbol "a", Symbol "b" ], List [Symbol "define", Symbol "foo", Symbol "a"], List [Symbol "+", Symbol "foo", Symbol "b"]]]), (List [Symbol "func", Number 1, Number 2])]
 --     --, List [List [Symbol "lambda", List [Symbol "a", Symbol "b"], List [Symbol "+", Symbol "a", Symbol "b"]], List [Number 1, Number2]]
 --   ] --empty if no parameters
