@@ -15,6 +15,182 @@ import Defines
 import Errors
 import Functions
 
+-- Find and execute user defined function
+
+getFunctionByName :: Env -> String -> Maybe Function
+getFunctionByName (Env { functions = [] }) _ = Nothing
+getFunctionByName (Env { functions = (Function name params body):xs }) expr
+    | name == expr = Just (Function name params body)
+    | otherwise = getFunctionByName (Env { functions = xs }) expr
+
+-- Compute a "+ - div * mod" list, using defines if needed
+
+addition :: Env -> [Tree] -> (Env, Maybe Result)
+addition env [Number a, Number b] = (env, Just (Number (a + b)))
+addition env [Number a, Symbol b]
+    | (_, Just (Number symbolValue)) <- getSymbolValue env b =
+        (env, Just (Number (a + symbolValue)))
+    | otherwise = (registerError env "Symbol not found", Nothing)
+addition env [Symbol a, Number b]
+    | (_, Just (Number symbolValue)) <- getSymbolValue env a =
+        (env, Just (Number (symbolValue + b)))
+    | otherwise = (registerError env "Symbol not found", Nothing)
+addition env [Symbol a, Symbol b]
+    | (_, Just (Number symbolValueA)) <- getSymbolValue env a
+    , (_, Just (Number symbolValueB)) <- getSymbolValue env b =
+        (env, Just (Number (symbolValueA + symbolValueB)))
+    | otherwise = (registerError env "Symbol not found", Nothing)
+addition env list
+    | length list /= 2 = (registerError env "Addition need 2 params", Nothing)
+    | otherwise = (registerError env "Bad types in addition", Nothing)
+
+multiplication :: Env -> [Tree] -> (Env, Maybe Result)
+multiplication env [Number a, Number b] = (env, Just (Number (a * b)))
+multiplication env [Number a, Symbol b]
+    | (_, Just (Number symbolValue)) <- getSymbolValue env b =
+        (env, Just (Number (a * symbolValue)))
+    | otherwise = (registerError env "Symbol not found", Nothing)
+multiplication env [Symbol a, Number b]
+    | (_, Just (Number symbolValue)) <- getSymbolValue env a =
+        (env, Just (Number (symbolValue * b)))
+    | otherwise = (registerError env "Symbol not found", Nothing)
+multiplication env [Symbol a, Symbol b]
+    | (_, Just (Number symbolValueA)) <- getSymbolValue env a
+    , (_, Just (Number symbolValueB)) <- getSymbolValue env b =
+        (env, Just (Number (symbolValueA * symbolValueB)))
+    | otherwise = (registerError env "Symbol not found", Nothing)
+multiplication env list
+    | length list /= 2 = (registerError env "* need 2 params", Nothing)
+    | otherwise = (registerError env "Bad types in multiplication", Nothing)
+
+subtraction :: Env -> [Tree] -> (Env, Maybe Result)
+subtraction env [Number a, Number b] = (env, Just (Number (a - b)))
+subtraction env [Number a, Symbol b]
+    | (_, Just (Number symbolValue)) <- getSymbolValue env b =
+        (env, Just (Number (a - symbolValue)))
+    | otherwise = (registerError env "Symbol not found", Nothing)
+subtraction env [Symbol a, Number b]
+    | (_, Just (Number symbolValue)) <- getSymbolValue env a =
+        (env, Just (Number (symbolValue - b)))
+    | otherwise = (registerError env "Symbol not found", Nothing)
+subtraction env [Symbol a, Symbol b]
+    | (_, Just (Number symbolValueA)) <- getSymbolValue env a
+    , (_, Just (Number symbolValueB)) <- getSymbolValue env b =
+        (env, Just (Number (symbolValueA - symbolValueB)))
+    | otherwise = (registerError env "Symbol not found", Nothing)
+subtraction env list
+    | length list /= 2 = (registerError env "- need 2 params", Nothing)
+    | otherwise = (registerError env "Bad types in subtraction", Nothing)
+
+division :: Env -> [Tree] -> (Env, Maybe Result)
+division env [Number a, Number b]
+    | b == 0 = (registerError env "Division by 0", Nothing)
+    | otherwise = (env, Just (Number (a `div` b)))
+division env [Symbol a, Number b]
+    | b == 0 = (registerError env "Division by 0", Nothing)
+    | (_, Just (Number symbolValue)) <- getSymbolValue env a =
+        (env, Just (Number (symbolValue `div` b)))
+    | otherwise = (registerError env "Symbol not found", Nothing)
+division env [Number a, Symbol b]
+    | (_, Just (Number symbolValue)) <- getSymbolValue env b
+    , symbolValue == 0 = (registerError env "Division by 0", Nothing)
+    | (_, Just (Number symbolValue)) <- getSymbolValue env b =
+        (env, Just (Number (a `div` symbolValue)))
+    | otherwise = (registerError env "Symbol not found", Nothing)
+division env [Symbol a, Symbol b]
+    | (_, Just (Number _)) <- getSymbolValue env a
+    , (_, Just (Number symbolValueB)) <- getSymbolValue env b
+    , symbolValueB == 0 = (registerError env "Division by 0", Nothing)
+    | (_, Just (Number symbolValueA)) <- getSymbolValue env a
+    , (_, Just (Number symbolValueB)) <- getSymbolValue env b =
+        (env, Just (Number (symbolValueA `div` symbolValueB)))
+    | otherwise = (registerError env "Symbol not found", Nothing)
+division env list
+    | length list /= 2 = (registerError env "/ need 2 params", Nothing)
+    | otherwise = (registerError env "Bad types in division", Nothing)
+
+modulo :: Env -> [Tree] -> (Env, Maybe Result)
+modulo env [Number a, Number b]
+    | b == 0 = (registerError env "Modulo by 0", Nothing)
+    | otherwise = (env, Just (Number (a `mod` b)))
+modulo env [Symbol a, Number b]
+    | b == 0 = (registerError env "Modulo by 0", Nothing)
+    | (_, Just (Number symbolValue)) <- getSymbolValue env a =
+        (env, Just (Number (symbolValue `mod` b)))
+    | otherwise = (registerError env "Symbol not found", Nothing)
+modulo env [Number a, Symbol b]
+    | (_, Just (Number symbolValue)) <- getSymbolValue env b
+    , symbolValue == 0 = (registerError env "Modulo by 0", Nothing)
+    | (_, Just (Number symbolValue)) <- getSymbolValue env b =
+        (env, Just (Number (a `mod` symbolValue)))
+    | otherwise = (registerError env "Symbol not found", Nothing)
+modulo env [Symbol a, Symbol b]
+    | (_, Just (Number _)) <- getSymbolValue env a
+    , (_, Just (Number symbolValueB)) <- getSymbolValue env b
+    , symbolValueB == 0 = (registerError env "Modulo by 0", Nothing)
+    | (_, Just (Number symbolValueA)) <- getSymbolValue env a
+    , (_, Just (Number symbolValueB)) <- getSymbolValue env b =
+        (env, Just (Number (symbolValueA `mod` symbolValueB)))
+    | otherwise = (registerError env "Symbol not found", Nothing)
+modulo env list
+    | length list /= 2 = (registerError env "% need 2 params", Nothing)
+    | otherwise = (registerError env "Bad types in modulo", Nothing)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+isAFunction :: Env -> String -> Bool
+isAFunction (Env { functions = [] }) _ = False
+isAFunction (Env { functions = (Function name _ _):xs }) expr
+    | name == expr = True
+    | otherwise = isAFunction (Env { functions = xs }) expr
+
+getSymbolValueFromFunction :: Env -> String -> (Env, Maybe Tree)
+getSymbolValueFromFunction env@(Env { functions = [] }) symbl = (env, Nothing)
+getSymbolValueFromFunction env@(Env { functions = (Function name params bodies):xs }) symbl
+    | name == symbl = case computeFunction env (Function name params bodies) [] of
+            (newEnv, Nothing) -> (registerError newEnv "Function call failed", Nothing)
+            (newEnv, Just result) -> (env, Just result)
+    | otherwise = getSymbolValueFromFunction (Env { functions = xs }) symbl
+
+getSymbolValueFromDefine :: Env -> String -> (Env, Maybe Tree)
+getSymbolValueFromDefine env@(Env { defines = [] }) symbl = (env, Nothing)
+getSymbolValueFromDefine env@(Env { defines = (Define smbl value):xs })
+    symbl
+    | smbl == symbl = (env, Just value)
+    | otherwise = getSymbolValueFromDefine (Env { defines = xs }) symbl
+
+getSymbolValue :: Env -> String -> (Env, Maybe Tree)
+getSymbolValue env symbl
+    | isAFunction env symbl = getSymbolValueFromFunction env symbl
+    | otherwise = getSymbolValueFromDefine env symbl
+
+
+
+
+
+
+
+
+
+
 -- Find nested lists and resolve them
 resolveNestedLists :: Env -> [Tree] -> [Tree] -> (Env, Maybe [Tree])
 resolveNestedLists env resolvedList [] = (env, Just resolvedList)
@@ -110,6 +286,7 @@ computeFunction env (Function name params (x:_)) args =
     case computeFunction' env (Function name params [x]) args of
         (newEnv, Nothing) -> (registerError newEnv "Missing return in function", Nothing)
         (newEnv, Just replaced) -> computeAST newEnv replaced
+computeFunction env _ _ = (registerError env "Bad function call", Nothing)
 
 -- computeFunction :: Env -> Function -> [Tree] -> (Env, Maybe Result)
 -- computeFunction env (Function name params bodies) args =
@@ -127,10 +304,10 @@ handleSimpleList env (Symbol "mod" : rest) = modulo env rest
 handleSimpleList env (Symbol smbl : rest) =
     case getFunctionByName env smbl of
         Just func ->
-            let (_, result) = computeFunction env func rest
+            let (newEnv, result) = computeFunction env func rest
             in case result of
                 Just res -> (env, Just res)
-                Nothing  -> (env, Nothing)
+                Nothing -> (registerError env ("Function " ++ smbl ++ " not found"), Nothing)
         Nothing   -> (registerError env ("Function " ++ smbl ++ " not found"), Nothing)
 handleSimpleList env _ = (registerError env "Bad function call", Nothing)
 
@@ -169,6 +346,7 @@ handleDefine env (List [Symbol _, Symbol smbl, expr]) = (registerDefine env smbl
 handleDefine env _ = (registerError env "Bad define", Nothing)
 
 --(List [Symbol "define", Symbol "func", List [Symbol "lambda", List [Symbol "a", Symbol "b" ], List [Symbol "define", Symbol "foo", Symbol "a"], List [Symbol "+", Symbol "foo", Symbol "b"]]])
+--(List [List [Symbol "lambda", List [Symbol "a", Symbol "b"], List [Symbol "+", Symbol "a", Symbol "b"]], List [Number 1, Number2]]
 
 -- Compute entire AST
 computeAST :: Env -> Tree -> (Env, Maybe Result)

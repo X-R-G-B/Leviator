@@ -218,9 +218,17 @@ unitTestsComputeFunctions = testGroup "Tests compute functions"
       assertEqual "(define func (lambda (a b) (define foo a) (+ foo b))); (func 1 2)"
       (Env {defines = [], errors = [], functions = [Function {name = "func", params = ["a", "b"], bodies = [(List [Symbol "define", Symbol "foo", Symbol "a", (List [Symbol "+", Symbol "foo", Symbol "b"])])]}]}, [Just (Number 3)])
       (computeAllAST (Env {defines = [], errors = [], functions = []}) [(List [Symbol "define", Symbol "func", List [Symbol "lambda", List [Symbol "a", Symbol "b" ], List [Symbol "define", Symbol "foo", Symbol "a"], List [Symbol "+", Symbol "foo", Symbol "b"]]]), (List [Symbol "func", Number 1, Number 2])])
+    , testCase "((lambda (a b) (+ a b)) 1 2)" $
+      assertEqual "((lambda (a b) (+ a b)) 1 2)"
+      (Env {defines = [], errors = [], functions = []}, Just (Number 3))
+      (computeAST (Env {defines = [], errors = [], functions = []}) (List [List [Symbol "lambda", List [Symbol "a", Symbol "b"], List [Symbol "+", Symbol "a", Symbol "b"]], List [Number 1, Number 2]]))
+    , testCase "(define func (lambda () (define foo 42) (foo))); (func)" $
+      assertEqual "(define func (lambda () (define foo 42) (foo))); (func)"
+      (Env {defines = [], errors = [], functions = [Function {name = "func", params = [], bodies = [List [Symbol "define", Symbol "foo", Symbol "42"], Symbol "foo"]}]}, [Just (Number 42)])
+      (computeAllAST (Env {defines = [], errors = [], functions = []}) [(List [Symbol "define", Symbol "func", List [Symbol "lambda", List [], List [Symbol "define", Symbol "foo", Symbol "42"], Symbol "foo"]]), (Symbol "func")])
+    , testCase "(define func (lambda () (+ 42 42))); (func)" $
+      assertEqual "(define func (lambda () (+ 42 42))); (func)"
+      (Env {defines = [], errors = [], functions = [Function {name = "func", params = [], bodies = [List [Symbol "+", Symbol "42", Symbol "42"]]}]}, [Just (Number 84)])
+      (computeAllAST (Env {defines = [], errors = [], functions = []}) [(List [Symbol "define", Symbol "func", List [Symbol "lambda", List [], List [Symbol "+", Symbol "42", Symbol "42"]]]), (Symbol "func")])
   ]
-
--- unitTestsComputeFunctions :: TestTree
--- unitTestsComputeFunctions = testGroup "Tests compute functions"
---     --, List [List [Symbol "lambda", List [Symbol "a", Symbol "b"], List [Symbol "+", Symbol "a", Symbol "b"]], List [Number 1, Number2]]
 --   ] --empty if no parameters

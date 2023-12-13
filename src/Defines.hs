@@ -8,19 +8,11 @@
 module Defines
     (
         registerDefine,
-        getSymbolValue,
         registerFunction
     ) where
 
 import Types
 import Errors
-
-getSymbolValue :: Env -> String -> (Env, Maybe Tree)
-getSymbolValue (Env { defines = [], errors = _ }) _ = 
-    (Env { defines = [], errors = [], functions = [] }, Nothing)
-getSymbolValue (Env { defines = (Define smbl value):xs, errors = err }) expr
-    | smbl == expr = (Env { defines = xs, errors = err, functions = [] }, Just value)
-    | otherwise = getSymbolValue (Env { defines = xs, errors = err, functions = [] }) expr
 
 -- Register a define in the Defines list
 registerDefine :: Env -> Symbol -> Tree -> Env
