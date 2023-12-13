@@ -29,6 +29,8 @@ handleNoList env _ = (env, Nothing)
 
 -- Handle AST that register a define
 handleDefine :: Env -> Tree -> (Env, Maybe Result)
+handleDefine env (List [Symbol _, Symbol smbl, List [Symbol "lambda", List params, List body]])
+    = (registerFunction env smbl (List params) (List body), Nothing)
 handleDefine env (List [Symbol _, Symbol smbl, expr])
     = (registerDefine env smbl expr, Nothing)
 handleDefine env _ = (registerError env "Bad define", Nothing)

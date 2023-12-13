@@ -11,12 +11,21 @@ module Functions
         subtraction,
         multiplication,
         division,
-        modulo
+        modulo,
+        isAFunction
     ) where
 
 import Types
 import Errors
 import Defines
+
+-- Find and execute user defined function
+
+isAFunction :: Env -> String -> Bool
+isAFunction (Env { functions = [] }) _ = False
+isAFunction (Env { functions = (Function name _ _):xs }) expr
+    | name == expr = True
+    | otherwise = isAFunction (Env { functions = xs }) expr
 
 -- Compute a "+ - div * mod" list, using defines if needed
 

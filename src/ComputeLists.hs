@@ -13,6 +13,7 @@ module ComputeLists
 
 import Types
 import Functions
+import Errors
 
 doesListContainsList :: [Tree] -> Bool
 doesListContainsList [] = False
@@ -26,4 +27,7 @@ handleSimpleList env (Symbol "*" : rest) = multiplication env rest
 handleSimpleList env (Symbol "-" : rest) = subtraction env rest
 handleSimpleList env (Symbol "div" : rest) = division env rest
 handleSimpleList env (Symbol "mod" : rest) = modulo env rest
-handleSimpleList env _ = (env, Nothing)
+handleSimpleList env (Symbol smbl : rest)
+    | isAFunction env smbl = (env, Just (Number 4242))
+    | otherwise = (registerError env ("Function " ++ smbl ++ " not found"), Nothing)
+handleSimpleList env _ = (registerError env "Bad function call", Nothing)
