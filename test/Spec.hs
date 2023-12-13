@@ -2,9 +2,9 @@ import Test.Tasty
 import Test.Tasty.HUnit
 import Test.Tasty.Runners.Html
 
-import ComputeAST
+import Computing.ComputeAST
 import Types
-import Parser
+import Parsing.Parser
 
 main :: IO ()
 main = defaultMainWithIngredients (htmlRunner : defaultIngredients) tests

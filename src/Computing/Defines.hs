@@ -5,7 +5,7 @@
 -- Defines
 -}
 
-module Defines
+module Computing.Defines
     (
         registerDefine,
         getSymbolValue

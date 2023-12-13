@@ -5,7 +5,7 @@
 -- Functions
 -}
 
-module Functions
+module Computing.Functions
     (
         addition,
         subtraction,
@@ -15,8 +15,8 @@ module Functions
     ) where
 
 import Types
-import Errors
-import Defines
+import Computing.Errors
+import Computing.Defines
 
 -- Compute a "+ - div * mod" list, using defines if needed
 

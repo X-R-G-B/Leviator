@@ -5,14 +5,14 @@
 -- Compute nested lists
 -}
 
-module ComputeDeepLists
+module Computing.ComputeDeepLists
     (
         handleDeepList,
         resolveNestedLists
     ) where
 
 import Types
-import ComputeLists
+import Computing.ComputeLists
 
 -- Find nested lists and resolve them
 resolveNestedLists :: Env -> [Tree] -> [Tree] -> (Env, Maybe [Tree])

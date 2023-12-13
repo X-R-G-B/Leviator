@@ -5,16 +5,16 @@
 -- ComputeAST
 -}
 
-module ComputeAST
+module Computing.ComputeAST
     (
         computeAST
     ) where
 
 import Types
-import Defines
-import Errors
-import ComputeDeepLists
-import ComputeLists
+import Computing.Defines
+import Computing.Errors
+import Computing.ComputeDeepLists
+import Computing.ComputeLists
 
 -- Handle AST that doesn't contain a list
 handleNoList :: Env -> Tree -> (Env, Maybe Result)

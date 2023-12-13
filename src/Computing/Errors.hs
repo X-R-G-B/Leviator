@@ -5,7 +5,7 @@
 -- Errors
 -}
 
-module Errors
+module Computing.Errors
     (
         registerError,
         getErrors,

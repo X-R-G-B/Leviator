@@ -5,14 +5,14 @@
 -- Compute simple lists
 -}
 
-module ComputeLists
+module Computing.ComputeLists
     (
         doesListContainsList,
         handleSimpleList
     ) where
 
 import Types
-import Functions
+import Computing.Functions
 
 doesListContainsList :: [Tree] -> Bool
 doesListContainsList [] = False
