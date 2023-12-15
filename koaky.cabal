@@ -32,6 +32,7 @@ library
       Computing.Defines
       Computing.Errors
       Computing.Functions
+      KoakyLibVersion
       Parsing.Parser
       Types
   other-modules:
@@ -46,6 +47,9 @@ library
 executable koaky-exe
   main-is: Main.hs
   other-modules:
+      Args
+      Run
+      Version
       Paths_koaky
   hs-source-dirs:
       app
