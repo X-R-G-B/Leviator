@@ -1,8 +1,8 @@
 {-
---  EPITECH PROJECT, 2023
---  koaky
---  File description:
---  version
+-- EPITECH PROJECT, 2023
+-- koaky
+-- File description:
+-- version
 -}
 
 module Version
