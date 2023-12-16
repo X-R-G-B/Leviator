@@ -10,7 +10,8 @@ module Defines
         registerDefine,
         registerFunction,
         getSymbolValue,
-        getParams
+        getParams,
+        handleDefine
     ) where
 
 import Types
@@ -42,3 +43,8 @@ getParams _ = []
 registerFunction :: Env -> Symbol -> Tree -> [Tree] -> Env
 registerFunction env "" _ _ = registerError env "function name must not be empty"
 registerFunction env name params bodies = addFunction env name (getParams params) bodies
+
+handleDefine :: Env -> Tree -> (Env, Maybe Result)
+handleDefine env (List [Symbol _, Symbol smbl, List (Symbol "lambda": List params : bodies)]) = (registerFunction env smbl (List params) bodies, Nothing)
+handleDefine env (List [Symbol _, Symbol smbl, expr]) = (registerDefine env smbl expr, Nothing)
+handleDefine env _ = (registerError env "Bad define", Nothing)

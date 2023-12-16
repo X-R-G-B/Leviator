@@ -30,7 +30,9 @@ library
       Defines
       Errors
       Functions
+      ListContainList
       Parser
+      ReplaceFunctionParams
       Types
   other-modules:
       Paths_koaky
