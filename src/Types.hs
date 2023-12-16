@@ -16,6 +16,8 @@ module Types
     ) where
 
 import Data.Int (Int64)
+import Data.Either (Either)
+import Data.Void (Void)
 
 type Symbol = String
 
@@ -38,7 +40,7 @@ data Env = Env {
     functions :: [Function]
 }
 
-type Result = Tree
+type Result = Either (Maybe Tree) Void
 
 ---------- EQ INSTANCES ----------
 

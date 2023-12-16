@@ -18,7 +18,8 @@ tests = testGroup "Tests"
     unitTestsComputeSimpleFunctions,
     unitTestsComputeBasics,
     unitTestsASTParse,
-    unitTestsComputeFunctions
+    unitTestsComputeFunctions,
+    unitTestsComputeConditions
   ]
 
 unitTestsASTEqual :: TestTree
@@ -94,33 +95,35 @@ unitTestsASTParse = testGroup "AST Parse Tests"
        testParser "(do (re (mi)) 12 (re (mi)))" (List [Symbol "do", List [Symbol "re", List [Symbol "mi"]], Number 12, List [Symbol "re", List [Symbol "mi"]]])
   ]
 
-computeAllAST :: Env -> [Tree] -> (Env, [Maybe Result])
+computeAllAST :: Env -> [Tree] -> (Env, [Result])
 computeAllAST env [] = (env, [])
 computeAllAST env (x:xs) = do
   let (newEnv, result) = computeAST env x
   case result of
-    Nothing -> computeAllAST newEnv xs
-    Just tree -> do
+    Left (Just r) -> do
       let (newEnv2, results) = computeAllAST newEnv xs
-      (newEnv2, [Just tree] ++ results)
+      (newEnv2, (Left (Just r)):results)
+    _ -> do
+      let (newEnv2, results) = computeAllAST newEnv xs
+      (newEnv2, results)
 
 unitTestComputeTypes :: TestTree
 unitTestComputeTypes = testGroup "Tests Compute Types"
  [ testCase "bool true" $
        assertEqual "bool true"
-         (Env {defines = [], errors = [], functions = []}, Just (Boolean True))
+         (Env {defines = [], errors = [], functions = []}, Left (Just (Boolean True)))
          (computeAST (Env {defines = [], errors = [], functions = []}) (Boolean True))
    , testCase "bool false" $
        assertEqual "bool false"
-        (Env {defines = [], errors = [], functions = []}, Just (Boolean False))
+        (Env {defines = [], errors = [], functions = []}, Left (Just (Boolean False)))
          (computeAST (Env {defines = [], errors = [], functions = []}) (Boolean False))
     , testCase "number 42" $
         assertEqual "number 42"
-          (Env {defines = [], errors = [], functions = []}, Just (Number 42))
+          (Env {defines = [], errors = [], functions = []}, Left (Just (Number 42)))
           (computeAST (Env {defines = [], errors = [], functions = []}) (Number 42))
     , testCase "number -42" $
         assertEqual "number -42"
-          (Env {defines = [], errors = [], functions = []}, Just (Number (-42)))
+          (Env {defines = [], errors = [], functions = []}, Left (Just (Number (-42))))
           (computeAST (Env {defines = [], errors = [], functions = []}) (Number (-42)))
  ]
 
@@ -128,11 +131,11 @@ unitTestsComputeDefines :: TestTree
 unitTestsComputeDefines = testGroup "Tests Compute defines"
   [ testCase "define x 42" $
       assertEqual "define x 42"
-        (Env {defines = [Define {symbol = "x", expression = Number 42}], errors = [], functions = []}, Nothing)
+        (Env {defines = [Define {symbol = "x", expression = Number 42}], errors = [], functions = []}, Left (Nothing))
         (computeAST (Env {defines = [], errors = [], functions = []}) (List [Symbol "define", Symbol "x", Number 42]))
     , testCase "define x 42; x" $
       assertEqual "define x 42; x"
-        (Env {defines = [Define {symbol = "x", expression = Number 42}], errors = [], functions = []}, [Just (Number 42)])
+        (Env {defines = [Define {symbol = "x", expression = Number 42}], errors = [], functions = []}, [Left (Just (Number 42))])
         (computeAllAST (Env {defines = [], errors = [], functions = []}) [(List [Symbol "define", Symbol "x", Number 42]), (Symbol "x")])
     , testCase "define x 42; define y 84" $
       assertEqual "define x 42; define y 84"
@@ -140,15 +143,15 @@ unitTestsComputeDefines = testGroup "Tests Compute defines"
         (computeAllAST (Env {defines = [], errors = [], functions = []}) [(List [Symbol "define", Symbol "x", Number 42]), (List [Symbol "define", Symbol "y", Number 84])])
     , testCase "define x 42; define y 84; x; y" $
         assertEqual "define x 42; define y 84; x; y"
-          (Env {defines = [Define {symbol = "x", expression = Number 42}, Define {symbol = "y", expression = Number 84}], errors = [], functions = []}, [Just (Number 42), Just (Number 84)])
+          (Env {defines = [Define {symbol = "x", expression = Number 42}, Define {symbol = "y", expression = Number 84}], errors = [], functions = []}, [Left (Just (Number 42)), Left (Just (Number 84))])
           (computeAllAST (Env {defines = [], errors = [], functions = []}) [(List [Symbol "define", Symbol "x", Number 42]), (List [Symbol "define", Symbol "y", Number 84]), (Symbol "x"), (Symbol "y")])
     , testCase "define x (42 + 6); x" $
         assertEqual "define x (42 + 6); x"
-          (Env {defines = [Define {symbol = "x", expression = List [Symbol "+", Number 42, Number 6]}], errors = [], functions = []}, [Just (Number 48)])
+          (Env {defines = [Define {symbol = "x", expression = List [Symbol "+", Number 42, Number 6]}], errors = [], functions = []}, [Left (Just (Number 48))])
           (computeAllAST (Env {defines = [], errors = [], functions = []}) [(List [Symbol "define", Symbol "x", (List [Symbol "+", Number 42, Number 6])]), (Symbol "x")])
     , testCase "define foo (4 + 5); foo + foo" $
         assertEqual "define foo (4 + 5); foo + foo"
-          (Env {defines = [Define {symbol = "foo", expression = List [Symbol "+", Number 4, Number 5]}], errors = [], functions = []}, [Just (Number 18)])
+          (Env {defines = [Define {symbol = "foo", expression = List [Symbol "+", Number 4, Number 5]}], errors = [], functions = []}, [Left (Just (Number 18))])
           (computeAllAST (Env {defines = [], errors = [], functions = []}) [(List [Symbol "define", Symbol "foo", (List [Symbol "+", Number 4, Number 5])]), (List [Symbol "+", Symbol "foo", Symbol "foo"])])
   ]
 
@@ -156,27 +159,27 @@ unitTestsComputeSimpleFunctions :: TestTree
 unitTestsComputeSimpleFunctions = testGroup "Tests compute + - div mod"
   [ testCase "42 + 42" $
       assertEqual "42 + 42"
-        (Env {defines = [], errors = [], functions = []}, Just (Number 84))
+        (Env {defines = [], errors = [], functions = []}, Left (Just (Number 84)))
         (computeAST (Env {defines = [], errors = [], functions = []}) (List [Symbol "+", Number 42, Number 42]))
     , testCase "-42 + -42" $
       assertEqual "-42 + -42"
-        (Env {defines = [], errors = [], functions = []}, Just (Number (-84)))
+        (Env {defines = [], errors = [], functions = []}, Left (Just (Number (-84))))
         (computeAST (Env {defines = [], errors = [], functions = []}) (List [Symbol "+", Number (-42), Number (-42)]))
     , testCase "42 + dontexist" $
       assertEqual "42 + dontexist"
-        (Env {defines = [], errors = ["Symbol not found"], functions = []}, Nothing)
+        (Env {defines = [], errors = ["Symbol not found"], functions = []}, Right (undefined))
         (computeAST (Env {defines = [], errors = [], functions = []}) (List [Symbol "+", Number 42, Symbol "dontexist"]))
     , testCase "bool + number" $
       assertEqual "bool + number"
-        (Env {defines = [], errors = ["Bad types in addition"], functions = []}, Nothing)
+        (Env {defines = [], errors = ["Bad types in addition"], functions = []}, Right (undefined))
         (computeAST (Env {defines = [], errors = [], functions = []}) (List [Symbol "+", Boolean True, Number 42]))
     , testCase "20 / 2 + 3 * 5 - 10" $
       assertEqual "20 / 2 + 3 * 5 - 10"
-        (Env {defines = [], errors = [], functions = []}, Just (Number 15))
+        (Env {defines = [], errors = [], functions = []}, Left (Just (Number 15)))
         (computeAST (Env {defines = [], errors = [], functions = []}) (List [Symbol "-", (List [Symbol "+", (List [Symbol "div", Number 20, Number 2]), (List [Symbol "*", Number 3, Number 5])]), Number 10]))
     , testCase "11 mod 3" $
       assertEqual "11 mod 3"
-        (Env {defines = [], errors = [], functions = []}, Just (Number 2))
+        (Env {defines = [], errors = [], functions = []}, Left (Just (Number 2)))
         (computeAST (Env {defines = [], errors = [], functions = []}) (List [Symbol "mod", Number 11, Number 3]))
   ]
 
@@ -184,23 +187,23 @@ unitTestsComputeBasics :: TestTree
 unitTestsComputeBasics = testGroup "Tests compute basics"
   [ testCase "define foo 42; foo + foo" $
       assertEqual "define foo 42; foo + foo"
-        (Env {defines = [Define {symbol = "foo", expression = Number 42}], errors = [], functions = []}, [Just (Number 84)])
+        (Env {defines = [Define {symbol = "foo", expression = Number 42}], errors = [], functions = []}, [Left (Just (Number 84))])
         (computeAllAST (Env {defines = [], errors = [], functions = []}) [(List [Symbol "define", Symbol "foo", Number 42]), (List [Symbol "+", Symbol "foo", Symbol "foo"])])
     , testCase "define foo 42; define bar 42; foo + bar" $
         assertEqual "define foo 42; define bar 42; foo + bar"
-          (Env {defines = [Define {symbol = "foo", expression = Number 42}, Define {symbol = "bar", expression = Number 42}], errors = [], functions = []}, [Just (Number 84)])
+          (Env {defines = [Define {symbol = "foo", expression = Number 42}, Define {symbol = "bar", expression = Number 42}], errors = [], functions = []}, [Left (Just (Number 84))])
           (computeAllAST (Env {defines = [], errors = [], functions = []}) [(List [Symbol "define", Symbol "foo", Number 42]), (List [Symbol "define", Symbol "bar", Number 42]), (List [Symbol "+", Symbol "foo", Symbol "bar"])])
     , testCase "2 + 2 * 5" $
         assertEqual "2 + 2 * 5"
-          (Env {defines = [], errors = [], functions = []}, [Just (Number 12)])
+          (Env {defines = [], errors = [], functions = []}, [Left (Just (Number 12))])
           (computeAllAST (Env {defines = [], errors = [], functions = []}) [(List [Symbol "+", Number 2, (List [Symbol "*", Number 2, Number 5])])])
     , testCase "2 + 2 * (foo + 10) = 106" $
         assertEqual "2 + 2 * (foo + 10) = 106"
-          (Env {defines = [Define {symbol = "foo", expression = Number 42}], errors = [], functions = []}, [Just (Number 106)])
+          (Env {defines = [Define {symbol = "foo", expression = Number 42}], errors = [], functions = []}, [Left (Just (Number 106))])
           (computeAllAST (Env {defines = [], errors = [], functions = []}) [(List [Symbol "define", Symbol "foo", Number 42]), (List [Symbol "+", Number 2, (List [Symbol "*", Number 2, (List [Symbol "+", Symbol "foo", Number 10])])])])
     , testCase "2 + 3 * (8 + (5* ( 2 + 3))) = 107" $
         assertEqual "2 + 3 * (8 + (5* ( 2 + 3))) = 107"
-          (Env {defines = [], errors = [], functions = []}, [Just (Number 101)])
+          (Env {defines = [], errors = [], functions = []}, [Left (Just (Number 101))])
           (computeAllAST (Env {defines = [], errors = [], functions = []}) [(List [Symbol "+", Number 2, (List [Symbol "*", Number 3, (List [Symbol "+", Number 8, (List [Symbol "*", Number 5, (List [Symbol "+", Number 2, Number 3])])])])])])
   ]
 
@@ -208,34 +211,42 @@ unitTestsComputeFunctions :: TestTree
 unitTestsComputeFunctions = testGroup "Tests compute functions"
   [ testCase "(define add (lambda (a b) (+ a b))); (add 1 2)" $
       assertEqual "(define add (lambda (a b) (+ a b))); (add 1 2)"
-      (Env {defines = [], errors = [], functions = [Function {name = "add", params = ["a", "b"], bodies = [(List [Symbol "+", Symbol "a", Symbol "b"])]}]}, [Just (Number 3)])
+      (Env {defines = [], errors = [], functions = [Function {name = "add", params = ["a", "b"], bodies = [(List [Symbol "+", Symbol "a", Symbol "b"])]}]}, [Left (Just (Number 3))])
       (computeAllAST (Env {defines = [], errors = [], functions = []}) [(List [Symbol "define", Symbol "add", List [Symbol "lambda", List [Symbol "a", Symbol "b" ], List [Symbol "+", Symbol "a", Symbol "b"]]]), (List [Symbol "add", Number 1, Number 2])])
     , testCase "(define sub (lambda (a b) (- a b))); (sub 84 42)" $
       assertEqual "(define sub (lambda (a b) (- a b))); (sub 84 42)"
-      (Env {defines = [], errors = [], functions = [Function {name = "sub", params = ["a", "b"], bodies = [(List [Symbol "-", Symbol "a", Symbol "b"])]}]}, [Just (Number 42)])
+      (Env {defines = [], errors = [], functions = [Function {name = "sub", params = ["a", "b"], bodies = [(List [Symbol "-", Symbol "a", Symbol "b"])]}]}, [Left (Just (Number 42))])
       (computeAllAST (Env {defines = [], errors = [], functions = []}) [(List [Symbol "define", Symbol "sub", List [Symbol "lambda", List [Symbol "a", Symbol "b" ], List [Symbol "-", Symbol "a", Symbol "b"]]]), (List [Symbol "sub", Number 84, Number 42])])
     , testCase "(define sub (lambda (a b c d e) (+ a (+ b (* 8 (+ d e))); (sub 84 42 1 2 3)" $
       assertEqual "(define sub (lambda (a b c d e) (+ a (+ b (* 8 (+ d e))); (sub 84 42 1 2 3)"
-      (Env {defines = [], errors = [], functions = [Function {name = "sub", params = ["a", "b", "c", "d", "e"], bodies = [(List [Symbol "+", Symbol "a", (List [Symbol "+", Symbol "b", (List [Symbol "*", Number 8, (List [Symbol "+", Symbol "d", Symbol "e"])])])])]}]}, [Just (Number 166)])
+      (Env {defines = [], errors = [], functions = [Function {name = "sub", params = ["a", "b", "c", "d", "e"], bodies = [(List [Symbol "+", Symbol "a", (List [Symbol "+", Symbol "b", (List [Symbol "*", Number 8, (List [Symbol "+", Symbol "d", Symbol "e"])])])])]}]}, [Left (Just (Number 166))])
       (computeAllAST (Env {defines = [], errors = [], functions = []}) [(List [Symbol "define", Symbol "sub", List [Symbol "lambda", List [Symbol "a", Symbol "b", Symbol "c", Symbol "d", Symbol "e" ], List [Symbol "+", Symbol "a", (List [Symbol "+", Symbol "b", (List [Symbol "*", Number 8, (List [Symbol "+", Symbol "d", Symbol "e"])])])]]]), (List [Symbol "sub", Number 84, Number 42, Number 1, Number 2, Number 3])])
     , testCase "(define func (lambda (a b) (define foo a) (+ foo b))); (func 1 2)" $
       assertEqual "(define func (lambda (a b) (define foo a) (+ foo b))); (func 1 2)"
-      (Env {defines = [], errors = [], functions = [Function {name = "func", params = ["a", "b"], bodies = [(List [Symbol "define", Symbol "foo", Symbol "a", (List [Symbol "+", Symbol "foo", Symbol "b"])])]}]}, [Just (Number 3)])
+      (Env {defines = [], errors = [], functions = [Function {name = "func", params = ["a", "b"], bodies = [(List [Symbol "define", Symbol "foo", Symbol "a", (List [Symbol "+", Symbol "foo", Symbol "b"])])]}]}, [Left (Just (Number 3))])
       (computeAllAST (Env {defines = [], errors = [], functions = []}) [(List [Symbol "define", Symbol "func", List [Symbol "lambda", List [Symbol "a", Symbol "b" ], List [Symbol "define", Symbol "foo", Symbol "a"], List [Symbol "+", Symbol "foo", Symbol "b"]]]), (List [Symbol "func", Number 1, Number 2])])
     , testCase "((lambda (a b) (+ a b)) 1 2)" $
       assertEqual "((lambda (a b) (+ a b)) 1 2)"
-      (Env {defines = [], errors = [], functions = []}, Just (Number 3))
+      (Env {defines = [], errors = [], functions = []}, Left (Just (Number 3)))
       (computeAST (Env {defines = [], errors = [], functions = []}) (List [List [Symbol "lambda", List [Symbol "a", Symbol "b"], List [Symbol "+", Symbol "a", Symbol "b"]], List [Number 1, Number 2]]))
     , testCase "(define func (lambda () (define foo 42) (foo))); (func)" $
       assertEqual "(define func (lambda () (define foo 42) (foo))); (func)"
-      (Env {defines = [], errors = [], functions = [Function {name = "func", params = [], bodies = [List [Symbol "define", Symbol "foo", Number 42], Symbol "foo"]}]}, [Just (Number 42)])
+      (Env {defines = [], errors = [], functions = [Function {name = "func", params = [], bodies = [List [Symbol "define", Symbol "foo", Number 42], Symbol "foo"]}]}, [Left (Just (Number 42))])
       (computeAllAST (Env {defines = [], errors = [], functions = []}) [(List [Symbol "define", Symbol "func", List [Symbol "lambda", List [], List [Symbol "define", Symbol "foo", Number 42], Symbol "foo"]]), (List [Symbol "func"])])
     , testCase "(define func (lambda () (+ 42 42))); (func)" $
       assertEqual "(define func (lambda () (+ 42 42))); (func)"
-      (Env {defines = [], errors = [], functions = [Function {name = "func", params = [], bodies = [List [Symbol "+", Number 42, Number 42]]}]}, [Just (Number 84)])
+      (Env {defines = [], errors = [], functions = [Function {name = "func", params = [], bodies = [List [Symbol "+", Number 42, Number 42]]}]}, [Left (Just (Number 84))])
       (computeAllAST (Env {defines = [], errors = [], functions = []}) [(List [Symbol "define", Symbol "func", List [Symbol "lambda", List [], List [Symbol "+", Number 42, Number 42]]]), (List [Symbol "func"])])
     , testCase "(define func (lambda (x) (+ 1 x))); (func 41)" $
       assertEqual "(define func (lambda (x) (+ 1 x))); (func 41)"
-      (Env {defines = [], errors = [], functions = [Function {name = "func", params = ["x"], bodies = [List [Symbol "+", Number 1, Symbol "x"]]}]}, [Just (Number 42)])
+      (Env {defines = [], errors = [], functions = [Function {name = "func", params = ["x"], bodies = [List [Symbol "+", Number 1, Symbol "x"]]}]}, [Left (Just (Number 42))])
       (computeAllAST (Env {defines = [], errors = [], functions = []}) [(List [Symbol "define", Symbol "func", List [Symbol "lambda", List [Symbol "x"], List [Symbol "+", Number 1, Symbol "x"]]]), (List [Symbol "func", Number 41])])
+  ]
+
+unitTestsComputeConditions :: TestTree
+unitTestsComputeConditions = testGroup "Tests compute conditions"
+  [ testCase "(if #t 42 84)" $
+      assertEqual "(if #t 42 84)"
+      (Env {defines = [], errors = [], functions = []}, Left (Just (Number 42)))
+      (computeAST (Env {defines = [], errors = [], functions = []}) (List [Symbol "if", Boolean True, Number 42, Number 84]))
   ]

@@ -46,8 +46,8 @@ registerFunction env "" _ _ = registerError env "function name must not be empty
 registerFunction env fnName fnParams fnBodies
     = addFunction env fnName (getParams fnParams) fnBodies
 
-handleDefine :: Env -> Tree -> (Env, Maybe Result)
+handleDefine :: Env -> Tree -> (Env, Result)
 handleDefine env (List [Symbol _, Symbol smbl, List (Symbol "lambda": List fnParams : fnBodies)])
-    = (registerFunction env smbl (List fnParams) fnBodies, Nothing)
-handleDefine env (List [Symbol _, Symbol smbl, expr]) = (registerDefine env smbl expr, Nothing)
-handleDefine env _ = (registerError env "Bad define", Nothing)
+    = (registerFunction env smbl (List fnParams) fnBodies, Left (Nothing))
+handleDefine env (List [Symbol _, Symbol smbl, expr]) = (registerDefine env smbl expr, Left (Nothing))
+handleDefine env _ = (registerError env "Bad define", Right (undefined))
