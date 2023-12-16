@@ -49,5 +49,7 @@ registerFunction env fnName fnParams fnBodies
 handleDefine :: Env -> Tree -> (Env, Result)
 handleDefine env (List [Symbol _, Symbol smbl, List (Symbol "lambda": List fnParams : fnBodies)])
     = (registerFunction env smbl (List fnParams) fnBodies, Left (Nothing))
+handleDefine env (List [Symbol _, (List (Symbol smbl : fnParams)), List fnBodies])
+    = (registerFunction env smbl (List fnParams) (List fnBodies : []), Left (Nothing))
 handleDefine env (List [Symbol _, Symbol smbl, expr]) = (registerDefine env smbl expr, Left (Nothing))
 handleDefine env _ = (registerError env "Bad define", Right (undefined))
