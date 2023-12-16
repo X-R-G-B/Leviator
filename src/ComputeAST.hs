@@ -178,10 +178,10 @@ handleSimpleList env (Symbol "mod" : rest) = modulo env rest
 handleSimpleList env (Symbol smbl : rest) =
     case getFunctionByName env smbl of
         Just func ->
-            let (_, result) = computeFunction env func rest
+            let (newEnv, result) = computeFunction env func rest
             in case result of
                 Just res -> (env, Just res)
-                Nothing -> (registerError env ("Function " ++ smbl ++ " not found"), Nothing)
+                Nothing -> (registerError newEnv ("Can't compute function " ++ smbl), Nothing)
         Nothing   -> (registerError env ("Function " ++ smbl ++ " not found"), Nothing)
 handleSimpleList env _ = (registerError env "Bad function call", Nothing)
 
