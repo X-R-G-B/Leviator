@@ -146,6 +146,10 @@ unitTestsComputeDefines = testGroup "Tests Compute defines"
         assertEqual "define x (42 + 6); x"
           (Env {defines = [Define {symbol = "x", expression = List [Symbol "+", Number 42, Number 6]}], errors = [], functions = []}, [Just (Number 48)])
           (computeAllAST (Env {defines = [], errors = [], functions = []}) [(List [Symbol "define", Symbol "x", (List [Symbol "+", Number 42, Number 6])]), (Symbol "x")])
+    , testCase "define foo (4 + 5); foo + foo" $
+        assertEqual "define foo (4 + 5); foo + foo"
+          (Env {defines = [Define {symbol = "foo", expression = List [Symbol "+", Number 4, Number 5]}], errors = [], functions = []}, [Just (Number 18)])
+          (computeAllAST (Env {defines = [], errors = [], functions = []}) [(List [Symbol "define", Symbol "foo", (List [Symbol "+", Number 4, Number 5])]), (List [Symbol "+", Symbol "foo", Symbol "foo"])])
   ]
 
 unitTestsComputeSimpleFunctions :: TestTree
