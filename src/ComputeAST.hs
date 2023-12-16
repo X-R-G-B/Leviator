@@ -131,12 +131,56 @@ modulo env list
     | length list /= 2 = (registerError env "% need 2 params", Right (undefined))
     | otherwise = (registerError env "Bad types in modulo", Right (undefined))
 
+------------------------- CONDITIONS ---------------------------------
 
+equal :: Env -> [Tree] -> (Env, Result)
+equal env [Number a, Number b] = (env, Left (Just (Boolean (a == b))))
+equal env [Number a, Symbol b]
+    | (_, Just (Number symbolValue)) <- evaluateSymbol env b =
+        (env, Left (Just (Boolean (a == symbolValue))))
+    | otherwise = (registerError env "Symbol not found", Right (undefined))
+equal env [Symbol a, Number b]
+    | (_, Just (Number symbolValue)) <- evaluateSymbol env a =
+        (env, Left (Just (Boolean (symbolValue == b))))
+    | otherwise = (registerError env "Symbol not found", Right (undefined))
+equal env [Symbol a, Symbol b]
+    | (_, Just (Number symbolValueA)) <- evaluateSymbol env a
+    , (_, Just (Number symbolValueB)) <- evaluateSymbol env b =
+        (env, Left (Just (Boolean (symbolValueA == symbolValueB))))
+    | otherwise = (registerError env "Symbol not found", Right (undefined))
+equal env list
+    | length list /= 2 = (registerError env "eq? need 2 params", Right (undefined))
+    | otherwise = (registerError env "Bad types in eq?", Right (undefined))
+
+inferior :: Env -> [Tree] -> (Env, Result)
+inferior env [Number a, Number b] = (env, Left (Just (Boolean (a < b))))
+inferior env [Number a, Symbol b]
+    | (_, Just (Number symbolValue)) <- evaluateSymbol env b =
+        (env, Left (Just (Boolean (a < symbolValue))))
+    | otherwise = (registerError env "Symbol not found", Right (undefined))
+inferior env [Symbol a, Number b]
+    | (_, Just (Number symbolValue)) <- evaluateSymbol env a =
+        (env, Left (Just (Boolean (symbolValue < b))))
+    | otherwise = (registerError env "Symbol not found", Right (undefined))
+inferior env [Symbol a, Symbol b]
+    | (_, Just (Number symbolValueA)) <- evaluateSymbol env a
+    , (_, Just (Number symbolValueB)) <- evaluateSymbol env b =
+        (env, Left (Just (Boolean (symbolValueA < symbolValueB))))
+    | otherwise = (registerError env "Symbol not found", Right (undefined))
+inferior env list
+    | length list /= 2 = (registerError env "< need 2 params", Right (undefined))
+    | otherwise = (registerError env "Bad types in <", Right (undefined))
+
+handleIf :: Env -> [Tree] -> (Env, Result)
+handleIf env (Boolean (True) : thenBranch : _ : [])
+    = computeASTWithoutList env thenBranch
+handleIf env (Boolean (False) : _ : elseBranch : [])
+    = computeASTWithoutList env elseBranch
+handleIf env _ = (registerError env "Bad if statement", Right (undefined))
 
 ----------------------------------------------------------------------------------
 
-
-
+-- Evaluate a symbol and return its value
 evaluateSymbol :: Env -> Symbol -> (Env, Maybe Tree)
 evaluateSymbol env smbl =
     case getSymbolValue env smbl of
@@ -149,10 +193,7 @@ evaluateSymbol env smbl =
                 (_, _) -> (env, Nothing)
         (_, _) -> (env, Nothing)
 
-
-
 ----------------------------------------------------------------------------------
-
 
 
 -- Find nested lists and resolve them
@@ -175,17 +216,7 @@ resolveNestedLists env resolvedList (Boolean value : rest) =
 resolveNestedLists env resolvedList (Symbol smbl : rest) =
     resolveNestedLists env (resolvedList ++ [Symbol smbl]) rest
 
-
-
-
-
-
-
 ----------------------------------------------------------------------------------
-
-
-
-
 
 -- Compute simple lists (no nested lists)
 handleSimpleList :: Env -> [Tree] -> (Env, Result)
@@ -194,6 +225,9 @@ handleSimpleList env (Symbol "*" : rest) = multiplication env rest
 handleSimpleList env (Symbol "-" : rest) = subtraction env rest
 handleSimpleList env (Symbol "div" : rest) = division env rest
 handleSimpleList env (Symbol "mod" : rest) = modulo env rest
+handleSimpleList env (Symbol "eq?" : rest) = equal env rest
+handleSimpleList env (Symbol "<" : rest) = inferior env rest
+handleSimpleList env (Symbol "if" : rest) = handleIf env rest
 handleSimpleList env (Symbol smbl : rest) =
     case getFunctionByName env smbl of
         Nothing -> (registerError env ("Function " ++ smbl ++ " not found"), Right (undefined))
@@ -203,29 +237,14 @@ handleSimpleList env (Symbol smbl : rest) =
                 (newEnv, _) -> (env { errors = errors newEnv }, Right (undefined))
 handleSimpleList env _ = (registerError env "Bad function call", Right (undefined))
 
--- Compute nested lists
-handleDeepList :: Env -> [Tree] -> (Env, Result)
-handleDeepList env list
-    | not (doesListContainsList list) = handleSimpleList env list
-    | otherwise =
-        case resolveNestedLists env [] list of
-            (newEnv, Nothing) -> (newEnv, Right (undefined))
-            (newEnv, Just resolvedList) -> handleDeepList newEnv resolvedList
-
-
 ----------------------------------------------------------------------------------
-
 
 handleLambda :: Env -> Tree -> (Env, Result)
 handleLambda env (List (List (Symbol "lambda" : List fnParams : fnBodies): (List args): _))
     = computeFunction env (Function "" (getParams (List fnParams)) fnBodies) args
 handleLambda env _ = (registerError env "Bad lambda", Left (Nothing))
 
-
-
--------------------------------------------------------------------------------------
-
-
+--------------------------- COMPUTE FUNCTIONS --------------------------------
 
 computeFunctionBody :: Env -> Function -> [Tree] -> (Env, Result)
 computeFunctionBody env (Function _ _ []) _ = (env, Left (Nothing))
@@ -246,12 +265,8 @@ computeFunction env (Function fnName fnParams (x:_)) args =
 computeFunction env _ _ = (registerError env "Bad function call", Right (undefined))
 
 
+--------------------------- COMPUTE AST -------------------------------------
 
--------------------------------------------------------------------------------------
-
-
-
--- Compute AST that doesn't contain a list
 computeASTWithoutList :: Env -> Tree -> (Env, Result)
 computeASTWithoutList env (Number nbr) = (env, Left (Just (Number nbr)))
 computeASTWithoutList env (Boolean value) = (env, Left (Just (Boolean value)))
@@ -262,11 +277,16 @@ computeASTWithoutList env (Symbol smbl)
         where (_, value) = getSymbolValue env smbl
 computeASTWithoutList env _ = (env, Right (undefined))
 
--- Compute entire AST
+computeAstWithList :: Env -> Tree -> (Env, Result)
+computeAstWithList env (List list)
+    | not (doesListContainsList list) = handleSimpleList env list
+    | otherwise = case resolveNestedLists env [] list of
+            (newEnv, Nothing) -> (newEnv, Right (undefined))
+            (newEnv, Just rvd) -> computeAST newEnv (List rvd)
+computeAstWithList env _ = (registerError env "Bad list", Right (undefined))
+
 computeAST :: Env -> Tree -> (Env, Result)
 computeAST env tree@(List (Symbol "define" : _)) = handleDefine env tree
 computeAST env tree@(List (List (Symbol "lambda" : _) : _)) = handleLambda env tree
-computeAST env (List list)
-    | doesListContainsList list = handleDeepList env list
-    | otherwise = handleSimpleList env list
+computeAST env tree@(List _) = computeAstWithList env tree
 computeAST env tree = computeASTWithoutList env tree
