@@ -16,16 +16,15 @@ import ListContainList
 import Defines
 import Errors
 import ReplaceFunctionParams
-import Functions
 
 
 -- Find and execute user defined function
 
 getFunctionByName :: Env -> String -> Maybe Function
 getFunctionByName (Env { functions = [] }) _ = Nothing
-getFunctionByName (Env { functions = (Function name params body):xs }) expr
-    | name == expr = Just (Function name params body)
-    | otherwise = getFunctionByName (Env { functions = xs }) expr
+getFunctionByName (Env { functions = (Function fnName fnParams body):xs, defines = defs, errors = errs }) expr
+    | fnName == expr = Just (Function fnName fnParams body)
+    | otherwise = getFunctionByName (Env { functions = xs, defines = defs, errors = errs }) expr
 
 -- Compute a "+ - div * mod" list, using defines if needed
 
@@ -179,7 +178,7 @@ handleSimpleList env (Symbol "mod" : rest) = modulo env rest
 handleSimpleList env (Symbol smbl : rest) =
     case getFunctionByName env smbl of
         Just func ->
-            let (newEnv, result) = computeFunction env func rest
+            let (_, result) = computeFunction env func rest
             in case result of
                 Just res -> (env, Just res)
                 Nothing -> (registerError env ("Function " ++ smbl ++ " not found"), Nothing)
@@ -196,25 +195,24 @@ handleDeepList env list
             (newEnv, Just resolvedList) -> handleDeepList newEnv resolvedList
 
 handleLambda :: Env -> Tree -> (Env, Maybe Result)
-handleLambda env (List (List (Symbol "lambda" : List params : bodies): (List args): _))
-    = computeFunction env (Function "" (getParams (List params)) bodies) args
+handleLambda env (List (List (Symbol "lambda" : List fnParams : fnBodies): (List args): _))
+    = computeFunction env (Function "" (getParams (List fnParams)) fnBodies) args
 handleLambda env _ = (registerError env "Bad lambda", Nothing)
 
 computeFunction' :: Env -> Function -> [Tree] -> (Env, Maybe Result)
 computeFunction' env (Function _ _ []) _ = (env, Nothing)
-computeFunction' env (Function name params (x:_)) args =
-    case replaceFunctionParams env params x args of
+computeFunction' env (Function _ fnParams (x:_)) args =
+    case replaceFunctionParams env fnParams x args of
         (newEnv, Nothing) -> (newEnv, Nothing)
         (newEnv, Just replaced) -> computeAST newEnv replaced
 
 computeFunction :: Env -> Function -> [Tree] -> (Env, Maybe Result)
-computeFunction env (Function _ _ []) _ = (env, Nothing)
-computeFunction env (Function name params (x:xs:rest)) args =
-    case computeFunction' env (Function name params [x]) args of
-        (newEnv, Nothing) -> computeFunction newEnv (Function name params (xs:rest)) args
-        (newEnv, Just replaced) -> (registerError newEnv "Return needs to be the last statement", Nothing)
-computeFunction env (Function name params (x:_)) args =
-    case computeFunction' env (Function name params [x]) args of
+computeFunction env (Function fnName fnParams (x:xs:rest)) args =
+    case computeFunction' env (Function fnName fnParams [x]) args of
+        (newEnv, Nothing) -> computeFunction newEnv (Function fnName fnParams (xs:rest)) args
+        (newEnv, Just _) -> (registerError newEnv "Return needs to be the last statement", Nothing)
+computeFunction env (Function fnName fnParams (x:_)) args =
+    case computeFunction' env (Function fnName fnParams [x]) args of
         (newEnv, Nothing) -> (registerError newEnv "Missing return in function", Nothing)
         (newEnv, Just replaced) -> computeAST newEnv replaced
 computeFunction env _ _ = (registerError env "Bad function call", Nothing)

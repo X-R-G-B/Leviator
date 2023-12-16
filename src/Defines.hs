@@ -31,7 +31,8 @@ registerDefine env symb value =
 
 -- Add a function to the Functions list in the Env
 addFunction :: Env -> String -> [String] -> [Tree] -> Env
-addFunction env name params bodies = Env (defines env) (errors env) (functions env ++ [Function name params bodies])
+addFunction env fnName fnParams fnBodies
+    = Env (defines env) (errors env) (functions env ++ [Function fnName fnParams fnBodies])
 
 -- Get params from a function
 getParams :: Tree -> [String]
@@ -42,9 +43,10 @@ getParams _ = []
 -- Register a function in the Functions list
 registerFunction :: Env -> Symbol -> Tree -> [Tree] -> Env
 registerFunction env "" _ _ = registerError env "function name must not be empty"
-registerFunction env name params bodies = addFunction env name (getParams params) bodies
+registerFunction env fnName fnParams fnBodies
+    = addFunction env fnName (getParams fnParams) fnBodies
 
 handleDefine :: Env -> Tree -> (Env, Maybe Result)
-handleDefine env (List [Symbol _, Symbol smbl, List (Symbol "lambda": List params : bodies)]) = (registerFunction env smbl (List params) bodies, Nothing)
+handleDefine env (List [Symbol _, Symbol smbl, List (Symbol "lambda": List fnParams : fnBodies)]) = (registerFunction env smbl (List fnParams) fnBodies, Nothing)
 handleDefine env (List [Symbol _, Symbol smbl, expr]) = (registerDefine env smbl expr, Nothing)
 handleDefine env _ = (registerError env "Bad define", Nothing)
