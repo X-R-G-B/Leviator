@@ -8,8 +8,11 @@ import Types
 import Errors
 
 replaceSymbol :: Tree -> String -> Tree -> Tree
-replaceSymbol (List lst) toReplace with =
-    List (map (\t -> if t == Symbol toReplace then with else replaceSymbol t toReplace with) lst)
+replaceSymbol (Symbol smbl) toReplace replacement
+    | smbl == toReplace = replacement
+    | otherwise = Symbol smbl
+replaceSymbol (List lst) toReplace replacement
+    = List (map (\t -> replaceSymbol t toReplace replacement) lst)
 replaceSymbol t _ _ = t
 
 replaceFunctionParams :: Env -> [String] -> Tree -> [Tree] -> (Env, Maybe Tree)

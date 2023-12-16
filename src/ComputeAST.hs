@@ -16,15 +16,7 @@ import ListContainList
 import Defines
 import Errors
 import ReplaceFunctionParams
-
-
--- Find and execute user defined function
-
-getFunctionByName :: Env -> String -> Maybe Function
-getFunctionByName (Env { functions = [] }) _ = Nothing
-getFunctionByName (Env { functions = (Function fnName fnParams body):xs, defines = defs, errors = errs }) expr
-    | fnName == expr = Just (Function fnName fnParams body)
-    | otherwise = getFunctionByName (Env { functions = xs, defines = defs, errors = errs }) expr
+import Functions
 
 -- Compute a "+ - div * mod" list, using defines if needed
 
@@ -139,6 +131,12 @@ modulo env list
     | length list /= 2 = (registerError env "% need 2 params", Nothing)
     | otherwise = (registerError env "Bad types in modulo", Nothing)
 
+
+
+----------------------------------------------------------------------------------
+
+
+
 evaluateSymbol :: Env -> Symbol -> (Env, Maybe Tree)
 evaluateSymbol env smbl =
     case getSymbolValue env smbl of
@@ -147,6 +145,12 @@ evaluateSymbol env smbl =
         (_, Just (Boolean value)) -> (env, Just (Boolean value))
         (_, Just (List list)) -> computeAST env (List list)
         (_, _) -> (env, Nothing)
+
+
+
+----------------------------------------------------------------------------------
+
+
 
 -- Find nested lists and resolve them
 resolveNestedLists :: Env -> [Tree] -> [Tree] -> (Env, Maybe [Tree])
@@ -168,7 +172,19 @@ resolveNestedLists env resolvedList (Boolean value : rest) =
 resolveNestedLists env resolvedList (Symbol smbl : rest) =
     resolveNestedLists env (resolvedList ++ [Symbol smbl]) rest
 
-    -- Compute simple lists (no nested lists)
+
+
+
+
+
+
+----------------------------------------------------------------------------------
+
+
+
+
+
+-- Compute simple lists (no nested lists)
 handleSimpleList :: Env -> [Tree] -> (Env, Maybe Result)
 handleSimpleList env (Symbol "+" : rest) = addition env rest
 handleSimpleList env (Symbol "*" : rest) = multiplication env rest
@@ -177,12 +193,11 @@ handleSimpleList env (Symbol "div" : rest) = division env rest
 handleSimpleList env (Symbol "mod" : rest) = modulo env rest
 handleSimpleList env (Symbol smbl : rest) =
     case getFunctionByName env smbl of
+        Nothing -> (registerError env ("Function " ++ smbl ++ " not found"), Nothing)
         Just func ->
-            let (newEnv, result) = computeFunction env func rest
-            in case result of
-                Just res -> (env, Just res)
-                Nothing -> (registerError newEnv ("Can't compute function " ++ smbl), Nothing)
-        Nothing   -> (registerError env ("Function " ++ smbl ++ " not found"), Nothing)
+            case computeFunction env func rest of
+                (_, Just res) -> (env, Just res)
+                (newEnv, Nothing) -> (env { errors = errors newEnv }, Nothing)
 handleSimpleList env _ = (registerError env "Bad function call", Nothing)
 
 -- Compute nested lists
@@ -194,39 +209,55 @@ handleDeepList env list
             (newEnv, Nothing) -> (newEnv, Nothing)
             (newEnv, Just resolvedList) -> handleDeepList newEnv resolvedList
 
+
+----------------------------------------------------------------------------------
+
+
 handleLambda :: Env -> Tree -> (Env, Maybe Result)
 handleLambda env (List (List (Symbol "lambda" : List fnParams : fnBodies): (List args): _))
     = computeFunction env (Function "" (getParams (List fnParams)) fnBodies) args
 handleLambda env _ = (registerError env "Bad lambda", Nothing)
 
-computeFunction' :: Env -> Function -> [Tree] -> (Env, Maybe Result)
-computeFunction' env (Function _ _ []) _ = (env, Nothing)
-computeFunction' env (Function _ fnParams (x:_)) args =
+
+
+-------------------------------------------------------------------------------------
+
+
+
+computeFunctionBody :: Env -> Function -> [Tree] -> (Env, Maybe Result)
+computeFunctionBody env (Function _ _ []) _ = (env, Nothing)
+computeFunctionBody env (Function _ fnParams (x:_)) args =
     case replaceFunctionParams env fnParams x args of
         (newEnv, Nothing) -> (newEnv, Nothing)
         (newEnv, Just replaced) -> computeAST newEnv replaced
 
 computeFunction :: Env -> Function -> [Tree] -> (Env, Maybe Result)
 computeFunction env (Function fnName fnParams (x:xs:rest)) args =
-    case computeFunction' env (Function fnName fnParams [x]) args of
+    case computeFunctionBody env (Function fnName fnParams [x]) args of
         (newEnv, Nothing) -> computeFunction newEnv (Function fnName fnParams (xs:rest)) args
-        (newEnv, Just _) -> (registerError newEnv "Return needs to be the last statement", Nothing)
+        (_, Just _) -> (registerError env "Return needs to be the last statement", Nothing)
 computeFunction env (Function fnName fnParams (x:_)) args =
-    case computeFunction' env (Function fnName fnParams [x]) args of
+    case computeFunctionBody env (Function fnName fnParams [x]) args of
         (newEnv, Nothing) -> (registerError newEnv "Missing return in function", Nothing)
         (newEnv, Just replaced) -> computeAST newEnv replaced
 computeFunction env _ _ = (registerError env "Bad function call", Nothing)
 
--- Handle AST that doesn't contain a list
-handleNoList :: Env -> Tree -> (Env, Maybe Result)
-handleNoList env (Number nbr) = (env, Just (Number nbr))
-handleNoList env (Boolean value) = (env, Just (Boolean value))
-handleNoList env (Symbol smbl)
+
+
+-------------------------------------------------------------------------------------
+
+
+
+-- Compute AST that doesn't contain a list
+computeASTWithoutList :: Env -> Tree -> (Env, Maybe Result)
+computeASTWithoutList env (Number nbr) = (env, Just (Number nbr))
+computeASTWithoutList env (Boolean value) = (env, Just (Boolean value))
+computeASTWithoutList env (Symbol smbl)
     | Nothing <- value = (env, Nothing)
     | Just (List list) <- value = computeAST env (List list)
     | Just result <- value = (env, Just result)
         where (_, value) = getSymbolValue env smbl
-handleNoList env _ = (env, Nothing)
+computeASTWithoutList env _ = (env, Nothing)
 
 -- Compute entire AST
 computeAST :: Env -> Tree -> (Env, Maybe Result)
@@ -235,4 +266,4 @@ computeAST env tree@(List (List (Symbol "lambda" : _) : _)) = handleLambda env t
 computeAST env (List list)
     | doesListContainsList list = handleDeepList env list
     | otherwise = handleSimpleList env list
-computeAST env tree = handleNoList env tree
+computeAST env tree = computeASTWithoutList env tree
