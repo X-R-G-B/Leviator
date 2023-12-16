@@ -257,4 +257,20 @@ unitTestsComputeConditions = testGroup "Tests compute conditions"
       assertEqual "(if #t 42 84)"
       (Env {defines = [], errors = [], functions = []}, Left (Just (Number 42)))
       (computeAST (Env {defines = [], errors = [], functions = []}) (List [Symbol "if", Boolean True, Number 42, Number 84]))
+    , testCase "(if #f (3 + 3) (4 + 4))" $
+      assertEqual "(if #f (3 + 3) (4 + 4))"
+      (Env {defines = [], errors = [], functions = []}, Left (Just (Number 8)))
+      (computeAST (Env {defines = [], errors = [], functions = []}) (List [Symbol "if", Boolean False, (List [Symbol "+", Number 3, Number 3]), (List [Symbol "+", Number 4, Number 4])]))
+    , testCase "define foo 42; (if (< foo 10) (* foo 3) (div foo 2))" $
+      assertEqual "define foo 42; (if (< foo 10) (* foo 3) (div foo 2))"
+      (Env {defines = [Define {symbol = "foo", expression = Number 42}], errors = [], functions = []}, [Left (Just (Number 21))])
+      (computeAllAST (Env {defines = [], errors = [], functions = []}) [(List [Symbol "define", Symbol "foo", Number 42]), (List [Symbol "if", (List [Symbol "<", Symbol "foo", Number 10]), (List [Symbol "*", Symbol "foo", Number 3]), (List [Symbol "div", Symbol "foo", Number 2])])])
+    , testCase "define foo 42; (if (eq? foo 42) (+ foo 42) (- foo 42))" $
+      assertEqual "define foo 42; (if (eq? foo 42) (+ foo 42) (- foo 42))"
+      (Env {defines = [Define {symbol = "foo", expression = Number 42}], errors = [], functions = []}, [Left (Just (Number 84))])
+      (computeAllAST (Env {defines = [], errors = [], functions = []}) [(List [Symbol "define", Symbol "foo", Number 42]), (List [Symbol "if", (List [Symbol "eq?", Symbol "foo", Number 42]), (List [Symbol "+", Symbol "foo", Number 42]), (List [Symbol "-", Symbol "foo", Number 42])])])
+    , testCase "define foo 42; (if (eq? foo 22) (+ foo 42) (- foo 42))" $
+      assertEqual "define foo 42; (if (eq? foo 22) (+ foo 42) (- foo 42))"
+      (Env {defines = [Define {symbol = "foo", expression = Number 42}], errors = [], functions = []}, [Left (Just (Number 0))])
+      (computeAllAST (Env {defines = [], errors = [], functions = []}) [(List [Symbol "define", Symbol "foo", Number 42]), (List [Symbol "if", (List [Symbol "eq?", Symbol "foo", Number 22]), (List [Symbol "+", Symbol "foo", Number 42]), (List [Symbol "-", Symbol "foo", Number 42])])])
   ]
