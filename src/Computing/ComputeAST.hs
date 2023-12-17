@@ -68,18 +68,22 @@ handleSimpleList env (Symbol ">=" : rest) = superiorOrEqual env rest
 handleSimpleList env (Symbol "if" : rest) = handleIf env rest
 handleSimpleList env (Symbol smbl : rest) =
     case getFunctionByName env smbl of
-        Nothing -> (registerError env ("Function " ++ smbl ++ " not found"), Right (undefined))
+        Nothing -> (registerError env ("Function " ++ smbl ++ " not found"),
+            Right (undefined))
         Just func ->
             case computeFunction env func rest of
                 (_, Left (Just result)) -> (env, Left (Just result))
-                (newEnv, _) -> (env { errors = errors newEnv }, Right (undefined))
-handleSimpleList env _ = (registerError env "Bad function call", Right (undefined))
+                (newEnv, _) -> (env {errors = errors newEnv}, Right(undefined))
+handleSimpleList env _ =
+    (registerError env "Bad function call", Right (undefined))
 
-----------------------------------------------------------------------------------
+-----------------------------------------------------------------------------
 
 handleLambda :: Env -> Tree -> (Env, Result)
-handleLambda env (List (List (Symbol "lambda" : List fnParams : fnBodies): (List args): _))
-    = computeFunction env (Function "" (getParams (List fnParams)) fnBodies) args
+handleLambda env (List (List (Symbol "lambda" : List fnParams : fnBodies):
+    (List args): _)) =
+        computeFunction env
+            (Function "" (getParams (List fnParams)) fnBodies) args
 handleLambda env _ = (registerError env "Bad lambda", Left (Nothing))
 
 --------------------------- COMPUTE FUNCTIONS --------------------------------
@@ -94,15 +98,17 @@ computeFunctionBody env (Function _ fnParams (x:_)) args =
 computeFunction :: Env -> Function -> [Tree] -> (Env, Result)
 computeFunction env (Function fnName fnParams (x:xs:rest)) args =
     case computeFunctionBody env (Function fnName fnParams [x]) args of
-        (newEnv, Left (Nothing)) -> computeFunction newEnv (Function fnName fnParams (xs:rest)) args
-        (_, _) -> (registerError env "Return needs to be the last statement", Right (undefined))
+        (newEnv, Left (Nothing)) ->
+            computeFunction newEnv (Function fnName fnParams (xs:rest)) args
+        (_, _) ->
+            (registerError env "Bad return placement", Right (undefined))
 computeFunction env (Function fnName fnParams (x:_)) args =
     case computeFunctionBody env (Function fnName fnParams [x]) args of
         (newEnv, Left (Just replaced)) -> computeAST newEnv replaced
-        (newEnv, _) -> (registerError newEnv "Missing return in function", Right (undefined))
+        (newEnv, _) ->
+            (registerError newEnv "Missing return in func", Right (undefined))
 computeFunction env _ _ =
     (registerError env "Bad function call", Right (undefined))
-
 
 --------------------------- COMPUTE AST -------------------------------------
 
