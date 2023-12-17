@@ -5,7 +5,7 @@
 -- Parser
 -}
 
-module Parser
+module Parsing.Parser
     (
         Parser (Parser, runParser),
         parseTree

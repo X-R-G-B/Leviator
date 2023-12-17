@@ -1,5 +1,11 @@
+{-
+-- EPITECH PROJECT, 2023
+-- Koaky
+-- File description:
+-- ListContainList
+-}
 
-module ListContainList 
+module Computing.ListContainList 
     (
         doesListContainsList
     ) where

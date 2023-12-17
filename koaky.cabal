@@ -26,13 +26,14 @@ source-repository head
 library
   exposed-modules:
       AST
-      ComputeAST
-      Defines
-      Errors
-      Functions
-      ListContainList
-      Parser
-      ReplaceFunctionParams
+      Computing.ComputeAST
+      Computing.Defines
+      Computing.Errors
+      Computing.Functions
+      Computing.ListContainList
+      Computing.ReplaceFunctionParams
+      KoakyLibVersion
+      Parsing.Parser
       Types
   other-modules:
       Paths_koaky
@@ -46,6 +47,9 @@ library
 executable koaky-exe
   main-is: Main.hs
   other-modules:
+      Args
+      Run
+      Version
       Paths_koaky
   hs-source-dirs:
       app

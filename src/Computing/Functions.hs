@@ -5,7 +5,7 @@
 -- Functions
 -}
 
-module Functions
+module Computing.Functions
     ( getFunctionByName
     ) where
 

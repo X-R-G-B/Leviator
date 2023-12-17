@@ -5,18 +5,18 @@
 -- ComputeAST
 -}
 
-module ComputeAST
+module Computing.ComputeAST
     (
         computeAST,
         evaluateSymbol
     ) where
 
 import Types
-import ListContainList
-import Defines
-import Errors
-import ReplaceFunctionParams
-import Functions
+import Computing.ListContainList
+import Computing.ReplaceFunctionParams
+import Computing.Defines
+import Computing.Functions
+import Computing.Errors
 
 -- Compute a "+ - div * mod" list, using defines if needed
 

@@ -5,7 +5,7 @@
 -- Defines
 -}
 
-module Defines
+module Computing.Defines
     (
         registerDefine,
         registerFunction,
@@ -15,7 +15,7 @@ module Defines
     ) where
 
 import Types
-import Errors
+import Computing.Errors
 
 getSymbolValue :: Env -> String -> (Env, Maybe Tree)
 getSymbolValue (Env { defines = [], errors = _, functions = _ }) _ =

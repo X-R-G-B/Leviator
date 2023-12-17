@@ -1,11 +1,11 @@
 
-module ReplaceFunctionParams
+module Computing.ReplaceFunctionParams
     (
         replaceFunctionParams
     ) where
     
 import Types
-import Errors
+import Computing.Errors
 
 replaceSymbol :: Tree -> String -> Tree -> Tree
 replaceSymbol (Symbol smbl) toReplace replacement
