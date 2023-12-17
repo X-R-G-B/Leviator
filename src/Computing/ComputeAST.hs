@@ -7,7 +7,7 @@
 
 module Computing.ComputeAST
     (
-        computeAST,
+        computeAST
     ) where
 
 import Types
