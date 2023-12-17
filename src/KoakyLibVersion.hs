@@ -18,7 +18,7 @@ koakyLibVersionPatch :: Int
 koakyLibVersionPatch = 0
 
 koakyLibVersionMinor :: Int
-koakyLibVersionMinor = 0
+koakyLibVersionMinor = 4
 
 koakyLibVersionMajor :: Int
 koakyLibVersionMajor = 0
