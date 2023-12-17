@@ -26,7 +26,8 @@ printErrors hand (Env defines_ errors_) =
 
 checkComputing :: HHHandle -> (Env, Maybe Result) -> IO ()
 checkComputing hand (env, Nothing) = printErrors hand env
-checkComputing hand (env, Just result) = print result >> handleInput hand env []
+checkComputing hand (env, Just result) =
+  print result >> handleInput hand env []
 
 checkParsing :: HHHandle -> String -> Maybe (Tree, String) -> Env -> IO ()
 checkParsing hand str Nothing env = handleInput hand env str
@@ -35,7 +36,8 @@ checkParsing hand _ (Just (tree, _)) env =
 
 checkInput :: HHHandle -> String -> Env -> IO ()
 checkInput _ ":q" _ = return ()
-checkInput hand input env = checkParsing hand input (runParser (parseTree) input) env
+checkInput hand input env =
+  checkParsing hand input (runParser (parseTree) input) env
 
 checkEOF :: HHHandle -> Env -> String -> Bool -> IO ()
 checkEOF _ _ _ True = return ()
