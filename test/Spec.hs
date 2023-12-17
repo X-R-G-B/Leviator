@@ -160,6 +160,10 @@ unitTestsComputeDefines = testGroup "Tests Compute defines"
         assertEqual "define foo 42; define bar foo; bar + bar"
           (Env {defines = [Define {symbol = "foo", expression = Number 42}, Define {symbol = "bar", expression = Number 42}], errors = [], functions = []}, [Left (Just (Number 84))])
           (computeAllAST (defaultEnv) [(List [Symbol "define", Symbol "foo", Number 42]), (List [Symbol "define", Symbol "bar", Symbol "foo"]), (List [Symbol "+", Symbol "bar", Symbol "bar"])])
+    , testCase "define foo 42; define foo 84" $
+        assertEqual "define foo 42; define foo 84"
+          (Env {defines = [Define {symbol = "foo", expression = Number 42}], errors = ["Symbol foo is already defined"], functions = []}, [])
+          (computeAllAST (defaultEnv) [(List [Symbol "define", Symbol "foo", Number 42]), (List [Symbol "define", Symbol "foo", Number 84])])
   ]
 
 unitTestsComputeSimpleFunctions :: TestTree

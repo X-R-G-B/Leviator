@@ -129,17 +129,16 @@ computeAstWithList env (List list)
             (newEnv, Just rvd) -> computeAST newEnv (List rvd)
 computeAstWithList env _ = (registerError env "Bad list", Right (undefined))
 
-
 -- Register a define in the Defines list
 registerDefine :: Env -> Symbol -> Tree -> Env
-registerDefine env symb value@(Number _) = Env (defines env ++ [Define symb value]) (errors env) (functions env)
-registerDefine env symb value@(Boolean _) = Env (defines env ++ [Define symb value]) (errors env) (functions env)
+registerDefine env symb value@(Number _) = addDefineToEnv env symb value
+registerDefine env symb value@(Boolean _) = addDefineToEnv env symb value
 registerDefine env symb (List list) = case computeAST env (List list) of
-    (_, Left (Just result)) -> Env (defines env ++ [Define symb result]) (errors env) (functions env)
-    (newEnv, _) -> registerError newEnv "Bad define"
+    (_, Left (Just result)) -> addDefineToEnv env symb result
+    (newEnv, _) -> registerError newEnv ("Bad define " ++ symb)
 registerDefine env symb (Symbol smbl) = case getSymbolValue env smbl of
-    (_, Just result) -> Env (defines env ++ [Define symb result]) (errors env) (functions env)
-    (newEnv, _) -> registerError newEnv "Bad define"
+    (_, Just result) -> addDefineToEnv env symb result
+    (newEnv, _) -> registerError newEnv ("Bad define " ++ symb)
 
 -- Add a function to the Functions list in the Env
 addFunction :: Env -> String -> [String] -> [Tree] -> Env
