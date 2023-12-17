@@ -273,4 +273,12 @@ unitTestsComputeConditions = testGroup "Tests compute conditions"
       assertEqual "define foo 42; (if (eq? foo 22) (+ foo 42) (- foo 42))"
       (Env {defines = [Define {symbol = "foo", expression = Number 42}], errors = [], functions = []}, [Left (Just (Number 0))])
       (computeAllAST (Env {defines = [], errors = [], functions = []}) [(List [Symbol "define", Symbol "foo", Number 42]), (List [Symbol "if", (List [Symbol "eq?", Symbol "foo", Number 22]), (List [Symbol "+", Symbol "foo", Number 42]), (List [Symbol "-", Symbol "foo", Number 42])])])
+    , testCase "define foo 42; (if (diff? foo 22) (false) (true))" $
+      assertEqual "define foo 42; (if (diff? foo 22) (false) (true))"
+      (Env {defines = [Define {symbol = "foo", expression = Number 42}], errors = [], functions = []}, [Left (Just (Boolean True))])
+      (computeAllAST (Env {defines = [], errors = [], functions = []}) [(List [Symbol "define", Symbol "foo", Number 42]), (List [Symbol "if", (List [Symbol "diff?", Symbol "foo", Number 22]), Boolean True, Boolean False])])
+    , testCase "define foo 42; (if (diff? foo 42) (true) (false))" $
+      assertEqual "define foo 42; (if (diff? foo 42) (true) (false))"
+      (Env {defines = [Define {symbol = "foo", expression = Number 42}], errors = [], functions = []}, [Left (Just (Boolean False))])
+      (computeAllAST (Env {defines = [], errors = [], functions = []}) [(List [Symbol "define", Symbol "foo", Number 42]), (List [Symbol "if", (List [Symbol "diff?", Symbol "foo", Number 42]), Boolean True, Boolean False])])
   ]

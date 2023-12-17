@@ -152,6 +152,25 @@ equal env list
     | length list /= 2 = (registerError env "eq? need 2 params", Right (undefined))
     | otherwise = (registerError env "Bad types in eq?", Right (undefined))
 
+notEqual :: Env -> [Tree] -> (Env, Result)
+notEqual env [Number a, Number b] = (env, Left (Just (Boolean (a /= b))))
+notEqual env [Number a, Symbol b]
+    | (_, Just (Number symbolValue)) <- evaluateSymbol env b =
+        (env, Left (Just (Boolean (a /= symbolValue))))
+    | otherwise = (registerError env "Symbol not found", Right (undefined))
+notEqual env [Symbol a, Number b]
+    | (_, Just (Number symbolValue)) <- evaluateSymbol env a =
+        (env, Left (Just (Boolean (symbolValue /= b))))
+    | otherwise = (registerError env "Symbol not found", Right (undefined))
+notEqual env [Symbol a, Symbol b]
+    | (_, Just (Number symbolValueA)) <- evaluateSymbol env a
+    , (_, Just (Number symbolValueB)) <- evaluateSymbol env b =
+        (env, Left (Just (Boolean (symbolValueA /= symbolValueB))))
+    | otherwise = (registerError env "Symbol not found", Right (undefined))
+notEqual env list
+    | length list /= 2 = (registerError env "not-eq? need 2 params", Right (undefined))
+    | otherwise = (registerError env "Bad types in not-eq?", Right (undefined))
+
 inferior :: Env -> [Tree] -> (Env, Result)
 inferior env [Number a, Number b] = (env, Left (Just (Boolean (a < b))))
 inferior env [Number a, Symbol b]
@@ -170,6 +189,63 @@ inferior env [Symbol a, Symbol b]
 inferior env list
     | length list /= 2 = (registerError env "< need 2 params", Right (undefined))
     | otherwise = (registerError env "Bad types in <", Right (undefined))
+
+superior :: Env -> [Tree] -> (Env, Result)
+superior env [Number a, Number b] = (env, Left (Just (Boolean (a > b))))
+superior env [Number a, Symbol b]
+    | (_, Just (Number symbolValue)) <- evaluateSymbol env b =
+        (env, Left (Just (Boolean (a > symbolValue))))
+    | otherwise = (registerError env "Symbol not found", Right (undefined))
+superior env [Symbol a, Number b]
+    | (_, Just (Number symbolValue)) <- evaluateSymbol env a =
+        (env, Left (Just (Boolean (symbolValue > b))))
+    | otherwise = (registerError env "Symbol not found", Right (undefined))
+superior env [Symbol a, Symbol b]
+    | (_, Just (Number symbolValueA)) <- evaluateSymbol env a
+    , (_, Just (Number symbolValueB)) <- evaluateSymbol env b =
+        (env, Left (Just (Boolean (symbolValueA > symbolValueB))))
+    | otherwise = (registerError env "Symbol not found", Right (undefined))
+superior env list
+    | length list /= 2 = (registerError env "> need 2 params", Right (undefined))
+    | otherwise = (registerError env "Bad types in >", Right (undefined))
+
+inferiorOrEqual :: Env -> [Tree] -> (Env, Result)
+inferiorOrEqual env [Number a, Number b] = (env, Left (Just (Boolean (a <= b))))
+inferiorOrEqual env [Number a, Symbol b]
+    | (_, Just (Number symbolValue)) <- evaluateSymbol env b =
+        (env, Left (Just (Boolean (a <= symbolValue))))
+    | otherwise = (registerError env "Symbol not found", Right (undefined))
+inferiorOrEqual env [Symbol a, Number b]
+    | (_, Just (Number symbolValue)) <- evaluateSymbol env a =
+        (env, Left (Just (Boolean (symbolValue <= b))))
+    | otherwise = (registerError env "Symbol not found", Right (undefined))
+inferiorOrEqual env [Symbol a, Symbol b]
+    | (_, Just (Number symbolValueA)) <- evaluateSymbol env a
+    , (_, Just (Number symbolValueB)) <- evaluateSymbol env b =
+        (env, Left (Just (Boolean (symbolValueA <= symbolValueB))))
+    | otherwise = (registerError env "Symbol not found", Right (undefined))
+inferiorOrEqual env list
+    | length list /= 2 = (registerError env "<= need 2 params", Right (undefined))
+    | otherwise = (registerError env "Bad types in <=", Right (undefined))
+
+superiorOrEqual :: Env -> [Tree] -> (Env, Result)
+superiorOrEqual env [Number a, Number b] = (env, Left (Just (Boolean (a >= b))))
+superiorOrEqual env [Number a, Symbol b]
+    | (_, Just (Number symbolValue)) <- evaluateSymbol env b =
+        (env, Left (Just (Boolean (a >= symbolValue))))
+    | otherwise = (registerError env "Symbol not found", Right (undefined))
+superiorOrEqual env [Symbol a, Number b]
+    | (_, Just (Number symbolValue)) <- evaluateSymbol env a =
+        (env, Left (Just (Boolean (symbolValue >= b))))
+    | otherwise = (registerError env "Symbol not found", Right (undefined))
+superiorOrEqual env [Symbol a, Symbol b]
+    | (_, Just (Number symbolValueA)) <- evaluateSymbol env a
+    , (_, Just (Number symbolValueB)) <- evaluateSymbol env b =
+        (env, Left (Just (Boolean (symbolValueA >= symbolValueB))))
+    | otherwise = (registerError env "Symbol not found", Right (undefined))
+superiorOrEqual env list
+    | length list /= 2 = (registerError env ">= need 2 params", Right (undefined))
+    | otherwise = (registerError env "Bad types in >=", Right (undefined))
 
 handleIf :: Env -> [Tree] -> (Env, Result)
 handleIf env (Boolean (True) : thenBranch : _ : [])
@@ -226,7 +302,11 @@ handleSimpleList env (Symbol "-" : rest) = subtraction env rest
 handleSimpleList env (Symbol "div" : rest) = division env rest
 handleSimpleList env (Symbol "mod" : rest) = modulo env rest
 handleSimpleList env (Symbol "eq?" : rest) = equal env rest
+handleSimpleList env (Symbol "diff?" : rest) = notEqual env rest
 handleSimpleList env (Symbol "<" : rest) = inferior env rest
+handleSimpleList env (Symbol ">" : rest) = superior env rest
+handleSimpleList env (Symbol "<=" : rest) = inferiorOrEqual env rest
+handleSimpleList env (Symbol ">=" : rest) = superiorOrEqual env rest
 handleSimpleList env (Symbol "if" : rest) = handleIf env rest
 handleSimpleList env (Symbol smbl : rest) =
     case getFunctionByName env smbl of
