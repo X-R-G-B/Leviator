@@ -32,6 +32,9 @@ library
       Computing.Functions
       Computing.ListContainList
       Computing.ReplaceFunctionParams
+      Computing.Operators.Assert
+      Computing.Operators.Calculate
+      Computing.Operators.EvaluateSymbol
       KoakyLibVersion
       Parsing.Parser
       Types

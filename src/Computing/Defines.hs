@@ -20,9 +20,9 @@ import Computing.Errors
 getSymbolValue :: Env -> String -> (Env, Maybe Tree)
 getSymbolValue (Env { defines = [], errors = _, functions = _ }) _ =
     (Env { defines = [], errors = [], functions = [] }, Nothing)
-getSymbolValue (Env { defines = (Define smbl value):xs, errors = err }) expr
-    | smbl == expr = (Env { defines = xs, errors = err, functions = [] }, Just value)
-    | otherwise = getSymbolValue (Env { defines = xs, errors = err, functions = [] }) expr
+getSymbolValue (Env { defines = (Define smbl value):xs, errors = err, functions = fcts }) expr
+    | smbl == expr = (Env { defines = xs, errors = err, functions = fcts }, Just value)
+    | otherwise = getSymbolValue (Env { defines = xs, errors = err, functions = fcts }) expr
 
 -- Register a define in the Defines list
 registerDefine :: Env -> Symbol -> Tree -> Env
