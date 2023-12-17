@@ -150,12 +150,16 @@ unitTestsComputeDefines = testGroup "Tests Compute defines"
           (computeAllAST (defaultEnv) [(List [Symbol "define", Symbol "x", Number 42]), (List [Symbol "define", Symbol "y", Number 84]), (Symbol "x"), (Symbol "y")])
     , testCase "define x (42 + 6); x" $
         assertEqual "define x (42 + 6); x"
-          (Env {defines = [Define {symbol = "x", expression = List [Symbol "+", Number 42, Number 6]}], errors = [], functions = []}, [Left (Just (Number 48))])
+          (Env {defines = [Define {symbol = "x", expression = Number 48}], errors = [], functions = []}, [Left (Just (Number 48))])
           (computeAllAST (defaultEnv) [(List [Symbol "define", Symbol "x", (List [Symbol "+", Number 42, Number 6])]), (Symbol "x")])
     , testCase "define foo (4 + 5); foo + foo" $
         assertEqual "define foo (4 + 5); foo + foo"
-          (Env {defines = [Define {symbol = "foo", expression = List [Symbol "+", Number 4, Number 5]}], errors = [], functions = []}, [Left (Just (Number 18))])
+          (Env {defines = [Define {symbol = "foo", expression = Number 9}], errors = [], functions = []}, [Left (Just (Number 18))])
           (computeAllAST (defaultEnv) [(List [Symbol "define", Symbol "foo", (List [Symbol "+", Number 4, Number 5])]), (List [Symbol "+", Symbol "foo", Symbol "foo"])])
+    , testCase "define foo 42; define bar foo; bar + bar" $
+        assertEqual "define foo 42; define bar foo; bar + bar"
+          (Env {defines = [Define {symbol = "foo", expression = Number 42}, Define {symbol = "bar", expression = Number 42}], errors = [], functions = []}, [Left (Just (Number 84))])
+          (computeAllAST (defaultEnv) [(List [Symbol "define", Symbol "foo", Number 42]), (List [Symbol "define", Symbol "bar", Symbol "foo"]), (List [Symbol "+", Symbol "bar", Symbol "bar"])])
   ]
 
 unitTestsComputeSimpleFunctions :: TestTree
