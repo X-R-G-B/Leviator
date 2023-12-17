@@ -24,14 +24,16 @@ printErrors hand (Env defines_ [] funcs_) =
 printErrors hand (Env defines_ errors_ funcs_) =
   mapM_ putStrLn errors_ >> handleInput hand (Env defines_ [] funcs_)
 
-checkComputing :: HHHandle -> (Env, Maybe Result) -> IO ()
-checkComputing hand (env, Nothing) = printErrors hand env
-checkComputing hand (env, Just result) = print result >> handleInput hand env
+checkComputing :: HHHandle -> (Env, Result) -> IO ()
+checkComputing hand (env, Right _) = printErrors hand env
+checkComputing hand (env, Left Nothing) = handleInput hand env
+checkComputing hand (env, Left (Just result)) =
+    print result >> handleInput hand env
 
 checkParsing :: HHHandle -> Maybe (Tree, String) -> Env -> IO ()
 checkParsing _ Nothing _ = return ()
---checkParsing hand (Just (tree, _)) env =
---    checkComputing hand (computeAST env tree)
+checkParsing hand (Just (tree, _)) env =
+    checkComputing hand (computeAST env tree)
 
 checkInput :: HHHandle -> String -> Env -> IO ()
 checkInput _ ":q" _ = return ()
