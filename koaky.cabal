@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.35.2.
+-- This file has been generated from package.yaml by hpack version 0.36.0.
 --
 -- see: https://github.com/sol/hpack
 
@@ -27,11 +27,15 @@ library
   exposed-modules:
       AST
       Computing.ComputeAST
-      Computing.ComputeDeepLists
-      Computing.ComputeLists
       Computing.Defines
       Computing.Errors
       Computing.Functions
+      Computing.ListContainList
+      Computing.Operators.Assert
+      Computing.Operators.Calculate
+      Computing.Operators.EvaluateSymbol
+      Computing.ReplaceFunctionParams
+      KoakyLibVersion
       Parsing.Parser
       Types
   other-modules:
@@ -46,6 +50,9 @@ library
 executable koaky-exe
   main-is: Main.hs
   other-modules:
+      Args
+      Run
+      Version
       Paths_koaky
   hs-source-dirs:
       app
