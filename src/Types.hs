@@ -16,7 +16,6 @@ module Types
     ) where
 
 import Data.Int (Int64)
-import Data.Either (Either)
 import Data.Void (Void)
 
 type Symbol = String
