@@ -26,6 +26,5 @@ replaceFunctionParams env fnParams body args
     | length fnParams /= length args =
         (registerError env "Mismatched number of arguments", Nothing)
     | otherwise =
-        let replacement = zip fnParams args
-            replacedbody = foldl (\acc (param, arg) -> replaceSymbol acc param arg) body replacement
-        in (env, Just replacedbody)
+        (env, Just $ foldl (\acc (param, arg) -> replaceSymbol acc param arg)
+            body (zip fnParams args))

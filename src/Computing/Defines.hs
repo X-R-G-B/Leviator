@@ -46,7 +46,8 @@ getParams _ = []
 
 -- Register a function in the Functions list
 registerFunction :: Env -> Symbol -> Tree -> [Tree] -> Env
-registerFunction env "" _ _ = registerError env "function name must not be empty"
+registerFunction env "" _ _ =
+    registerError env "function name must not be empty"
 registerFunction env fnName fnParams fnBodies
     = addFunction env fnName (getParams fnParams) fnBodies
 

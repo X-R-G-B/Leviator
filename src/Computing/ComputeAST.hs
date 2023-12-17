@@ -100,7 +100,8 @@ computeFunction env (Function fnName fnParams (x:_)) args =
     case computeFunctionBody env (Function fnName fnParams [x]) args of
         (newEnv, Left (Just replaced)) -> computeAST newEnv replaced
         (newEnv, _) -> (registerError newEnv "Missing return in function", Right (undefined))
-computeFunction env _ _ = (registerError env "Bad function call", Right (undefined))
+computeFunction env _ _ =
+    (registerError env "Bad function call", Right (undefined))
 
 
 --------------------------- COMPUTE AST -------------------------------------
@@ -125,6 +126,7 @@ computeAstWithList env _ = (registerError env "Bad list", Right (undefined))
 
 computeAST :: Env -> Tree -> (Env, Result)
 computeAST env tree@(List (Symbol "define" : _)) = handleDefine env tree
-computeAST env tree@(List (List (Symbol "lambda" : _) : _)) = handleLambda env tree
+computeAST env tree@(List (List (Symbol "lambda" : _) : _)) =
+    handleLambda env tree
 computeAST env tree@(List _) = computeAstWithList env tree
 computeAST env tree = computeASTWithoutList env tree
