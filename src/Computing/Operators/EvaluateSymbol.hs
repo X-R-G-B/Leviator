@@ -1,8 +1,14 @@
+{-
+-- EPITECH PROJECT, 2023
+-- Koaky
+-- File description:
+-- EvaluateSymbol
+-}
 
 module Computing.Operators.EvaluateSymbol
-  (
-    evaluateSymbol
-  ) where
+    (
+        evaluateSymbol
+    ) where
 
 import Types
 import Computing.Defines

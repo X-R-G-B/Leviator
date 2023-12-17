@@ -1,3 +1,9 @@
+{-
+-- EPITECH PROJECT, 2023
+-- Koaky
+-- File description:
+-- ReplaceFunctionParams
+-}
 
 module Computing.ReplaceFunctionParams
     (
