@@ -7,11 +7,11 @@
 
 module Computing.Operators.Calculate
     (
-      addition,
-      subtraction,
-      multiplication,
-      division,
-      modulo,
+        addition,
+        subtraction,
+        multiplication,
+        division,
+        modulo,
     ) where
 
 import Types
@@ -30,20 +30,24 @@ calculate a b "mod" = Number (a `mod` b)
 calculate _ _ _ = Number 0
 
 maybeCalculate :: Maybe Tree -> Maybe Tree -> Symbol -> Env -> (Env, Result)
+maybeCalculate _ (Just (Number 0)) "div" env
+    = (registerError env "Division by 0", Right (undefined))
 maybeCalculate (Just (Number a)) (Just (Number b)) operator env =
     (env, Left (Just (calculate a b operator)))
 maybeCalculate _ _ _ env =
     (registerError env "Symbol not found", Right (undefined))
 
 calculateOperator :: Env -> [Tree] -> Symbol -> (Env, Result)
+calculateOperator env [_, Number 0] "div" =
+    (registerError env "Division by 0", Right (undefined))
 calculateOperator env [Number a, Number b] operator =
-  (env, Left (Just (calculate a b operator)))
+    (env, Left (Just (calculate a b operator)))
 calculateOperator env [Number a, Symbol b] operator =
-  maybeCalculate (Just (Number a)) (evaluateSymbol env b) operator env
+    maybeCalculate (Just (Number a)) (evaluateSymbol env b) operator env
 calculateOperator env [Symbol a, Number b] operator =
-  maybeCalculate (evaluateSymbol env a) (Just (Number b)) operator env
+    maybeCalculate (evaluateSymbol env a) (Just (Number b)) operator env
 calculateOperator env [Symbol a, Symbol b] operator =
-  maybeCalculate (evaluateSymbol env a) (evaluateSymbol env b) operator env
+    maybeCalculate (evaluateSymbol env a) (evaluateSymbol env b) operator env
 calculateOperator env list _
     | length list /= 2 =
         (registerError env "Addition need 2 params", Right (undefined))

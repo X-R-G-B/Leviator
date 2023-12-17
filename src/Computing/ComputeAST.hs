@@ -94,7 +94,6 @@ computeFunctionBody env (Function _ fnParams (x:_)) args =
     case replaceFunctionParams env fnParams x args of
         (newEnv, Nothing) -> (newEnv, Right (undefined))
         (newEnv, Just replaced) -> computeAST newEnv replaced
-
 computeFunction :: Env -> Function -> [Tree] -> (Env, Result)
 computeFunction env (Function fnName fnParams (x:xs:rest)) args =
     case computeFunctionBody env (Function fnName fnParams [x]) args of

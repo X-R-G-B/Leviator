@@ -208,6 +208,10 @@ unitTestsComputeBasics = testGroup "Tests compute basics"
         assertEqual "2 + 3 * (8 + (5* ( 2 + 3))) = 107"
           (defaultEnv, [Left (Just (Number 101))])
           (computeAllAST (defaultEnv) [(List [Symbol "+", Number 2, (List [Symbol "*", Number 3, (List [Symbol "+", Number 8, (List [Symbol "*", Number 5, (List [Symbol "+", Number 2, Number 3])])])])])])
+    , testCase "div 42 0" $
+        assertEqual "div 42 0"
+          (Env {defines = [], errors = ["Division by 0"], functions = []}, Right (undefined))
+          (computeAST (defaultEnv) (List [Symbol "div", Number 42, Number 0]))
   ]
 
 unitTestsComputeFunctions :: TestTree
