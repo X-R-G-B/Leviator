@@ -11,10 +11,12 @@ module Types
         Tree(..),
         Define(..),
         Env(..),
-        Result
+        Result,
+        Function(..)
     ) where
 
 import Data.Int (Int64)
+import Data.Void (Void)
 
 type Symbol = String
 
@@ -25,12 +27,19 @@ data Define = Define {
     expression :: Tree
 } deriving (Show)
 
+data Function = Function {
+    name :: String,
+    params :: [String],
+    bodies :: [Tree]
+} deriving (Show)
+
 data Env = Env {
     defines :: [Define],
-    errors :: [String]
+    errors :: [String],
+    functions :: [Function]
 }
 
-type Result = Tree
+type Result = Either (Maybe Tree) Void
 
 ---------- EQ INSTANCES ----------
 
@@ -59,5 +68,6 @@ instance Show Tree where
     show (List list) = "L: " ++ show list
 
 instance Show Env where
-    show (Env { defines = def, errors = err }) =
-        "Defines: " ++ show def ++ "\nErrors: " ++ show err
+    show (Env { defines = def, errors = err, functions = func }) =
+        "Defines: " ++ show def ++ "\nErrors: "
+            ++ show err ++ "\nFunctions: " ++ show func

@@ -19,15 +19,16 @@ import System.IO
 data HHHandle = HHHandle Handle Bool
 
 printErrors :: HHHandle -> Env -> IO ()
-printErrors hand (Env defines_ []) =
-  printErrors hand (Env defines_ ["Unable to compute"])
-printErrors hand (Env defines_ errors_) =
-  mapM_ putStrLn errors_ >> handleInput hand (Env defines_ []) []
+printErrors hand (Env defines_ [] funcs_) =
+  printErrors hand (Env defines_ ["Unable to compute"] funcs_)
+printErrors hand (Env defines_ errors_ funcs_) =
+  mapM_ putStrLn errors_ >> handleInput hand (Env defines_ [] funcs_) []
 
-checkComputing :: HHHandle -> (Env, Maybe Result) -> IO ()
-checkComputing hand (env, Nothing) = printErrors hand env
-checkComputing hand (env, Just result) =
-  print result >> handleInput hand env []
+checkComputing :: HHHandle -> (Env, Result) -> IO ()
+checkComputing hand (env, Right _) = printErrors hand env
+checkComputing hand (env, Left Nothing) = handleInput hand env []
+checkComputing hand (env, Left (Just result)) =
+    print result >> handleInput hand env []
 
 checkParsing :: HHHandle -> String -> Maybe (Tree, String) -> Env -> IO ()
 checkParsing hand str Nothing env = handleInput hand env str
@@ -60,5 +61,5 @@ onEnd _ = return ()
 
 runFileHandle :: Handle -> Bool -> IO ()
 runFileHandle ff shouldClosee =
-    handleInput (HHHandle ff shouldClosee) (Env [] []) [] >>
+    handleInput (HHHandle ff shouldClosee) (Env [] [] []) [] >>
     onEnd (HHHandle ff shouldClosee)

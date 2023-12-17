@@ -19,7 +19,7 @@ import Types
 
 -- Add a new error to env
 registerError :: Env -> String -> Env
-registerError env err = Env (defines env) (errors env ++ [err])
+registerError env err = Env (defines env) (errors env ++ [err]) (functions env)
 
 -- Get all errors
 getErrors :: Env -> [String]
@@ -31,7 +31,7 @@ getLastError env = last (errors env)
 
 -- Clear all errors
 clearErrors :: Env -> Env
-clearErrors env = Env (defines env) []
+clearErrors env = Env (defines env) [] (functions env)
 
 -- Print all errors
 printErrors :: Env -> IO ()
