@@ -69,4 +69,5 @@ instance Show Tree where
 
 instance Show Env where
     show (Env { defines = def, errors = err, functions = func }) =
-        "Defines: " ++ show def ++ "\nErrors: " ++ show err ++ "\nFunctions: " ++ show func
+        "Defines: " ++ show def ++ "\nErrors: "
+            ++ show err ++ "\nFunctions: " ++ show func

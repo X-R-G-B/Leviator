@@ -31,10 +31,10 @@ library
       Computing.Errors
       Computing.Functions
       Computing.ListContainList
-      Computing.ReplaceFunctionParams
       Computing.Operators.Assert
       Computing.Operators.Calculate
       Computing.Operators.EvaluateSymbol
+      Computing.ReplaceFunctionParams
       KoakyLibVersion
       Parsing.Parser
       Types

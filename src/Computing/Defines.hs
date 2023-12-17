@@ -20,9 +20,12 @@ import Computing.Errors
 getSymbolValue :: Env -> String -> (Env, Maybe Tree)
 getSymbolValue (Env { defines = [], errors = _, functions = _ }) _ =
     (Env { defines = [], errors = [], functions = [] }, Nothing)
-getSymbolValue (Env { defines = (Define smbl value):xs, errors = err, functions = fcts }) expr
-    | smbl == expr = (Env { defines = xs, errors = err, functions = fcts }, Just value)
-    | otherwise = getSymbolValue (Env { defines = xs, errors = err, functions = fcts }) expr
+getSymbolValue (Env { defines = (Define smbl value):xs,
+    errors = err, functions = fcts }) expr
+        | smbl == expr =
+            (Env { defines = xs, errors = err, functions = fcts }, Just value)
+        | otherwise = getSymbolValue
+            (Env { defines = xs, errors = err, functions = fcts }) expr
 
 -- Register a define in the Defines list
 registerDefine :: Env -> Symbol -> Tree -> Env
@@ -32,7 +35,8 @@ registerDefine env symb value =
 -- Add a function to the Functions list in the Env
 addFunction :: Env -> String -> [String] -> [Tree] -> Env
 addFunction env fnName fnParams fnBodies
-    = Env (defines env) (errors env) (functions env ++ [Function fnName fnParams fnBodies])
+    = Env (defines env) (errors env)
+        (functions env ++ [Function fnName fnParams fnBodies])
 
 -- Get params from a function
 getParams :: Tree -> [String]
@@ -47,9 +51,13 @@ registerFunction env fnName fnParams fnBodies
     = addFunction env fnName (getParams fnParams) fnBodies
 
 handleDefine :: Env -> Tree -> (Env, Result)
-handleDefine env (List [Symbol _, Symbol smbl, List (Symbol "lambda": List fnParams : fnBodies)])
-    = (registerFunction env smbl (List fnParams) fnBodies, Left (Nothing))
-handleDefine env (List [Symbol _, (List (Symbol smbl : fnParams)), List fnBodies])
-    = (registerFunction env smbl (List fnParams) (List fnBodies : []), Left (Nothing))
-handleDefine env (List [Symbol _, Symbol smbl, expr]) = (registerDefine env smbl expr, Left (Nothing))
+handleDefine env (List [Symbol _, Symbol smbl,
+    List (Symbol "lambda": List fnParams : fnBodies)]) =
+        (registerFunction env smbl (List fnParams) fnBodies, Left (Nothing))
+handleDefine env (List [Symbol _,
+    (List (Symbol smbl : fnParams)), List fnBodies]) =
+        (registerFunction env smbl (List fnParams) (List fnBodies : []),
+            Left (Nothing))
+handleDefine env (List [Symbol _, Symbol smbl, expr]) =
+    (registerDefine env smbl expr, Left (Nothing))
 handleDefine env _ = (registerError env "Bad define", Right (undefined))

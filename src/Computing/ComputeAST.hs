@@ -30,7 +30,6 @@ handleIf env _ = (registerError env "Bad if statement", Right (undefined))
 
 ----------------------------------------------------------------------------------
 
-
 -- Find nested lists and resolve them
 resolveNestedLists :: Env -> [Tree] -> [Tree] -> (Env, Maybe [Tree])
 resolveNestedLists env resolvedList [] = (env, Just resolvedList)

@@ -17,7 +17,8 @@ replaceSymbol t _ _ = t
 
 replaceFunctionParams :: Env -> [String] -> Tree -> [Tree] -> (Env, Maybe Tree)
 replaceFunctionParams env fnParams body args
-    | length fnParams /= length args = (registerError env "Mismatched number of arguments", Nothing)
+    | length fnParams /= length args =
+        (registerError env "Mismatched number of arguments", Nothing)
     | otherwise =
         let replacement = zip fnParams args
             replacedbody = foldl (\acc (param, arg) -> replaceSymbol acc param arg) body replacement
