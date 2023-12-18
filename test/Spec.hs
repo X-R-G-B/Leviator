@@ -264,6 +264,46 @@ unitTestsComputeFunctions = testGroup "Tests compute functions"
       assertEqual "(define (func x) (+ x 1)); (func 41)"
       (Env {defines = [], errors = [], functions = [Function {name = "func", params = ["x"], bodies = [List [Symbol "+", Symbol "x", Number 1]]}]}, [Left (Just (Number 42))])
       (computeAllAST (defaultEnv) [(List [Symbol "define", List [Symbol "func", Symbol "x"], List [Symbol "+", Symbol "x", Number 1]]), (List [Symbol "func", Number 41])])
+    , testCase "(define (fact n) (if (< n 2) 1 (* n (fact (- n 1))))); (fact 5)" $
+      assertEqual "(define (fact n) (if (< n 2) 1 (* n (fact (- n 1))))); (fact 5)"
+      (Env {
+        defines = [], errors = [], functions = [
+          Function {
+            name = "fact", params = ["n"], bodies = [
+              (List [
+                Symbol "if",
+                List [
+                  Symbol "<", Symbol "n", Number 2],
+                Number 1,
+                List [
+                    Symbol "*", Symbol "n",
+                    List [
+                      Symbol "fact", List [
+                        Symbol "-", Symbol "n", Number 1]
+                    ]
+                ]
+              ]),
+              [
+                Left (Just (Number 120))
+              ]
+            ]
+          }
+        ]
+      })
+      (computeAllAST (defaultEnv) [(List [
+                                            Symbol "if",
+                                            List [
+                                              Symbol "<", Symbol "n", Number 2],
+                                            Number 1,
+                                            List [
+                                                Symbol "*", Symbol "n",
+                                                List [
+                                                  Symbol "fact", List [
+                                                    Symbol "-", Symbol "n", Number 1]
+                                                ]
+                                            ]
+                                          ]),
+                                          (List [Symbol "func", Number 5])])
   ]
 
 unitTestsComputeConditions :: TestTree
