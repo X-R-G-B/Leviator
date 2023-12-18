@@ -267,43 +267,54 @@ unitTestsComputeFunctions = testGroup "Tests compute functions"
     , testCase "(define (fact n) (if (< n 2) 1 (* n (fact (- n 1))))); (fact 5)" $
       assertEqual "(define (fact n) (if (< n 2) 1 (* n (fact (- n 1))))); (fact 5)"
       (Env {
-        defines = [], errors = [], functions = [
+        defines = [],
+        errors = [],
+        functions = [
           Function {
-            name = "fact", params = ["n"], bodies = [
-              (List [
+            name = "fact",
+            params = ["n"],
+            bodies = [
+              List [
                 Symbol "if",
-                List [
-                  Symbol "<", Symbol "n", Number 2],
+                List [Symbol "<", Symbol "n", Number 2],
                 Number 1,
                 List [
-                    Symbol "*", Symbol "n",
-                    List [
-                      Symbol "fact", List [
-                        Symbol "-", Symbol "n", Number 1]
-                    ]
+                  Symbol "*",
+                  Symbol "n",
+                  List [
+                    Symbol "fact",
+                    List [Symbol "-", Symbol "n", Number 1]
+                  ]
                 ]
-              ]),
-              [
-                Left (Just (Number 120))
               ]
             ]
           }
         ]
-      })
-      (computeAllAST (defaultEnv) [(List [
-                                            Symbol "if",
-                                            List [
-                                              Symbol "<", Symbol "n", Number 2],
-                                            Number 1,
-                                            List [
-                                                Symbol "*", Symbol "n",
-                                                List [
-                                                  Symbol "fact", List [
-                                                    Symbol "-", Symbol "n", Number 1]
-                                                ]
-                                            ]
-                                          ]),
-                                          (List [Symbol "func", Number 5])])
+      }, [Left (Just (Number 120))])
+      (computeAllAST (defaultEnv) [
+        List [
+          Symbol "define",
+          List [Symbol "fact", Symbol "n"],
+          List [
+            Symbol "if",
+            List [Symbol "<", Symbol "n", Number 2],
+            Number 1,
+            List [
+              Symbol "*",
+              Symbol "n",
+              List [
+                Symbol "fact",
+                List [Symbol "-", Symbol "n", Number 1]
+              ]
+            ]
+          ]
+        ],
+        List [
+          Symbol "fact",
+          Number 5
+        ]
+      ]
+    )
   ]
 
 unitTestsComputeConditions :: TestTree
