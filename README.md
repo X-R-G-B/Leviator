@@ -1,69 +1,194 @@
-# koaky
+# Leviator
 
-A Blazzing Light Lisp Interpreter
+The opinionated programing language
 
-## Features
+## Documentation
 
-- Condition
-- [x] `if`
-- [x] `eq?`
-- [x] `diff?`
-- [x] `<`
-- [x] `>`
-- [x] `>=`
-- [x] `<=`
-- Operator
-- [x] `+`
-- [x] `-`
-- [x] `*`
-- [x] `div`
-- [x] `mod`
-- Type
-- [x] `Integer`
-- [x] `Boolean`
-- [x] `Symbol`
-- Function
-- [x] `lambda`
-- [x] `define`
-- Error Handling
-- [x] Error handling at execution time
-- [x] Nice error message at execution time
-- [x] Error handling at parsing time
-- [ ] Nice error message at parsing time
+-- **Comentary**
 
-## Install
+```c
+// This is a comment
+```
 
-2 methods to use this interpreter:
-- from available binary
-- build from source
+-- **Variables Declaration**
 
-### From Available Binary
+```python
+@Int a = 1;
+@String b = "hello";
+```
 
-- Download the binary for your platform in the latest release.
+-- **Variables Assignment**
 
-### Build From Source
+```c
+a = 1;
+b = "hello";
+```
 
-- Clone this repository: <https://github.com/X-R-G-B/koaky.git>
-- Install stack: <https://docs.haskellstack.org/en/stable/>
-- `cd`'d in the repository you just cloned
-- Run: `stack build --copy-bins --local-bin-path .`
-- The binary will be available with the name `koaky-exe.exe`:windows `koaky-exe`:linux `koaky-exe`:macos
-
-## Usage
+- **Built-in Types**
 
 ```
-Usage: koaky-exe [OPTION]
+@Bool a = True;
+@Bool b = False;
+@Int c = 1;
+@List[Int] d = [1, 2, 3];
+@Char e = 'a';
+@String f = "hello";
+@List[Char] g = ['a', 'b', 'c'];
+```
 
-Interpret Lisp
-With no options, koaky reads from standard input.
+- **Built-in Global Variables**
 
-Options:
-	-h, --help
-		Display this help and exit
-	-v, --version
-		Output version information and exit
-	-f FILE, --file FILE
-		Read FILE and Interpret it
-	-
-		Read from standard input and Interpret it
+```c
+@List[String] ARGS = ["programfilepath", "arg1", "arg2"];
+```
+
+- **Function Declaration**
+
+```rust
+fn add(a: Int, b: Int) -> Int
+{
+    // the next line is the `return`
+    <- a + b;
+};
+```
+
+- **Function Call**
+
+```rust
+add(1, 2);
+```
+
+- **Function Polymorphism**
+
+```rust
+fn add(a: Int, b: Int) -> Int
+{
+    <- a + b;
+};
+
+fn add(a: Float, b: Float) -> Float
+{
+    <- a + b;
+};
+
+fn add(a: Int, b: Int, c: Int) -> Int
+{
+    <- a + b + c;
+};
+```
+
+- **Built-in Functions**
+
+```c
+// print to stdout
+print("hello");
+// print to stderr
+printErr("hello");
+// get a line from stdin
+getLine();
+// transform a type to a string
+str(1);
+// get the type of a value in string format
+type(a);
+// call a function with string
+call("add", [1, 2]);
+```
+
+- **Generic Functions**
+
+```rust
+fn add[A](a: A, b: A) -> A
+{
+    <- a + b;
+};
+```
+
+- **Generic Functions Call**
+
+```rust
+add[Int](1, 2);
+```
+
+- **Conditions**
+
+```c
+if (a == 1)
+{
+    // do something
+};
+
+if (a == 1)
+{
+    // do something
+}
+else
+{
+    // do something else
+};
+```
+
+- **Loops**
+
+```c
+@Int i = 0;
+while (i < 10)
+{
+    // do something
+    i = i + 1;
+};
+```
+
+```c
+@List[Int] lst = [1, 2, 3];
+foreach (a in lst)
+{
+    if (a == 2)
+    {
+        break;
+    }
+};
+```
+
+- **Imports**
+
+```c
+// Circular imports are not allowed
+#"path/to/file.lvt"
+```
+
+- **Entrypoint**
+
+```rust
+// If you don't have this function, the program will not be run
+fn start() -> Int
+{
+    <- 0;
+};
+```
+
+- **Operators**
+
+```
+a + b
+a - b
+a * b
+a / b
+```
+
+- **Structs**
+
+```c
+struct Point
+{
+    a: Int,
+};
+```
+
+- **Generic Structs**
+
+```c
+struct Rect[A]
+{
+    a: A,
+};
 ```
