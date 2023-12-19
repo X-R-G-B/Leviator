@@ -1,3 +1,10 @@
+{-
+-- EPITECH PROJECT, 2023
+-- Leviator
+-- File description:
+-- Lib
+-}
+
 module Lib
     ( someFunc
     ) where
