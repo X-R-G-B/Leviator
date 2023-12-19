@@ -57,7 +57,7 @@ All reference to this struct will be with the `ID`.
 
 - Number of fields (Int16)
 
-- Each fild is a `ID` of the field type
+- Each field is an `ID` of the field type and the name 'Maybe a list of Char8' separated by 'insert unused hexa value'
 
 - Struct end
 
@@ -68,10 +68,11 @@ All reference to this struct will be with the `ID`.
 
 ```
 struct a {
-    int
+    fstAttribute: int
+    sndAttribute: int
 }
 
 struct b {
-    a
+    attribute: a
 }
 ```
