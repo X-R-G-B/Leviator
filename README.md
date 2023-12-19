@@ -1,6 +1,9 @@
-# Leviator
-
-The opinionated programing language
+<div>
+    <img src="https://github.com/X-R-G-B/Leviator/assets/87119012/acc77ef3-b39f-4c40-b882-d7e0b0fdefb6" alt="logo" width="150" align="left">
+    <h1>🐲 Leviator</h1>
+    <p>The opinionated programing language</p>
+    <br><br>
+</div>
 
 ## Documentation
 
@@ -12,21 +15,21 @@ The opinionated programing language
 
 -- **Variables Declaration**
 
-```python
+```hs
 @Int a = 1;
 @String b = "hello";
 ```
 
 -- **Variables Assignment**
 
-```c
+```hs
 a = 1;
 b = "hello";
 ```
 
 - **Built-in Types**
 
-```
+```hs
 @Bool a = True;
 @Bool b = False;
 @Int c = 1;
@@ -145,7 +148,7 @@ foreach (a in lst)
     if (a == 2)
     {
         break;
-    }
+    };
 };
 ```
 
@@ -153,7 +156,7 @@ foreach (a in lst)
 
 ```c
 // Circular imports are not allowed
-#"path/to/file.lvt"
+import "path/to/file.lvt"
 ```
 
 - **Entrypoint**
@@ -173,6 +176,8 @@ a + b
 a - b
 a * b
 a / b
+a == b
+a != b
 ```
 
 - **Structs**
