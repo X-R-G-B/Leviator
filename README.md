@@ -1,7 +1,9 @@
-<img src="https://github.com/X-R-G-B/Leviator/assets/87119012/acc77ef3-b39f-4c40-b882-d7e0b0fdefb6" alt="logo" width="150" align="left">
-<h1>🐲 Leviator</h1>
-<p>The opinionated programing language</p>
-<br>
+<div>
+    <img src="https://github.com/X-R-G-B/Leviator/assets/87119012/acc77ef3-b39f-4c40-b882-d7e0b0fdefb6" alt="logo" width="150" align="left">
+    <h1>🐲 Leviator</h1>
+    <p>The opinionated programing language</p>
+    <br><br>
+</div>
 
 ## Documentation
 
