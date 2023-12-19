@@ -68,11 +68,11 @@ All reference to this struct will be with the `ID`.
 
 ```
 struct a {
-    fstAttribute: int
-    sndAttribute: int
+    fstAttribute: int,
+    sndAttribute: int,
 }
 
 struct b {
-    attribute: a
+    attribute: a,
 }
 ```
