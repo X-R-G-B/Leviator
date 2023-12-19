@@ -156,7 +156,7 @@ foreach (a in lst)
 
 ```c
 // Circular imports are not allowed
-#"path/to/file.lvt"
+import "path/to/file.lvt"
 ```
 
 - **Entrypoint**
