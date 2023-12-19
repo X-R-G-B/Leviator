@@ -61,25 +61,6 @@ jobs:
             exit 0
           fi
 
-      - name: Tests
-        if: steps.filter.outputs.docs == 'true' || steps.filter.outputs.docs2 == 'true' || steps.filter.outputs.workflow == 'true' || github.ref == 'refs/heads/main'
-        run: |
-          if ! stack test --test-arguments "--html book/Tests.html"; then
-            exit 0
-          fi
-
-      - name: Coverage
-        if: steps.filter.outputs.docs == 'true' || steps.filter.outputs.docs2 == 'true' || steps.filter.outputs.workflow == 'true' || github.ref == 'refs/heads/main'
-        run: |
-          if ! make tests-coverage; then
-            exit 0
-          else
-            PATH_HTML=$(make tests-coverage-html-path)
-            cp -r "$PATH_HTML/koaky" book/
-            cp -r "$PATH_HTML/combined" book/
-            cp "$PATH_HTML/index.html" book/Coverage.html
-          fi
-
       - name: Setup Pages
         if: github.ref == 'refs/heads/main'
         uses: actions/configure-pages@v3
