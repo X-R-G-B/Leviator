@@ -58,7 +58,7 @@ jobs:
       - name: Tests
         id: failedTest
         run: |
-          if ! stack test &> tests.log; then
+          if ! make tests &> tests.log; then
             echo "failedTest=true" >> $GITHUB_OUTPUT
           else
             echo "failedTest=false" >> $GITHUB_OUTPUT

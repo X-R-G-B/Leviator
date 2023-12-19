@@ -169,6 +169,9 @@ tags
 /koaky-exe
 /glados
 
+lvtc-exe
+lvtrun-exe
+
 *.log
 *.exe
 

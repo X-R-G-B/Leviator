@@ -5,41 +5,35 @@
 ## makefile that stack
 ##
 
-TARGET			=	koaky
-MARVIN_TARGET	=	glados
+TARGET			=	leviator
 
-CP			=	cp
-RM			=	rm -rf
-
-ifeq ($(OS),Windows_NT)
-	BIN_STACK	=	$(TARGET)-exe.exe
-else
-	BIN_STACK	=	$(TARGET)-exe
-endif
-
-all: $(TARGET)
+LVT_COMPILER	=	lvtc
+LVT_RUNER		=	lvtrun
 
 $(TARGET):
-	stack build --copy-bins --local-bin-path .
-	$(CP) "$(BIN_STACK)" "$(MARVIN_TARGET)"
+	"$(MAKE)" -C "$(LVT_COMPILER)"
+	"$(MAKE)" -C "$(LVT_RUNER)"
 
 clean:
-	stack clean
+	"$(MAKE)" -C "$(LVT_COMPILER)" clean
+	"$(MAKE)" -C "$(LVT_RUNER)" clean
 
 fclean: clean
-	stack purge
-	$(RM) "$(BIN_STACK)"
-	$(RM) "$(MARVIN_TARGET)"
+	"$(MAKE)" -C "$(LVT_COMPILER)" fclean
+	"$(MAKE)" -C "$(LVT_RUNER)" fclean
 
 re: fclean $(TARGET)
 
 tests:
-	stack test
+	"$(MAKE)" -C "$(LVT_COMPILER)" tests
+	"$(MAKE)" -C "$(LVT_RUNER)" tests
 
 tests-coverage:
-	stack test --coverage
+	"$(MAKE)" -C "$(LVT_COMPILER)" tests-coverage
+	"$(MAKE)" -C "$(LVT_RUNER)" tests-coverage
 
 tests-coverage-html-path:
-	@stack path --local-hpc-root
+	@"$(MAKE)" -C "$(LVT_COMPILER)" tests-coverage-html-path
+	@"$(MAKE)" -C "$(LVT_RUNER)" tests-coverage-html-path
 
 .PHONY: $(TARGET) fclean re clean all
