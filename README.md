@@ -180,8 +180,30 @@ a / b
 ```c
 struct Point
 {
-    a: Int,
+    x: Int,
+    y: Int,
 };
+```
+
+- **Structs Initialization**
+```
+@Point p = {1, 2};
+```
+
+- **Structs Access**
+```
+p:x
+```
+
+- **Nested Structs**
+```
+struct Rect
+{
+    Point size; 
+    Point pos; 
+};
+@Rect r = {{1, 2}, {3, 4}};
+r:size:x
 ```
 
 - **Generic Structs**
@@ -189,6 +211,6 @@ struct Point
 ```c
 struct Rect[A]
 {
-    a: A,
+    attribute: A,
 };
 ```
