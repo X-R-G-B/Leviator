@@ -7,20 +7,20 @@
 
 ## Documentation
 
--- **Comentary**
+- **Comentary**
 
 ```c
 // This is a comment
 ```
 
--- **Variables Declaration**
+- **Variables Declaration**
 
 ```hs
 @Int a = 1;
 @String b = "hello";
 ```
 
--- **Variables Assignment**
+- **Variables Assignment**
 
 ```hs
 a = 1;
@@ -33,17 +33,11 @@ b = "hello";
 @Bool a = True;
 @Bool b = False;
 @Int c = 1;
-@List[Int] d = [1, 2, 3];
 @Char e = 'a';
-@String f = "hello";
-@List[Char] g = ['a', 'b', 'c'];
+@StringView f = "hello";
 ```
 
-- **Built-in Global Variables**
-
-```c
-@List[String] ARGS = ["programfilepath", "arg1", "arg2"];
-```
+There is a `Void` type that can be used to return nothing.
 
 - **Function Declaration**
 
@@ -52,6 +46,11 @@ fn add(a: Int, b: Int) -> Int
 {
     // the next line is the `return`
     <- a + b;
+};
+
+export fn sub(a: Int, b: Int) -> Int
+{
+    <- a - b;
 };
 ```
 
@@ -78,23 +77,6 @@ fn add(a: Int, b: Int, c: Int) -> Int
 {
     <- a + b + c;
 };
-```
-
-- **Built-in Functions**
-
-```c
-// print to stdout
-print("hello");
-// print to stderr
-printErr("hello");
-// get a line from stdin
-getLine();
-// transform a type to a string
-str(1);
-// get the type of a value in string format
-type(a);
-// call a function with string
-call("add", [1, 2]);
 ```
 
 - **Generic Functions**
@@ -138,17 +120,6 @@ while (i < 10)
 {
     // do something
     i = i + 1;
-};
-```
-
-```c
-@List[Int] lst = [1, 2, 3];
-foreach (a in lst)
-{
-    if (a == 2)
-    {
-        break;
-    };
 };
 ```
 

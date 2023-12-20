@@ -11,6 +11,40 @@
 0x01 0x00 0x00 0x00
 ```
 
+## Type Section
+
+```
+0x01
+```
+
+### Function Type
+
+```
+0x60
+```
+
+#### Number of Parameters
+
+- for 2 parameters
+    ```
+    0x02
+    ```
+
+#### Parameters Type
+
+```
+0x7F: i32
+0x7D: f32
+```
+
+#### Return Type
+
+```
+0x7F: i32
+0x7D: f32
+0x00: void
+```
+
 ## Function Section
 
 ```
@@ -176,3 +210,16 @@ else, push `0`
     Jump to the label
 
     Label is a number
+
+### Operations
+
+#### i32
+
+##### i32.add
+
+```
+0x6a
+```
+
+Add the 2 values on the top of the stack.
+Push the result to the stack.
