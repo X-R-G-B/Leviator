@@ -2,116 +2,177 @@
 
 :: All value starting with `0x` are hexadecimal
 
-| Summary                      |
-|------------------------------|
-| Header                       |
-| Struct registration          |
-| Function registration        |
-| Start function               |
-
 ## Header
 
 1. The file starts with:
 
 ```
-0x55 0x1E 0x53 0x0A
+0x00 0x61 0x73 0x6D
+0x01 0x00 0x00 0x00
 ```
 
-## Struct registration
+## Function Section
 
+```
+0x03
+```
 
-Struct ID for:
-- __Int__: `0x00000001`
-- __String__: `0x00000002`
-- __Bool__: `0x00000003`
-- __Void__: `0x00000004`
-- __Char__: `0x00000005`
+## Export Section
 
-1. The section starts with:
+```
+0x07
+```
+
+Instructions
+------------
+
+## Instructions
+
+### Stack
+
+#### local
+
+##### local.get <index>
+
+```
+0x20
+```
+
+Get a local variable by its index and add it to the stack.
+
+##### local.set <index>
+
+```
+0x21
+```
+
+Get the top of the stack and set a local variable by its index.
+
+#### global
+
+##### global.get <index>
+
+```
+0x23
+```
+
+Get a global variable by its index and add it to the stack.
+
+##### global.set <index>
+
+```
+0x24
+```
+
+Get the top of the stack and set a global variable by its index.
+
+#### i32
+
+##### i32.const <value>
+
+```
+0x41
+```
+
+Push an `Int32` to the stack.
+
+### Memory
+
+#### i32
+
+##### i32.store
+
+```
+0x36
+```
+
+Take the top of the stack. This will be the value stored in memory.
+Take the top of the stack. This will be the index in memory.
+
+Store the value in memory at the index.
+
+##### i32.load
+
+```
+0x28
+```
+
+Take the top of the stack. This will be the index in memory.
+
+Push an `Int32` to the stack with the value at address in memory.
+
+### Condition
+
+#### i32
+
+##### i32.gt_s
+
+```
+0x4a
+```
+
+Compare the 2 values on the top of the stack.
+
+If the first value is greater than the second value, push `1` to the stack.
+else, push `0`
+
+##### i32.eq
+
+```
+0x46
+```
+
+Compare the 2 values on the top of the stack.
+
+If the first value is equal to the second value, push `1` to the stack.
+else, push `0`
+
+#### control
+
+##### if...else...end
+
+- if
 
     ```
-    0x00 0x06 0x07 0x00
+    0x04
     ```
 
-   - Each struct type `ID` is an (Int32) followed by its name in multiple (Char8), until `0x00`
+    Enter in the first branch if the top of the stack is 1.
+
+- else
 
     ```
-    0x00000006MyStruct0x000x00000007SndStruct0x00
+    0x05
     ```
 
-2. Struct are a list of other struct of built-in types
+    Enter in the second branch if the top of the stack is 0.
 
-   - Struct start
-
-    ```
-    0x01
-    ```
-
-   - Struct name (Int32) is an `ID` of the struct name.
-
-     All reference to this struct will be with the `ID`.
-
-   - Number of fields (Int16)
-
-   - Each field is an `ID` of the field type
-
-   - Struct end
+- end
 
     ```
-    0x00
+    0x0b
     ```
 
-## Function registration
+    Exit from the if/else block.
 
-Struct ID for:
-- __print__: `0x00000001`
-- __printErr__: `0x00000002`
-- __getLine__: `0x00000003`
-- __str__: `0x00000004`
-- __type__: `0x00000005`
-- __call__: `0x00000006`
+##### loop <label> ... br <label>
 
-1. The section starts with:
+- loop <label>
 
     ```
-    0x00 0x06 0x07 0x00
+    0x03
     ```
 
-    - Each function `ID` is an (Int32) followed by its name in multiple (Char8), until `0x00`
+    Create a label for the loop
+
+    Label is a number
+
+- br <label>
 
     ```
-    0x00000006myFunc0x000x00000007sndFunc0x00
+    0x0c
     ```
 
-2. Struct are a list of other struct of built-in types
+    Jump to the label
 
-    - Struct start
-
-    ```
-    0x01
-    ```
-
-    - Struct name (Int32) is an `ID` of the struct name.
-
-
-1. The section starts with:
-
-    ```
-    0x00 0x06 0x07 0x00
-    ```
-
-2. Each function is:
-
-    - Function start
-   
-      ```
-      0x01
-      ```
-      
-    - Function name (Int32) is an `ID` of the function name.
-
-      All reference to this function will be with the `ID`.
-
-    - Function name (Char8) is the name of the function and finish with `0x00`
-
-    - 
+    Label is a number
