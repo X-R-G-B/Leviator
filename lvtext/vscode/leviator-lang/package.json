@@ -1,0 +1,41 @@
+{
+  "name": "leviator-lang",
+  "displayName": "Leviator Lang",
+  "version": "0.0.1",
+  "description": "Syntax highlighting for leviator lang",
+  "author": {
+    "name": "GTX",
+    "url": "https://github.com/X-R-G-B"
+  },
+  "icon": "assets/icon.png",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "publisher": "X-L-R-G-B",
+  "categories": [
+    "Programming Languages"
+  ],
+  "pricing": "Free",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/X-R-G-B/Leviator"
+  },
+  "bugs": {
+    "url": "https://github.com/X-R-G-B/Leviator/issues"
+  },
+  "homepage": "https://github.com/X-R-G-B/Leviator/blob/main/README.md",
+  "contributes": {
+    "languages": [{
+      "id": "leviator",
+      "aliases": ["Leviator", "leviator"],
+      "extensions": [".lvt"],
+      "configuration": "./language-configuration.json"
+    }],
+    "grammars": [{
+      "language": "leviator",
+      "scopeName": "source.lvt",
+      "path": "./syntaxes/leviator.tmLanguage.json"
+    }]
+  }
+}
