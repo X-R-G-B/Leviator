@@ -1,0 +1,64 @@
+// Types
+@Int a = 1;
+@Char b = 'a';
+@Float c = 1.0;
+@Bool d = true;
+@StringView e = "Leviator";
+
+// Data types
+struct Point
+{
+    x: Float,
+    y: Float,
+};
+
+fn printPoint(p: Point) -> Void
+{
+    print(p:x);
+    print(p:y);
+};
+
+// Functions
+fn add(a: Int, b: Int) -> Int
+{
+    <- a + b;
+};
+
+// Conditions + flow control
+fn max(a: Int, b: Int) -> Int
+{
+    if (a > b)
+    {
+        <- a;
+    }
+    else
+    {
+        <- b;
+    };
+};
+
+fn hundredPrinter() -> Void
+{
+    @Int i = 0;
+
+    while (True)
+    {
+        // New line every 10 numbers
+        if (i % 10 == 0)
+        {
+            print("\n");
+        };
+        print(i);
+        if (i == 100)
+        {
+            break;
+        };
+        i = i + 1;
+    };
+};
+
+// this is the entry point of the program
+fn start()
+{
+    print("Hello, world!\n");
+};
