@@ -57,7 +57,7 @@ fn hundredPrinter() -> Void
     };
 };
 
-// this is the entry point of the program
+// Entry point of the program
 fn start()
 {
     print("Hello, world!\n");
