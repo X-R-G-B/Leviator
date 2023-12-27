@@ -15,17 +15,21 @@ main :: IO ()
 main = defaultMain tests
 
 tests :: TestTree
-tests = testGroup "Leviator Tests - Compiler" [ utParserExpression ]
+tests = testGroup "Leviator Tests - Compiler"
+    [
+        utParserExpression,
+        utParserExpressions
+    ]
 
 testParserHelper :: String -> String -> Expression -> IO ()
 testParserHelper str restExpected expressionExpected =
-    case runParser (parseExpresion) str of
-        Just (parsed, rest) -> assertEqual str restExpected rest >>=
-            (\_ -> assertEqual str expressionExpected parsed)
+    case runParser parseExpresion str of
+        Just (parsed, rest) -> assertEqual str restExpected rest >>
+            assertEqual str expressionExpected parsed
         Nothing -> assertFailure ("Parsing failed: " ++ str)
 
 testParserHelperFail :: String -> IO ()
-testParserHelperFail str = case runParser (parseExpresion) str of
+testParserHelperFail str = case runParser parseExpresion str of
     Just _ -> assertFailure ("Parsing should have failed: " ++ str)
     Nothing -> assertEqual str "" ""
 
@@ -86,4 +90,51 @@ utParserExpression = testGroup "Parse Expression"
   , testCase "bad formated 4" $
       testParserHelperFail
         "export abc()"
+  ]
+
+
+testParserHelpers :: String -> String -> [Expression] -> IO ()
+testParserHelpers str restExpected expressionExpected =
+    case runParser parseAllExpression str of
+        Just (parsed, rest) -> assertEqual str restExpected rest >>
+            assertEqual str expressionExpected parsed
+        Nothing -> assertFailure ("Parsing failed: " ++ str)
+
+testParserHelperFails :: String -> IO ()
+testParserHelperFails str = case runParser parseAllExpression str of
+    Just (x, _) -> assertFailure ("Parsing should have failed: `" ++ str ++ "` But got: `" ++ show x ++ "`")
+    Nothing -> assertEqual str "" ""
+
+utParserExpressions :: TestTree
+utParserExpressions = testGroup "Parse Expressions"
+  [
+-- function
+    testCase "function main" $
+      testParserHelpers
+        "fn main() -> Int \n{\n    <- 0;\n};\nexport fn main() -> Int \n{\n    <- 0;\n};\n"
+        ""
+        [Function "fn main() -> Int \n{\n    <- 0;\n};\n", Function "export fn main() -> Int \n{\n    <- 0;\n};\n"]
+  , testCase "function bad formated (no end `}`)" $
+      testParserHelperFails
+        "fn main() -> Int \n{\n    <- 0;\n};\nfn main() -> Int \n{\n    <- 0;\n"
+  , testCase "function bad formated (no end `;`)" $
+      testParserHelperFails
+        "fn main() -> Int \n{\n    <- 0;\n}\nfn main() -> Int \n{\n    <- 0;\n};\n"
+-- alias
+  , testCase "alias" $
+      testParserHelpers
+        "alias abc def;\nalias def def;\n"
+        ""
+        [Alias "alias abc def;\n", Alias "alias def def;\n"]
+  , testCase "alias multiline" $
+      testParserHelpers
+        "alias abc def\nefg hij;\n"
+        ""
+        [Alias "alias abc def\nefg hij;\n"]
+-- comment
+  , testCase "comment" $
+      testParserHelpers
+        "// this is a comment\nalias abc def;\n"
+        ""
+        [Comment "// this is a comment\n", Alias "alias abc def;\n"]
   ]

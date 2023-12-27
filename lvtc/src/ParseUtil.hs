@@ -6,17 +6,17 @@
 -}
 
 module ParseUtil (
-        parseChar,
-        parseAnyChar,
-        parseUInt,
-        parseSign,
-        parseInt,
-        parseString,
-        parseBetween,
-        parseAfter,
-        parseBefore,
-        parseAllCharUntil,
-    ) where
+    parseChar,
+    parseAnyChar,
+    parseUInt,
+    parseSign,
+    parseInt,
+    parseString,
+    parseBetween,
+    parseAfter,
+    parseBefore,
+    parseAllCharUntil,
+) where
 
 import Parser
 import Data.Int (Int32)

@@ -6,9 +6,10 @@
 -}
 
 module Expression (
-        Expression (..),
-        parseExpresion,
-    ) where
+    Expression (..),
+    parseExpresion,
+    parseAllExpression,
+) where
 
 import Parser
 import Control.Applicative
@@ -38,3 +39,8 @@ parseComment = Comment <$> ((++) <$> parseString "//" <*> parseAllCharUntil "\n"
 
 parseExpresion :: Parser Expression
 parseExpresion = parseAlias <|> parseFunction <|> parseComment
+
+parseAllExpression :: Parser [Expression]
+parseAllExpression = some p
+    where
+        p = parseExpresion <* many (parseAnyChar "\n")
