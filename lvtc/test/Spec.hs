@@ -26,7 +26,7 @@ testParserHelper str restExpected expressionExpected =
     case runParser parseExpresion str of
         Just (parsed, rest) -> assertEqual str restExpected rest >>
             assertEqual str expressionExpected parsed
-        Nothing -> assertFailure ("Parsing failed: " ++ str)
+        Nothing -> assertFailure ("Parsing failed for: `" ++ str ++ "`")
 
 testParserHelperFail :: String -> IO ()
 testParserHelperFail str = case runParser parseExpresion str of
