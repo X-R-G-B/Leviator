@@ -6,8 +6,8 @@
 -}
 
 module Parser (
-        Parser (..),
-    ) where
+    Parser (..),
+) where
 
 import Control.Applicative
 
