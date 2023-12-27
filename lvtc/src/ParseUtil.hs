@@ -39,7 +39,8 @@ parseAnyChar str = Parser f
 parseString :: String -> Parser String
 parseString value = Parser f
     where
-        f s | take (length value) s == value = Just (value, drop (length value) s)
+        f s | take (length value) s == value =
+                        Just (value, drop (length value) s)
                  | otherwise = Nothing
 
 parseUInt :: Parser Int32

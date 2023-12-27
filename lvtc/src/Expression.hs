@@ -38,14 +38,15 @@ countBracketsForFunction n ('}':xs) = countBracketsForFunction (n - 1) xs
 countBracketsForFunction n ('\\':_:xs) = countBracketsForFunction n xs
 countBracketsForFunction n (_:xs) = countBracketsForFunction n xs
 
+parseFunction' :: Parser Expression
+parseFunction' = Function <$> ((++) <$>
+                    (parseString "fn " <|> parseString "export fn") <*>
+                    parseAllCharUntil "\n};\n")
+
 parseFunction :: Parser Expression
 parseFunction = Parser f
     where
-        f str = case runParser (
-            Function <$>
-                ((++) <$>
-                    (parseString "fn " <|> parseString "export fn") <*>
-                    parseAllCharUntil "\n};\n")) str of
+        f str = case runParser parseFunction' str of
             Nothing -> Nothing
             Just (Function x, xs) -> case countBracketsForFunction 0 x of
                 0 -> Just (Function x, xs)
@@ -53,10 +54,12 @@ parseFunction = Parser f
             Just _ -> Nothing
 
 parseAlias :: Parser Expression
-parseAlias = Alias <$> ((++) <$> parseString "alias " <*> parseAllCharUntil ";\n")
+parseAlias =
+    Alias <$> ((++) <$> parseString "alias " <*> parseAllCharUntil ";\n")
 
 parseComment :: Parser Expression
-parseComment = Comment <$> ((++) <$> parseString "//" <*> parseAllCharUntil "\n")
+parseComment =
+    Comment <$> ((++) <$> parseString "//" <*> parseAllCharUntil "\n")
 
 parseExpresion :: Parser Expression
 parseExpresion = parseAlias <|> parseFunction <|> parseComment
