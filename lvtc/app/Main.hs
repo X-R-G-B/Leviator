@@ -8,6 +8,10 @@
 module Main (main) where
 
 import Lib
+import Expression
+import Parser
 
 main :: IO ()
-main = someFunc
+-- main = print $ runParser (parseExpresion) "fn main () -> Int \n{\n    <- 0;\n};\n"
+-- main = print $ runParser (parseExpresion) "alias abc def;\n"
+main = print $ runParser (parseExpresion) "// this is a comment\n"
