@@ -70,4 +70,4 @@ parseAllCharUntil str = Parser f
         f [] = empty
         f (x:xs) = case runParser (parseString str) (x:xs) of
                 Nothing -> runParser ((x :) <$> parseAllCharUntil str) xs
-                Just (y, ys) -> Just (y, ys)
+                Just (_, ys) -> Just ([], ys)
