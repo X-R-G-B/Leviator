@@ -28,10 +28,13 @@ parseAliasName = parseAllCharUntil " "
 parseAliasValue :: Parser String
 parseAliasValue = parseAllCharUntil ";\n"
 
+parseAlias' :: Parser String
+parseAlias' = (parseAliasKeyword *> parseAliasName <* many (parseChar ' '))
+
 parseAlias :: Parser Alias.Alias
 parseAlias = Parser f
     where
-        f str = case runParser (parseAliasKeyword *> parseAliasName <* many (parseChar ' ')) str of
+        f str = case runParser parseAlias' str of
             Nothing -> Nothing
             Just (key, xs) -> case runParser parseAliasValue xs of
                 Nothing -> Nothing
@@ -41,7 +44,9 @@ replaceAliasInString :: Alias.Alias -> String -> String
 replaceAliasInString _ [] = []
 replaceAliasInString (Alias.Alias key value) (x:xs)
     | take (length key) (x:xs) == key =
-        value ++ replaceAliasInString (Alias.Alias key value) (drop (length key) (x:xs))
+        value ++ replaceAliasInString
+                    (Alias.Alias key value)
+                    (drop (length key) (x:xs))
     | otherwise = x : replaceAliasInString (Alias.Alias key value) xs
 
 replaceAlias :: Alias -> [Expression] -> [Expression]
@@ -49,9 +54,11 @@ replaceAlias _ [] = []
 replaceAlias alias ((Expression.Alias _):xs) =
     replaceAlias alias xs
 replaceAlias (Alias.Alias key value) ((Expression.Function str):xs) =
-    (Expression.Function (replaceAliasInString (Alias.Alias key value) str)) : (replaceAlias (Alias.Alias key value) xs)
+    (Expression.Function (replaceAliasInString (Alias.Alias key value) str))
+    : (replaceAlias (Alias.Alias key value) xs)
 replaceAlias (Alias.Alias key value) ((Expression.Comment str):xs) =
-    (Expression.Comment (replaceAliasInString (Alias.Alias key value) str)) : (replaceAlias (Alias.Alias key value) xs)
+    (Expression.Comment (replaceAliasInString (Alias.Alias key value) str))
+    : (replaceAlias (Alias.Alias key value) xs)
 
 replaceAllAlias :: [Alias] -> [Expression] -> [Expression]
 replaceAllAlias [] exprs = exprs
