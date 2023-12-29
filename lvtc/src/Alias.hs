@@ -7,11 +7,6 @@
 
 module Alias (
     proceedAlias,
-    parseAlias,
-    parseAliasKeyword,
-    parseAliasName,
-    parseAliasValue,
-    Alias.Alias (..),
 ) where
 
 import Expression
