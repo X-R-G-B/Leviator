@@ -10,6 +10,7 @@ import Test.Tasty.HUnit
 
 import Expression
 import Parser
+import Alias
 
 main :: IO ()
 main = defaultMain tests
@@ -18,7 +19,8 @@ tests :: TestTree
 tests = testGroup "Leviator Tests - Compiler"
     [
         utParserExpression,
-        utParserExpressions
+        utParserExpressions,
+        utAlias
     ]
 
 testParserHelper :: String -> String -> Expression -> IO ()
@@ -61,7 +63,7 @@ utParserExpression = testGroup "Parse Expression"
       testParserHelper
         "alias abc def;\n"
         ""
-        (Alias "alias abc def;\n")
+        (Expression.Alias "alias abc def;\n")
   , testCase "alias bad formated (no end `\\n`)" $
       testParserHelperFail
         "alias abc def;"
@@ -125,16 +127,42 @@ utParserExpressions = testGroup "Parse Expressions"
       testParserHelpers
         "alias abc def;\nalias def def;\n"
         ""
-        [Alias "alias abc def;\n", Alias "alias def def;\n"]
+        [Expression.Alias "alias abc def;\n", Expression.Alias "alias def def;\n"]
   , testCase "alias multiline" $
       testParserHelpers
         "alias abc def\nefg hij;\n"
         ""
-        [Alias "alias abc def\nefg hij;\n"]
+        [Expression.Alias "alias abc def\nefg hij;\n"]
 -- comment
   , testCase "comment" $
       testParserHelpers
         "// this is a comment\nalias abc def;\n"
         ""
-        [Comment "// this is a comment\n", Alias "alias abc def;\n"]
+        [Comment "// this is a comment\n", Expression.Alias "alias abc def;\n"]
+  ]
+
+utAlias :: TestTree
+utAlias = testGroup "Alias"
+  [
+    testCase "alias" $
+      assertEqual "alias"
+        [
+            Expression.Function "fn main() -> Int \n{\n    <- 0;\n};"
+        ]
+        (proceedAlias [
+            Expression.Alias "alias int Int;\n",
+            Expression.Alias "alias retValue 0;\n",
+            Expression.Function "fn main() -> int \n{\n    <- retValue;\n};"
+        ])
+  , testCase "nested alias" $
+      assertEqual "alias nested"
+        [
+            Expression.Function "fn main() -> Int \n{\n    <- 0;\n};"
+        ]
+        (proceedAlias [
+            Expression.Alias "alias int INT;\n",
+            Expression.Alias "alias retValue 0;\n",
+            Expression.Alias "alias INT Int;\n",
+            Expression.Function "fn main() -> int \n{\n    <- retValue;\n};"
+        ])
   ]
