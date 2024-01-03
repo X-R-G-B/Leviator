@@ -8,6 +8,7 @@ import Test.Tasty.HUnit
 
 import Parser
 import ParseLvt
+import AST
 
 testParserHelper :: String -> String -> Instruction -> IO ()
 testParserHelper str restExpected expressionExpected =
@@ -22,35 +23,35 @@ utParserLvt = testGroup "Parse Lvt"
     testCase "declare int" $
       testParserHelper "@Int a = 0;\n"
         ""
-        (Declare "Int" "a" (Integer 0))
+        (Declaration (("a", "Int"), Integer 0))
   , testCase "declare bool" $
       testParserHelper "@Bool a = True;\n"
         ""
-        (Declare "Bool" "a" (Boolean True))
+        (Declaration (("a", "Bool"), Boolean True))
   , testCase "declare string view" $
       testParserHelper "@StringView a = \"abc\";\n"
         ""
-        (Declare "StringView" "a" (StringView "abc"))
+        (Declaration (("a", "StringView"), StringView "abc"))
   , testCase "declare character" $
       testParserHelper "@Char a = 'a';\n"
         ""
-        (Declare "Char" "a" (Character 'a'))
+        (Declaration (("a", "Char"), Character 'a'))
   , testCase "assign variable" $
       testParserHelper "a = 0;\n"
         ""
-        (Assign "a" (Integer 0))
+        (Assignation ("a", Integer 0))
   , testCase "call function" $
       testParserHelper "a(0);\n"
         ""
-        (Call "a" [Integer 0])
+        (Function ("a", [Integer 0]))
   , testCase "call function (no arguments)" $
       testParserHelper "a();\n"
         ""
-        (Call "a" [])
+        (Function ("a", []))
   , testCase "call function (3 arguments)" $
       testParserHelper "a(0, \"abc\", False);\n"
         ""
-        (Call "a" [Integer 0, StringView "abc", Boolean False])
+        (Function ("a", [Integer 0, StringView "abc", Boolean False]))
   , testCase "return value" $
       testParserHelper "<- 0;\n"
         ""

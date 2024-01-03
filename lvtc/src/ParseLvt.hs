@@ -9,77 +9,28 @@ module ParseLvt
 (
     -- Value
     parseValue,
-    Value (..),
+    parseVar,
+    parseFuncValue,
     parseBoolean,
     parseInteger,
     parseCharacter,
     parseStringView,
-    parseVariable,
     parseVoid,
     -- Instruction
     parseInstruction,
-    Instruction (..),
-    parseCall,
+    parseFunction,
     parseReturn,
-    parseDeclare,
-    parseAssign,
+    parseDeclaration,
+    parseAssignation,
+    parseCond,
 ) where
+
+import Control.Applicative
+
+import AST
 
 import Parser
 import ParseUtil
-import Control.Applicative
-import Data.Int (Int32)
-
-data Value =
-    Boolean Bool
-    | Integer Int32
-    | Character Char
-    | StringView String
-    | Variable String
-    | Void
-
-instance Show Value where
-    show (Boolean x) = "B< " ++ show x ++ " >"
-    show (Integer x) = "I< " ++ show x ++ " >"
-    show (Character x) = "C< " ++ show x ++ " >"
-    show (StringView x) = "SV< " ++ show x ++ " >"
-    show (Variable x) = "V< " ++ show x ++ " >"
-    show Void = "Void"
-
-instance Eq Value where
-    (==) (Boolean x) (Boolean y) = x == y
-    (==) (Integer x) (Integer y) = x == y
-    (==) (Character x) (Character y) = x == y
-    (==) (StringView x) (StringView y) = x == y
-    (==) (Variable x) (Variable y) = x == y
-    (==) _ _ = False
-
-data Instruction =
-    -- Call Name [Arguments]
-    Call String [Value]
-    -- Return Value
-    | Return Value
-    -- Declare Type Name Value
-    | Declare String String Value
-    -- Assign Name Value
-    | Assign String Value
-
-instance Show Instruction where
-    show (Call x y) =
-        "Call[< " ++ show x ++ " >< " ++ show y ++ " >]"
-    show (Return x) =
-        "Return[< " ++ show x ++ " >]"
-    show (Declare x y z) =
-        "Declare[< " ++ show x ++ " >< " ++ show y ++ " >< " ++ show z ++ " >]"
-    show (Assign x y) =
-        "Assign[< " ++ show x ++ " >< " ++ show y ++ " >]"
-
-instance Eq Instruction where
-    (==) (Call x y) (Call a b) = x == a && y == b
-    (==) (Return x) (Return y) = x == y
-    (==) (Declare x y z) (Declare a b c) = x == a && y == b && z == c
-    (==) (Assign x y) (Assign a b) = x == a && y == b
-    (==) _ _ = False
 
 parseBoolean :: Parser Value
 parseBoolean =
@@ -88,6 +39,14 @@ parseBoolean =
 
 parseInteger :: Parser Value
 parseInteger = Integer <$> parseInt
+
+parseFuncValue :: Parser Value
+parseFuncValue = Parser f
+    where
+        f str = case runParser parseCall str of
+            Nothing -> Nothing
+            Just (Function x, xs) -> Just (FuncValue x, xs)
+            _notAFunction -> Nothing
 
 parseCharacter :: Parser Value
 parseCharacter =
@@ -106,8 +65,8 @@ parseStringView =
         *> parseAllCharUntil "\""
         )
 
-parseVariable :: Parser Value
-parseVariable = Parser f
+parseVar :: Parser Value
+parseVar = Parser f
     where
         f str = case runParser (parseAnyChar alphabetLower) str of
             Nothing -> Nothing
@@ -117,10 +76,12 @@ parseVariable = Parser f
                     xs
                 of
                     Nothing -> Nothing
-                    Just (y, ys) -> Just (Variable (x:y), ys)
+                    Just (y, ys) -> Just (Var (x:y), ys)
 
 parseVoid :: Parser Value
-parseVoid = (\_ -> Void) <$> parseString "Void"
+parseVoid = f <$> parseString "Void"
+    where
+        f _ = Void
 
 parseValue :: Parser Value
 parseValue =
@@ -128,10 +89,10 @@ parseValue =
     <|> parseInteger
     <|> parseCharacter
     <|> parseStringView
-    <|> parseVariable
+    <|> parseVar
     <|> parseVoid
 
-parseCallName :: Parser String
+parseCallName :: Parser Symbol
 parseCallName = Parser f
     where
         f str = case runParser (parseAnyChar alphabetLower) str of
@@ -155,8 +116,8 @@ parseCallArg = Parser f
     where
         f str = case runParser parseValue str of
             Nothing -> Nothing
-            Just (x, (',':' ':xs)) -> Just (x, xs)
-            Just (x, (',':xs)) -> Just (x, xs)
+            Just (x, ',':' ':xs) -> Just (x, xs)
+            Just (x, ',':xs) -> Just (x, xs)
             Just (x, xs) -> Just (x, xs)
 
 parseCallArgs :: Parser [Value]
@@ -171,7 +132,12 @@ parseCallArgs = Parser f
                     Just (y, ys) -> Just (x:y, ys)
 
 parseCall :: Parser Instruction
-parseCall = Call <$> parseCallName <*> parseCallArgs
+parseCall = f <$> parseCallName <*> parseCallArgs
+    where
+        f name args = Function (name, args)
+
+parseFunction :: Parser Instruction
+parseFunction = parseCall
 
 parseReturn :: Parser Instruction
 parseReturn = Return <$> (parseString "<- " *> parseValue)
@@ -189,33 +155,60 @@ parseType = Parser f
             Just ("StringView", xs)
         f _ = Nothing
 
-parseDeclare :: Parser Instruction
-parseDeclare = Parser f
+parseDeclaration :: Parser Instruction
+parseDeclaration = Parser f
     where
         f str = case
                 runParser (parseChar '@' *> parseType <* parseChar ' ') str
             of
                 Nothing -> Nothing
-                Just (x, xs) ->
-                    case runParser parseAssign xs of
+                Just (typ, xs) ->
+                    case runParser parseAssignation xs of
                         Nothing -> Nothing
-                        Just (Assign y1 y2, ys) -> Just (Declare x y1 y2, ys)
-                        _ -> Nothing
+                        Just (Assignation (name, val), ys) -> Just (Declaration ((name, typ), val), ys)
+                        _notAssignation -> Nothing
 
-parseAssign :: Parser Instruction
-parseAssign = Parser f
+parseAssignation :: Parser Instruction
+parseAssignation = Parser f
     where
-        f str = case runParser (parseVariable <* parseString " = ") str of
+        f str = case runParser (parseVar <* parseString " = ") str of
             Nothing -> Nothing
-            Just (Variable x, xs) ->
+            Just (Var x, xs) ->
                 case runParser parseValue xs of
                     Nothing -> Nothing
-                    Just (y, ys) -> Just (Assign x y, ys)
-            _ -> Nothing
+                    Just (y, ys) -> Just (Assignation (x, y), ys)
+            _notVar -> Nothing
+
+parseCondComp :: Parser Value
+parseCondComp = parseString "if (" *> parseValue <* parseString ")\n"
+
+parseCondIf :: Parser [Instruction]
+parseCondIf = parseString "{\n" *> parseInstructions <* parseString "}"
+
+parseCondElse :: Parser [Instruction]
+parseCondElse = parseString ";\nelse\n{\n" *> parseInstructions <* parseString "};\n"
+
+parseCond :: Parser Instruction
+parseCond = Parser f
+    where
+        f str = case runParser parseCondComp str of
+            Nothing -> Nothing
+            Just (val, xs) ->
+                case runParser parseCondIf xs of
+                    Nothing -> Nothing
+                    Just (ifBlock, ys) ->
+                        case runParser parseCondElse ys of
+                            Nothing -> Just (Cond (val, ifBlock, []), ys)
+                            Just (elseBlock, zs) ->
+                                Just (Cond (val, ifBlock, elseBlock), zs)
 
 parseInstruction :: Parser Instruction
 parseInstruction =
-    (parseCall
+    (parseFunction
     <|> parseReturn
-    <|> parseDeclare
-    <|> parseAssign) <* parseString ";\n"
+    <|> parseDeclaration
+    <|> parseAssignation
+    <|> parseCond) <* parseString ";\n"
+
+parseInstructions :: Parser [Instruction]
+parseInstructions = some parseInstruction
