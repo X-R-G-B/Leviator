@@ -7,12 +7,12 @@
 
 module AST
   ( Type
-  , Value
+  , Value (..)
   , Var
   , FuncCall
   , FuncPrototype
   , FuncDeclaration
-  , Instruction
+  , Instruction (..)
   , VarDeclaration
   , VarAssignation
   , Condition
