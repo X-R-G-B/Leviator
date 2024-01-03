@@ -17,7 +17,6 @@ module AST
   , VarDeclaration
   , VarAssignation
   , Condition
-  , ReturnType
   ) where
 
 getType :: Type -> String
@@ -27,7 +26,7 @@ getType _ = Nothing
 type Type = String
 
 data Value =
-  Var String | Function FuncCall | Boolean Bool | Integer Int32 |
+  Var String | FuncValue FuncCall | Boolean Bool | Integer Int32 |
   StringView String
 
 
