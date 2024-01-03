@@ -215,7 +215,7 @@ parseAssign = Parser f
 
 parseInstruction :: Parser Instruction
 parseInstruction =
-    parseCall
+    (parseCall
     <|> parseReturn
     <|> parseDeclare
-    <|> parseAssign
+    <|> parseAssign) <* parseString ";\n"
