@@ -7,7 +7,7 @@
 
 module AST
   (
-  , Type
+    Type
   , Value
   , Var
   , FuncCall
@@ -18,7 +18,6 @@ module AST
   , VarAssignation
   , Condition
   , ReturnType
-  , TypeValue
   ) where
 
 getType :: Type -> String
@@ -27,16 +26,16 @@ getType _ = Nothing
 
 type Type = String
 
-data Value = Var String | Function FuncCall | Boolean Bool | Integer Int32 | StringView String
+data Value =
+  Var String | Function FuncCall | Boolean Bool | Integer Int32 |
+  StringView String
 
 
 -- Function
 
 type Var = (Symbol, Type)
 
-type ReturnType = Type | Void
-
-type FuncPrototype = (Symbol, [Var], ReturnType)
+type FuncPrototype = (Symbol, [Var], Type)
 
 type FuncDeclaration = (FuncPrototype, [Instruction])
 
@@ -54,4 +53,5 @@ type VarDeclaration = (Var, Value)
 type VarAssignation = (Symbol, Value)
 
 data Instruction =
-  Function FuncCall | Return Value | Declaration VarDeclaration | Assignation VarAssignation | Cond Condition
+  Function FuncCall | Return Value | Declaration VarDeclaration |
+  Assignation VarAssignation | Cond Condition
