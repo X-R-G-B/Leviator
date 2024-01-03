@@ -181,12 +181,3 @@ struct Rect
 @Rect r = {{1, 2}, {3, 4}};
 r:size:x
 ```
-
-- **Generic Structs**
-
-```c
-struct Rect[A]
-{
-    attribute: A,
-};
-```
