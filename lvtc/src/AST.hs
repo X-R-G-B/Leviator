@@ -1,3 +1,25 @@
+{-
+-- EPITECH PROJECT, 2023
+-- Leviator Run
+-- File description:
+-- AST
+-}
+
+module AST
+  (
+  , Type
+  , Value
+  , Var
+  , FuncCall
+  , FuncPrototype
+  , FuncDeclaration
+  , Instruction
+  , VarDeclaration
+  , VarAssignation
+  , Condition
+  , ReturnType
+  , TypeValue
+  ) where
 
 getType :: Type -> String
 getType Int32 = "Int32"
