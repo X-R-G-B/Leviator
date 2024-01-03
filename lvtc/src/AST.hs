@@ -27,9 +27,7 @@ getType _ = Nothing
 
 type Type = String
 
-type TypeValue = Int32 | Bool | String
-
-data Value = Var String | StaticValue TypeValue | Function FuncCall
+data Value = Var String | Function FuncCall | Boolean Bool | Integer Int32 | StringView String
 
 
 -- Function
@@ -55,4 +53,5 @@ type VarDeclaration = (Var, Value)
 
 type VarAssignation = (Symbol, Value)
 
-data Instruction = Function FuncCall | Return Value | Declaration VarDeclaration | Assignation VarAssignation | Cond Condition
+data Instruction =
+  Function FuncCall | Return Value | Declaration VarDeclaration | Assignation VarAssignation | Cond Condition
