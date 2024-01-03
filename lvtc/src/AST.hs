@@ -1,3 +1,9 @@
+{-
+-- EPITECH PROJECT, 2023
+-- Leviator Run
+-- File description:
+-- AST
+-}
 
 getType :: Type -> String
 getType Int32 = "Int32"
