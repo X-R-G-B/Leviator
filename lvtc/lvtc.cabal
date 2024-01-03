@@ -27,6 +27,7 @@ library
   exposed-modules:
       Expression
       Lib
+      ParseLvt
       Parser
       ParseUtil
   other-modules:
@@ -58,6 +59,7 @@ test-suite lvtc-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      UTParseLvt
       Paths_lvtc
   autogen-modules:
       Paths_lvtc

@@ -16,11 +16,35 @@ module ParseUtil (
     parseAfter,
     parseBefore,
     parseAllCharUntil,
+    alphabet,
+    alphabetLower,
+    alphabetUpper,
+    digit,
+    special,
 ) where
 
 import Parser
 import Data.Int (Int32)
 import Control.Applicative
+
+alphabetLower :: String
+alphabetLower = ['a'..'z']
+
+alphabetUpper :: String
+alphabetUpper = ['A'..'Z']
+
+alphabet :: String
+alphabet = alphabetLower ++ alphabetUpper
+
+digit :: String
+digit = ['0'..'9']
+
+special :: String
+special =
+    [
+        '_', ' ', '(', ')', '{', '}', ';', ',', ':', '.',
+        '+', '-', '*', '/', '%', '^', '!', '?'
+    ]
 
 parseChar :: Char -> Parser Char
 parseChar c = Parser f
@@ -70,4 +94,4 @@ parseAllCharUntil str = Parser f
         f [] = empty
         f (x:xs) = case runParser (parseString str) (x:xs) of
                 Nothing -> runParser ((x :) <$> parseAllCharUntil str) xs
-                Just (y, ys) -> Just (y, ys)
+                Just (_, ys) -> Just ([], ys)

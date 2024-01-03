@@ -11,6 +11,8 @@ import Test.Tasty.HUnit
 import Expression
 import Parser
 
+import UTParseLvt
+
 main :: IO ()
 main = defaultMain tests
 
@@ -18,7 +20,8 @@ tests :: TestTree
 tests = testGroup "Leviator Tests - Compiler"
     [
         utParserExpression,
-        utParserExpressions
+        utParserExpressions,
+        utParserLvt
     ]
 
 testParserHelper :: String -> String -> Expression -> IO ()
