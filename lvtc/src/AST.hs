@@ -6,8 +6,7 @@
 -}
 
 module AST
-  (
-    Type
+  ( Type
   , Value
   , Var
   , FuncCall
@@ -19,9 +18,9 @@ module AST
   , Condition
   ) where
 
-getType :: Type -> String
-getType Int32 = "Int32"
-getType _ = Nothing
+import Data.Int (Int32)
+
+type Symbol = String
 
 type Type = String
 
