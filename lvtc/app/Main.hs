@@ -9,9 +9,10 @@ module Main (main) where
 
 import Expression
 import Parser
+import ParseLvt (parseInstruction)
 
 main :: IO ()
-main = print $ runParser (parseExpresion)
-    "fn main () -> Int \n{\n    <- 0;\n};\n"
--- main = print $ runParser (parseExpresion) "alias abc def;\n"
--- main = print $ runParser (parseExpresion) "// this is a comment\n"
+main =
+    print (runParser parseInstruction "if (a)\n{\nb(0);\n};\n")
+    >> print (runParser parseExpresion "alias abc def;\n")
+    >> print (runParser parseExpresion "// this is a comment\n")

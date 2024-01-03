@@ -56,4 +56,20 @@ utParserLvt = testGroup "Parse Lvt"
       testParserHelper "<- 0;\n"
         ""
         (Return (Integer 0))
+  , testCase "condition if" $
+      testParserHelper "if (a)\n{\nb(0);\n};\n"
+        ""
+        (Cond ((Var "a"), [Function ("b", [Integer 0])], []))
+  , testCase "condition if else" $
+      testParserHelper "if (a)\n{\nb(0);\n}\nelse\n{\nc(0);\n};\n"
+        ""
+        (Cond ((Var "a"), [Function ("b", [Integer 0])], [Function ("c", [Integer 0])]))
+  , testCase "condition if with indent" $
+      testParserHelper "if (a)\n{\n    b(0);\n};\n"
+        ""
+        (Cond ((Var "a"), [Function ("b", [Integer 0])], []))
+  , testCase "condition if else with indent" $
+      testParserHelper "if (a)\n{\n    b(0);\n}\nelse\n{\n    c(0);\n};\n"
+        ""
+        (Cond ((Var "a"), [Function ("b", [Integer 0])], [Function ("c", [Integer 0])]))
   ]

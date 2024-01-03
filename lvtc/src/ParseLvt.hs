@@ -32,6 +32,14 @@ import AST
 import Parser
 import ParseUtil
 
+lexeme :: String -> String
+lexeme [] = []
+lexeme ('(':' ':xs) = lexeme ('(':xs)
+lexeme (',':' ':xs) = lexeme (',':xs)
+lexeme ('\n':' ':xs) = lexeme ('\n':xs)
+lexeme ('e':'l':'s':'e':' ':xs) = lexeme ("else" ++ xs)
+lexeme (x:xs) = x : lexeme xs
+
 parseBoolean :: Parser Value
 parseBoolean =
     ((\_ -> Boolean True) <$> parseString "True")
@@ -186,29 +194,31 @@ parseCondIf :: Parser [Instruction]
 parseCondIf = parseString "{\n" *> parseInstructions <* parseString "}"
 
 parseCondElse :: Parser [Instruction]
-parseCondElse = parseString ";\nelse\n{\n" *> parseInstructions <* parseString "};\n"
+parseCondElse = parseString "else\n{\n" *> parseInstructions <* parseString "}"
 
 parseCond :: Parser Instruction
 parseCond = Parser f
     where
-        f str = case runParser parseCondComp str of
+        f str = case runParser parseCondComp (lexeme str) of
             Nothing -> Nothing
             Just (val, xs) ->
                 case runParser parseCondIf xs of
                     Nothing -> Nothing
-                    Just (ifBlock, ys) ->
+                    Just (ifBlock, '\n':ys) ->
                         case runParser parseCondElse ys of
-                            Nothing -> Just (Cond (val, ifBlock, []), ys)
+                            Nothing -> Nothing
                             Just (elseBlock, zs) ->
                                 Just (Cond (val, ifBlock, elseBlock), zs)
+                    Just (ifBlock, ys) -> Just (Cond (val, ifBlock, []), ys)
 
 parseInstruction :: Parser Instruction
 parseInstruction =
-    (parseFunction
+    (parseCond
     <|> parseReturn
     <|> parseDeclaration
     <|> parseAssignation
-    <|> parseCond) <* parseString ";\n"
+    <|> parseFunction
+    ) <* parseString ";\n"
 
 parseInstructions :: Parser [Instruction]
 parseInstructions = some parseInstruction
