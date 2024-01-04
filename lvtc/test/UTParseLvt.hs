@@ -17,6 +17,13 @@ testParserHelper str restExpected expressionExpected =
             assertEqual str expressionExpected parsed
         Nothing -> assertFailure ("Parsing failed for: `" ++ str ++ "`")
 
+testParserHelpers :: String -> String -> [Instruction] -> IO ()
+testParserHelpers str restExpected expressionExpected =
+    case runParser parseInstructions str of
+        Just (parsed, rest) -> assertEqual str restExpected rest >>
+            assertEqual str expressionExpected parsed
+        Nothing -> assertFailure ("Parsing failed for: `" ++ str ++ "`")
+
 utParserLvt :: TestTree
 utParserLvt = testGroup "Parse Lvt"
   [
@@ -59,17 +66,25 @@ utParserLvt = testGroup "Parse Lvt"
   , testCase "condition if" $
       testParserHelper "if (a)\n{\nb(0);\n};\n"
         ""
-        (Cond ((Var "a"), [Function ("b", [Integer 0])], []))
+        (Cond (Var "a", [Function ("b", [Integer 0])], []))
   , testCase "condition if else" $
       testParserHelper "if (a)\n{\nb(0);\n}\nelse\n{\nc(0);\n};\n"
         ""
-        (Cond ((Var "a"), [Function ("b", [Integer 0])], [Function ("c", [Integer 0])]))
+        (Cond (Var "a", [Function ("b", [Integer 0])], [Function ("c", [Integer 0])]))
   , testCase "condition if with indent" $
       testParserHelper "if (a)\n{\n    b(0);\n};\n"
         ""
-        (Cond ((Var "a"), [Function ("b", [Integer 0])], []))
+        (Cond (Var "a", [Function ("b", [Integer 0])], []))
   , testCase "condition if else with indent" $
       testParserHelper "if (a)\n{\n    b(0);\n}\nelse\n{\n    c(0);\n};\n"
         ""
-        (Cond ((Var "a"), [Function ("b", [Integer 0])], [Function ("c", [Integer 0])]))
+        (Cond (Var "a", [Function ("b", [Integer 0])], [Function ("c", [Integer 0])]))
+  , testCase "test multiple instruction" $
+      testParserHelpers "@Int a = 0;\n    @Int c = b(a);\n    if (c)\n    {\n        d(a);\n    };\n"
+        ""
+        [
+            Declaration (("a", "Int"), Integer 0),
+            Declaration (("c", "Int"), FuncValue ("b", [Var "a"])),
+            Cond (Var "c", [Function ("d", [Var "a"])], [])
+        ]
   ]

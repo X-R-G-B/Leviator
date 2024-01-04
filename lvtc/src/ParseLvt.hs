@@ -17,6 +17,7 @@ module ParseLvt
     parseStringView,
     parseVoid,
     -- Instruction
+    parseInstructions,
     parseInstruction,
     parseFunction,
     parseReturn,
@@ -92,12 +93,13 @@ parseVoid = f <$> parseString "Void"
 
 parseValue :: Parser Value
 parseValue =
-    parseBoolean
-    <|> parseInteger
-    <|> parseCharacter
-    <|> parseStringView
-    <|> parseVar
+    parseFuncValue
+    <|> parseBoolean
     <|> parseVoid
+    <|> parseInteger
+    <|> parseStringView
+    <|> parseCharacter
+    <|> parseVar
 
 parseCallName :: Parser Symbol
 parseCallName =
@@ -216,4 +218,6 @@ parseInstruction =
     ) <* parseString ";\n"
 
 parseInstructions :: Parser [Instruction]
-parseInstructions = some parseInstruction
+parseInstructions = Parser f
+    where
+        f str = runParser (some parseInstruction) (lexeme str)
