@@ -80,8 +80,7 @@ parseVar = Parser f
             Nothing -> Nothing
             Just (x, xs) ->
                 case runParser
-                    (many (parseAnyChar (alphabet ++ digit ++ "_")))
-                    xs
+                    (many (parseAnyChar (alphabet ++ digit ++ "_"))) xs
                 of
                     Nothing -> Nothing
                     Just (y, ys) -> Just (Var (x:y), ys)
@@ -101,23 +100,13 @@ parseValue =
     <|> parseVoid
 
 parseCallName :: Parser Symbol
-parseCallName = Parser f
+parseCallName =
+    f
+        <$> parseAnyChar alphabetLower
+            <*> many (parseAnyChar (alphabet ++ digit ++ "_"))
+            <* parseChar '('
     where
-        f str = case runParser (parseAnyChar alphabetLower) str of
-            Nothing -> Nothing
-            Just (x, xs) ->
-                case runParser
-                    (many (parseAnyChar (alphabet ++ digit ++ "_")))
-                    xs
-                of
-                    Nothing -> Nothing
-                    Just (y, ys) ->
-                        case runParser
-                            (parseChar '(')
-                            ys
-                        of
-                            Nothing -> Nothing
-                            Just (_, zs) -> Just (x:y, zs)
+        f fstChar restName = fstChar : restName
 
 parseCallArg :: Parser Value
 parseCallArg = Parser f
@@ -153,15 +142,22 @@ parseReturn = Return <$> (parseString "<- " *> parseValue)
 parseType :: Parser String
 parseType = Parser f
     where
-        f ('B':'o':'o':'l':xs) =
-            Just ("Bool", xs)
-        f ('I':'n':'t':xs) =
-            Just ("Int", xs)
-        f ('C':'h':'a':'r':xs) =
-            Just ("Char", xs)
+        f ('B':'o':'o':'l':xs) = Just ("Bool", xs)
+        f ('I':'n':'t':xs) = Just ("Int", xs)
+        f ('C':'h':'a':'r':xs) = Just ("Char", xs)
+        f ('V':'o':'i':'d':xs) = Just ("Void", xs)
         f ('S':'t':'r':'i':'n':'g':'V':'i':'e':'w':xs) =
             Just ("StringView", xs)
         f _ = Nothing
+
+parseDeclaration' :: String -> Parser Instruction
+parseDeclaration' typ = Parser f
+    where
+        f str = case runParser parseAssignation str of
+            Nothing -> Nothing
+            Just (Assignation (name, val), xs) ->
+                Just (Declaration ((name, typ), val), xs)
+            _notAssignation -> Nothing
 
 parseDeclaration :: Parser Instruction
 parseDeclaration = Parser f
@@ -170,11 +166,7 @@ parseDeclaration = Parser f
                 runParser (parseChar '@' *> parseType <* parseChar ' ') str
             of
                 Nothing -> Nothing
-                Just (typ, xs) ->
-                    case runParser parseAssignation xs of
-                        Nothing -> Nothing
-                        Just (Assignation (name, val), ys) -> Just (Declaration ((name, typ), val), ys)
-                        _notAssignation -> Nothing
+                Just (typ, xs) -> runParser (parseDeclaration' typ) xs
 
 parseAssignation :: Parser Instruction
 parseAssignation = Parser f
@@ -196,6 +188,14 @@ parseCondIf = parseString "{\n" *> parseInstructions <* parseString "}"
 parseCondElse :: Parser [Instruction]
 parseCondElse = parseString "else\n{\n" *> parseInstructions <* parseString "}"
 
+parseCond' :: Value -> [Instruction] -> Parser Instruction
+parseCond' val ifBlock = Parser f
+    where
+        f ('\n':xs) = case runParser parseCondElse xs of
+            Nothing -> Nothing
+            Just (elseBlock, ys) -> Just (Cond (val, ifBlock, elseBlock), ys)
+        f str = Just (Cond (val, ifBlock, []), str)
+
 parseCond :: Parser Instruction
 parseCond = Parser f
     where
@@ -204,12 +204,7 @@ parseCond = Parser f
             Just (val, xs) ->
                 case runParser parseCondIf xs of
                     Nothing -> Nothing
-                    Just (ifBlock, '\n':ys) ->
-                        case runParser parseCondElse ys of
-                            Nothing -> Nothing
-                            Just (elseBlock, zs) ->
-                                Just (Cond (val, ifBlock, elseBlock), zs)
-                    Just (ifBlock, ys) -> Just (Cond (val, ifBlock, []), ys)
+                    Just (ifBlock, ys) -> runParser (parseCond' val ifBlock) ys
 
 parseInstruction :: Parser Instruction
 parseInstruction =
