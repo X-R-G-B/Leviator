@@ -8,7 +8,6 @@
 module Main (main) where
 
 import WasmMod.Module
-import WasmMod.Header
 
 main :: IO ()
 main = do

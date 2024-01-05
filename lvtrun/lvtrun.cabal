@@ -41,6 +41,7 @@ library
 executable lvtrun-exe
   main-is: Main.hs
   other-modules:
+      Errors
       WasmMod.Header
       WasmMod.Module
       WasmMod.Sections

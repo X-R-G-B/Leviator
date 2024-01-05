@@ -13,10 +13,12 @@ module WasmMod.Module
 where
 
 import qualified Data.ByteString as BS (ByteString, unpack, readFile)
+import Control.Monad (when)
 import Numeric (showHex)
 
 import WasmMod.Header
 import WasmMod.Sections
+import Errors
 
 data WasmModule = WasmModule {
   header :: ModHeader,
@@ -37,4 +39,7 @@ getFileContent path = BS.readFile path
 loadModule :: String -> IO WasmModule
 loadModule filePath = do
     bytes <- getFileContent filePath
-    return $ WasmModule (getModuleHeader bytes) []
+    let modHeader = getModuleHeader bytes
+    when (not $ isHeaderValid modHeader) $ exitWithError "Invalid header"
+    let modSections = []
+    return $ WasmModule modHeader modSections
