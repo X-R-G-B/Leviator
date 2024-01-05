@@ -8,20 +8,20 @@
 module WasmMod.Header
   (
     ModHeader(..),
-    getModuleHeader,
+    getModHeader,
     isHeaderValid
   )
 where
 
-import qualified Data.ByteString as BS (ByteString, take, drop, pack)
+import qualified Data.ByteString.Lazy as BS (ByteString, take, drop, pack)
 
 data ModHeader = ModHeader {
   magicNumber :: BS.ByteString,
   version :: BS.ByteString
 } deriving (Show)
 
-getModuleHeader :: BS.ByteString -> ModHeader
-getModuleHeader bytes = ModHeader (BS.take 4 bytes) (BS.take 4 $ BS.drop 4 bytes)
+getModHeader :: BS.ByteString -> ModHeader
+getModHeader bytes = ModHeader (BS.take 4 bytes) (BS.take 4 $ BS.drop 4 bytes)
 
 isHeaderValid :: ModHeader -> Bool
 isHeaderValid header =

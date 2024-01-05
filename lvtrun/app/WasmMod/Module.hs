@@ -12,7 +12,7 @@ module WasmMod.Module
   )
 where
 
-import qualified Data.ByteString as BS (ByteString, unpack, readFile)
+import qualified Data.ByteString.Lazy as BS (ByteString, unpack, readFile)
 import Control.Monad (when)
 import Numeric (showHex)
 
@@ -26,20 +26,21 @@ data WasmModule = WasmModule {
 }
 
 instance Show WasmModule where
-  show wasmMod = "Wasm Module Header:\n" ++
-    "  Magic Number: " ++ (concat $ map (\x -> showHex x " ") $
+  show wasmMod = "\n[ Wasm Module Header ]\n" ++
+    "- Magic Number: " ++ (concat $ map (\x -> showHex x " ") $
       BS.unpack $ magicNumber $ header wasmMod) ++ "\n" ++
-    "  Version: " ++ (concat $ map (\x -> showHex x " ") $
+    "- Version: " ++ (concat $ map (\x -> showHex x " ") $
       BS.unpack $ version $ header wasmMod) ++ "\n" ++
-    "  Sections: " ++ (show $ sections wasmMod) ++ "\n"
+    "- Sections: " ++ (show $ sections wasmMod) ++ "\n"
 
 getFileContent :: String -> IO BS.ByteString
 getFileContent path = BS.readFile path
 
 loadModule :: String -> IO WasmModule
 loadModule filePath = do
-    bytes <- getFileContent filePath
-    let modHeader = getModuleHeader bytes
-    when (not $ isHeaderValid modHeader) $ exitWithError "Invalid header"
-    let modSections = []
-    return $ WasmModule modHeader modSections
+  bytes <- getFileContent filePath
+  let modHeader = getModHeader bytes
+  when (not $ isHeaderValid modHeader) $ exitWithError "Invalid header"
+  let modSections = getModSections bytes
+  when (not $ areSectionsValid modSections) $ exitWithError "Invalid sections"
+  return $ WasmModule modHeader modSections
