@@ -17,9 +17,11 @@ where
 import qualified Data.ByteString.Lazy as BS (ByteString, head, drop, take, null, unpack)
 import Data.Binary.Get
 import Data.Bits
-import Data.Word (Word8, Word64)
 import Data.Int (Int32, Int64)
 import Numeric (showHex)
+import WasmMod.Leb128
+import Data.Word
+import WasmMod.Leb128
 
 data SectionID =
   Custom
@@ -68,43 +70,12 @@ getSectionID 11 = Data
 getSectionID 12 = DataCount
 getSectionID _ = Invalid
 
-getLEB128 :: Get Int
-getLEB128 = do
-  byte <- getWord8
-  let value = fromIntegral (byte .&. 0x7F)
-  if byte `testBit` 7
-    then do
-      next <- getLEB128
-      return $ value .|. (next `shiftL` 7)
-    else
-      return value
-
-getSectionSize :: BS.ByteString -> Int
-getSectionSize bytes = runGet getLEB128 bytes
-
--- Returns the number of bytes used to encode the leb128
-getLEB128Size' :: Get Int64
-getLEB128Size' = do
-  byte <- getWord8
-  let value = fromIntegral (byte .&. 0x7F)
-  if byte `testBit` 7
-    then do
-      next <- getLEB128Size'
-      return (next + 1)
-    else
-      return 1
-
-getLEB128Size :: BS.ByteString -> Int64
-getLEB128Size bytes = runGet getLEB128Size' bytes
-
 getSection :: BS.ByteString -> (Section, BS.ByteString)
-getSection bytes = (Section id size content, rest)
-  where
-    id = getSectionID (BS.head bytes)
-    nbByteEncoded = getLEB128Size (BS.drop 1 bytes)
-    size = getSectionSize (BS.take (fromIntegral nbByteEncoded) (BS.drop 1 bytes))
-    content = BS.take (fromIntegral size) (BS.drop (fromIntegral nbByteEncoded + 1) bytes)
-    rest = BS.drop (nbByteEncoded + 1 + fromIntegral size) bytes
+getSection bytes = do
+  let id = getSectionID (BS.head bytes)
+  let (size, rest) = extractLEB128 (BS.drop 1 bytes)
+  let content = BS.take (fromIntegral size) rest
+  (Section id (fromIntegral size) content, BS.drop (fromIntegral size) rest)
 
 removeHeader :: BS.ByteString -> BS.ByteString
 removeHeader bytes = BS.drop 8 bytes

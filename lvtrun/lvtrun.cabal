@@ -44,6 +44,7 @@ executable lvtrun-exe
   other-modules:
       Errors
       WasmMod.Header
+      WasmMod.Leb128
       WasmMod.Module
       WasmMod.Sections
       Paths_lvtrun
