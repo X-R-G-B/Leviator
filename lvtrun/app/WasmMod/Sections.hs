@@ -5,7 +5,12 @@
 -- Sections
 -}
 
-module WasmMod.Sections where
+module WasmMod.Sections
+  (
+    SectionID(..),
+    Section(..)
+  )
+where
 
 import qualified Data.ByteString as BS (ByteString)
 

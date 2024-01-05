@@ -12,7 +12,7 @@ module WasmMod.Module
   )
 where
 
-import qualified Data.ByteString as BS (ByteString, unpack)
+import qualified Data.ByteString as BS (ByteString, unpack, readFile)
 import Numeric (showHex)
 
 import WasmMod.Header
@@ -31,6 +31,10 @@ instance Show WasmModule where
       BS.unpack $ version $ header wasmMod) ++ "\n" ++
     "  Sections: " ++ (show $ sections wasmMod) ++ "\n"
 
+getFileContent :: String -> IO BS.ByteString
+getFileContent path = BS.readFile path
 
-loadModule :: BS.ByteString -> WasmModule
-loadModule bytes = WasmModule (getModuleHeader bytes) []
+loadModule :: String -> IO WasmModule
+loadModule filePath = do
+    bytes <- getFileContent filePath
+    return $ WasmModule (getModuleHeader bytes) []
