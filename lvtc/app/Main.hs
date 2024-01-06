@@ -7,8 +7,9 @@
 
 module Main (main) where
 
-import Expression (parseExpresion)
+import Expression (parseExpresion, parseAllExpression)
 import Parser (runParser)
+import Alias (proceedAlias)
 import ParseLvt (parseInstruction, parseInstructions)
 
 test1 :: String
@@ -32,6 +33,13 @@ test5 = "@Int a = 4 + 5;\n"
 test6 :: String
 test6 = "@Int a = 3 + 4 * 2 / ( 1 - 5 );\n"
 
+text :: String
+text = aliasInt ++ aliasRetValue ++ funcMain
+    where
+        aliasInt = "alias int Int;\n"
+        aliasRetValue = "alias retValue 0;\n"
+        funcMain = "fn main () -> int \n{\n    <- retValue;\n};\n"
+
 main :: IO ()
 main =
     print (runParser parseInstruction test1)
@@ -40,3 +48,4 @@ main =
     >> print (runParser parseExpresion test4)
     >> print (runParser parseInstruction test5)
     >> print (runParser parseInstruction test6)
+    >> print (runParser (proceedAlias <$> parseAllExpression) text)
