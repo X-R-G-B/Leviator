@@ -33,6 +33,7 @@ library
       Parser
       ParseUtil
       ShuntingYard
+      WatLike
   other-modules:
       Paths_lvtc
   autogen-modules:
