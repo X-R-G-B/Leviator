@@ -26,10 +26,13 @@ source-repository head
 library
   exposed-modules:
       Alias
+      AST
       Expression
       Lib
+      ParseLvt
       Parser
       ParseUtil
+      ShuntingYard
   other-modules:
       Paths_lvtc
   autogen-modules:
@@ -59,6 +62,8 @@ test-suite lvtc-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      UTParseLvt
+      UTShuntingYard
       Paths_lvtc
   autogen-modules:
       Paths_lvtc

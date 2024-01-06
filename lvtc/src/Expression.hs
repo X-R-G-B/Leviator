@@ -39,9 +39,11 @@ countBracketsForFunction n ('\\':_:xs) = countBracketsForFunction n xs
 countBracketsForFunction n (_:xs) = countBracketsForFunction n xs
 
 parseFunction' :: Parser Expression
-parseFunction' = (\x -> Function (x ++ "\n};\n")) <$> ((++) <$>
-                    (parseString "fn " <|> parseString "export fn") <*>
-                    parseAllCharUntil "\n};\n")
+parseFunction' =
+    (\x -> Function (x ++ "\n};\n"))
+        <$> ((++)
+            <$> (parseString "fn " <|> parseString "export fn")
+                <*> parseAllCharUntil "\n};\n")
 
 parseFunction :: Parser Expression
 parseFunction = Parser f
@@ -55,13 +57,17 @@ parseFunction = Parser f
 
 parseAlias :: Parser Expression
 parseAlias =
-    (\x -> Alias (x ++ ";\n")) <$>
-        ((++) <$> parseString "alias " <*> parseAllCharUntil ";\n")
+    (\x -> Alias (x ++ ";\n"))
+        <$> ((++)
+            <$> parseString "alias "
+                <*> parseAllCharUntil ";\n")
 
 parseComment :: Parser Expression
 parseComment =
-    (\x -> Comment (x ++ "\n")) <$>
-        ((++) <$> parseString "//" <*> parseAllCharUntil "\n")
+    (\x -> Comment (x ++ "\n"))
+        <$> ((++)
+            <$> parseString "//"
+                <*> parseAllCharUntil "\n")
 
 parseExpresion :: Parser Expression
 parseExpresion = parseAlias <|> parseFunction <|> parseComment

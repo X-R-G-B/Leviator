@@ -1,6 +1,6 @@
 {-
 -- EPITECH PROJECT, 2023
--- Leviator Run
+-- Leviator compiler
 -- File description:
 -- Lib
 -}
