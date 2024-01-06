@@ -79,21 +79,6 @@ fn add(a: Int, b: Int, c: Int) -> Int
 };
 ```
 
-- **Generic Functions**
-
-```rust
-fn add[A](a: A, b: A) -> A
-{
-    <- a + b;
-};
-```
-
-- **Generic Functions Call**
-
-```rust
-add[Int](1, 2);
-```
-
 - **Conditions**
 
 ```c
