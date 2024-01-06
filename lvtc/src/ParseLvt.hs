@@ -234,15 +234,12 @@ parseReturn :: Parser Instruction
 parseReturn = Return <$> (parseString "<- " *> parseValue)
 
 parseType :: Parser String
-parseType = Parser f
-    where
-        f ('B':'o':'o':'l':xs) = Just ("Bool", xs)
-        f ('I':'n':'t':xs) = Just ("Int", xs)
-        f ('C':'h':'a':'r':xs) = Just ("Char", xs)
-        f ('V':'o':'i':'d':xs) = Just ("Void", xs)
-        f ('S':'t':'r':'i':'n':'g':'V':'i':'e':'w':xs) =
-            Just ("StringView", xs)
-        f _ = Nothing
+parseType = 
+    parseString "Bool"
+    <|> parseString "Int"
+    <|> parseString "Char"
+    <|> parseString "Void"
+    <|> parseString "StringView"
 
 parseDeclaration' :: String -> Parser Instruction
 parseDeclaration' typ = Parser f
