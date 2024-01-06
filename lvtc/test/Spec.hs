@@ -12,6 +12,7 @@ import Expression
 import Parser
 
 import UTParseLvt
+import UTShuntingYard
 
 main :: IO ()
 main = defaultMain tests
@@ -21,7 +22,8 @@ tests = testGroup "Leviator Tests - Compiler"
     [
         utParserExpression,
         utParserExpressions,
-        utParserLvt
+        utParserLvt,
+        utShuntingYard
     ]
 
 testParserHelper :: String -> String -> Expression -> IO ()

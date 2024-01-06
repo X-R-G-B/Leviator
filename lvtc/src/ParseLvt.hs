@@ -32,13 +32,26 @@ import AST
 
 import Parser
 import ParseUtil
+import ShuntingYard
 
 lexeme :: String -> String
 lexeme [] = []
-lexeme ('(':' ':xs) = lexeme ('(':xs)
 lexeme (',':' ':xs) = lexeme (',':xs)
 lexeme ('\n':' ':xs) = lexeme ('\n':xs)
 lexeme ('e':'l':'s':'e':' ':xs) = lexeme ("else" ++ xs)
+lexeme ('i':'f':' ':xs) = lexeme ("if" ++ xs)
+lexeme (' ':'(':xs) = lexeme ("(" ++ xs)
+lexeme (' ':')':xs) = lexeme (")" ++ xs)
+lexeme (' ':'+':xs) = lexeme ("+" ++ xs)
+lexeme (' ':'-':xs) = lexeme ("-" ++ xs)
+lexeme (' ':'*':xs) = lexeme ("*" ++ xs)
+lexeme (' ':'/':xs) = lexeme ("/" ++ xs)
+lexeme ('+':' ':xs) = lexeme ("+" ++ xs)
+lexeme ('-':' ':xs) = lexeme ("-" ++ xs)
+lexeme ('*':' ':xs) = lexeme ("*" ++ xs)
+lexeme ('/':' ':xs) = lexeme ("/" ++ xs)
+lexeme ('(':' ':xs) = lexeme ("(" ++ xs)
+lexeme (')':' ':xs) = lexeme (")" ++ xs)
 lexeme (x:xs) = x : lexeme xs
 
 parseBoolean :: Parser Value
@@ -91,8 +104,87 @@ parseVoid = f <$> parseString "Void"
     where
         f _ = Void
 
+parseOperatorFstVal :: Parser Value
+parseOperatorFstVal = Parser f
+    where
+        f str = case runParser parseValueWithoutOperator str of
+            Nothing -> Nothing
+            Just (fstVal, xs) -> Just (fstVal, xs)
+
+parseOperatorOp :: Parser Value
+parseOperatorOp =
+    f
+        <$> (parseString "+"
+            <|> parseString "-"
+            <|> parseString "*"
+            <|> parseString "/"
+            <|> parseString "("
+            <|> parseString ")")
+    where
+        f op = Var op
+
+parseOperator' :: ShuntingYardState -> Parser ShuntingYardState
+parseOperator' sys =
+    (fOp <$> parseOperatorOp)
+    <|> (fVal <$> parseOperatorFstVal)
+    where
+        fVal val = shuntingYardValue val sys
+        fOp op = shuntingYardOp op sys
+
+parseOperatorTransform' :: [Value] -> Maybe [Value]
+parseOperatorTransform' [] = Just []
+parseOperatorTransform' (_:(Var "+"):_) = Nothing
+parseOperatorTransform' (_:(Var "-"):_) = Nothing
+parseOperatorTransform' (_:(Var "*"):_) = Nothing
+parseOperatorTransform' (_:(Var "/"):_) = Nothing
+parseOperatorTransform' (x1:x2:(Var "+"):rest) =
+    Just ((FuncValue ("+", [x1, x2])) : rest)
+parseOperatorTransform' (x1:x2:(Var "-"):rest) =
+    Just ((FuncValue ("-", [x1, x2])) : rest)
+parseOperatorTransform' (x1:x2:(Var "*"):rest) =
+    Just ((FuncValue ("*", [x1, x2])) : rest)
+parseOperatorTransform' (x1:x2:(Var "/"):rest) =
+    Just ((FuncValue ("/", [x1, x2])) : rest)
+parseOperatorTransform' (x:xs) =
+    case parseOperatorTransform' xs of
+        Nothing -> Nothing
+        Just ys -> Just (x:ys)
+
+parseOperatorTransform :: [Value] -> Maybe Value
+parseOperatorTransform [] = Nothing
+parseOperatorTransform vals =
+    case parseOperatorTransform' vals of
+        Nothing -> Nothing
+        Just [] -> Nothing
+        Just (x:[]) -> Just x
+        Just (x:rest) -> parseOperatorTransform (x:rest)
+
+parseOperatorS :: ShuntingYardState -> Parser ShuntingYardState
+parseOperatorS sys = Parser f
+    where
+        f str = case runParser (parseOperator' sys) str of
+            Nothing -> Just (sys, str)
+            Just (x, xs) -> case runParser (parseOperatorS x) xs of
+                Nothing -> Just (x, xs)
+                Just (y, ys) -> Just (y, ys)
+
+parseOperator :: Parser Value
+parseOperator = Parser f
+    where
+        f str = case runParser (parseOperatorS (SYS [] [])) (lexeme str) of
+            Nothing -> Nothing
+            Just (x, xs) -> pat (shuntingYardEnd x) xs
+        pat (SYS _ vals) str = case parseOperatorTransform vals of
+            Nothing -> Nothing
+            Just x -> Just (x, str)
+
 parseValue :: Parser Value
 parseValue =
+    parseOperator
+    <|> parseValueWithoutOperator
+
+parseValueWithoutOperator :: Parser Value
+parseValueWithoutOperator =
     parseFuncValue
     <|> parseBoolean
     <|> parseVoid
@@ -182,7 +274,7 @@ parseAssignation = Parser f
             _notVar -> Nothing
 
 parseCondComp :: Parser Value
-parseCondComp = parseString "if (" *> parseValue <* parseString ")\n"
+parseCondComp = parseString "if(" *> parseValue <* parseString ")\n"
 
 parseCondIf :: Parser [Instruction]
 parseCondIf = parseString "{\n" *> parseInstructions <* parseString "}"

@@ -26,9 +26,17 @@ test3 = "alias abc def;\n"
 test4 :: String
 test4 = "// this is a comment\n"
 
+test5 :: String
+test5 = "@Int a = 4 + 5;\n"
+
+test6 :: String
+test6 = "@Int a = 3 + 4 * 2 / ( 1 - 5 );\n"
+
 main :: IO ()
 main =
     print (runParser parseInstruction test1)
     >> print (runParser parseInstructions test2)
     >> print (runParser parseExpresion test3)
     >> print (runParser parseExpresion test4)
+    >> print (runParser parseInstruction test5)
+    >> print (runParser parseInstruction test6)

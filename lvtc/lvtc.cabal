@@ -31,6 +31,7 @@ library
       ParseLvt
       Parser
       ParseUtil
+      ShuntingYard
   other-modules:
       Paths_lvtc
   autogen-modules:
@@ -61,6 +62,7 @@ test-suite lvtc-test
   main-is: Spec.hs
   other-modules:
       UTParseLvt
+      UTShuntingYard
       Paths_lvtc
   autogen-modules:
       Paths_lvtc
