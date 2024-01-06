@@ -4,16 +4,23 @@
 -- File description:
 -- Errors
 -}
-
+ 
 module Errors
   (
-    exitWithError
+    CustomException(..),
+    handleException
   )
 where
 
-import System.Exit (exitWith, ExitCode(..))
+import Control.Exception (Exception(..), SomeException, displayException)
 
-exitWithError :: String -> IO a
-exitWithError msg = do
-  putStrLn msg
-  exitWith $ ExitFailure 84
+data CustomException =
+    ParseError String |
+    WasmError String |
+    RuntimeError String
+  deriving (Show, Eq)
+
+instance Exception CustomException
+
+handleException :: SomeException -> IO ()
+handleException e = putStrLn $ "Error: " ++ displayException e

@@ -47,6 +47,7 @@ executable lvtrun-exe
       WasmMod.Leb128
       WasmMod.Module
       WasmMod.Sections
+      WasmMod.Sections.Types
       Paths_lvtrun
   autogen-modules:
       Paths_lvtrun

@@ -5,11 +5,15 @@
 -- Main
 -}
 
+
 module Main (main) where
 
+import Control.Exception (try)
 import WasmMod.Module
+import Errors
 
 main :: IO ()
-main = do
-    wasmMod <- loadModule "./test/test.wasm"
-    print wasmMod
+main = try (loadModule "./test/test.wasm") >>= \result ->
+    case result of
+        Left err -> handleException err
+        Right wasmMod -> print wasmMod

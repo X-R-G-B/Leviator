@@ -15,29 +15,26 @@ module WasmMod.Sections
 where
 
 import qualified Data.ByteString.Lazy as BS (ByteString, head, drop, take, null, unpack)
-import Data.Binary.Get
-import Data.Bits
-import Data.Int (Int32, Int64)
+import Data.Word (Word8)
 import Numeric (showHex)
 import WasmMod.Leb128
-import Data.Word
-import WasmMod.Leb128
+import Data.Bits
 
 data SectionID =
   Custom
-  | Type
-  | Import
-  | Function
-  | Table
-  | Memory
-  | Global
-  | Export
-  | Start
-  | Element
-  | Code
-  | Data
-  | DataCount
-  | Invalid
+  | TypeID
+  | ImportID
+  | FunctionID
+  | TableID
+  | MemoryID
+  | GlobalID
+  | ExportID
+  | StartID
+  | ElementID
+  | CodeID
+  | DataID
+  | DataCountID
+  | InvalidID
   deriving (Show, Eq)
 
 data Section = Section {
@@ -56,19 +53,19 @@ areSectionsValid :: [Section] -> Bool
 areSectionsValid sections = True
 
 getSectionID :: Word8 -> SectionID
-getSectionID 1 = Type
-getSectionID 2 = Import
-getSectionID 3 = Function
-getSectionID 4 = Table
-getSectionID 5 = Memory
-getSectionID 6 = Global
-getSectionID 7 = Export
-getSectionID 8 = Start
-getSectionID 9 = Element
-getSectionID 10 = Code
-getSectionID 11 = Data
-getSectionID 12 = DataCount
-getSectionID _ = Invalid
+getSectionID 1 = TypeID
+getSectionID 2 = ImportID
+getSectionID 3 = FunctionID
+getSectionID 4 = TableID
+getSectionID 5 = MemoryID
+getSectionID 6 = GlobalID
+getSectionID 7 = ExportID
+getSectionID 8 = StartID
+getSectionID 9 = ElementID
+getSectionID 10 = CodeID
+getSectionID 11 = DataID
+getSectionID 12 = DataCountID
+getSectionID _ = InvalidID
 
 getSection :: BS.ByteString -> (Section, BS.ByteString)
 getSection bytes = do
@@ -90,5 +87,6 @@ getModSections' = do
             in section : getModSections'' rest
   getModSections''
 
+-- Todo: Check if sections are valid
 getModSections :: BS.ByteString -> [Section]
 getModSections bytes = getModSections' (removeHeader bytes)
