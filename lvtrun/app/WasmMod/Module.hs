@@ -13,7 +13,7 @@ module WasmMod.Module
 where
 
 import qualified Data.ByteString.Lazy as BS (ByteString, unpack, readFile)
-import Control.Exception (throwIO)
+import Control.Exception (throwIO, throw)
 import Control.Monad (when)
 import Numeric (showHex)
 
@@ -21,6 +21,7 @@ import Errors
 import WasmMod.Header
 import WasmMod.Sections
 import WasmMod.Sections.Types
+import WasmMod.Sections.Global
 
 data WasmModule = WasmModule {
   header :: ModHeader,
@@ -38,6 +39,13 @@ instance Show WasmModule where
 getFileContent :: String -> IO BS.ByteString
 getFileContent path = BS.readFile path
 
+--TEMP FUNC
+getGlobalSection :: [Section] -> Section
+getGlobalSection [] = throw (WasmError "No global section")
+getGlobalSection (x:xs)
+  | identifier x == GlobalID = x
+  | otherwise = getGlobalSection xs
+
 loadModule :: String -> IO WasmModule
 loadModule filePath = do
   bytes <- getFileContent filePath
@@ -47,4 +55,6 @@ loadModule filePath = do
   when (not $ areSectionsValid modSections) $ throwIO (WasmError "Invalid sections")
   let funcType = parseTypes $ head modSections
   print funcType
+  let globals = parseGlobals $ getGlobalSection modSections
+  print globals
   return $ WasmModule modHeader modSections

@@ -48,8 +48,8 @@
 # ----------------------- 3 -----------------------
 
 # section 3 is the function section with 17 bytes of length
-03 11
-10 01 00 01
+03 11 10
+01 00 01
 01 01 02 02
 00 01 00 00
 00 00 02 03 00
@@ -80,14 +80,16 @@
 
 # ----------------------- 6 ----------------------- the global section
 
-06
-12
-
-03 7f 01
-41 c7 c7 04
-0b 7f 01 41
-00 0b 7f 01
-41 00 0b
+06 12
+# vector of 3 globals
+03
+# i32 mut = i32.const 66560
+7f 01 41 c7 c7 04 0b
+7f 01 41 00 0b
+7f 01 41 00 0b
+# (globalType, expr)
+# globalType = (valtype, mut) with mut 0x00 = const, 0x01 = var
+# expr = (instructions) 0xb
 
 # ----------------------- 7 -----------------------
 

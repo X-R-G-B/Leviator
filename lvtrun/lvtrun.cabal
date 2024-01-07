@@ -43,10 +43,12 @@ executable lvtrun-exe
   main-is: Main.hs
   other-modules:
       Errors
+      Types
       WasmMod.Header
       WasmMod.Leb128
       WasmMod.Module
       WasmMod.Sections
+      WasmMod.Sections.Global
       WasmMod.Sections.Types
       Paths_lvtrun
   autogen-modules:

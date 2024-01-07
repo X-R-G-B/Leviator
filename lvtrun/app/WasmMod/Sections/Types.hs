@@ -21,8 +21,7 @@ import Data.Word (Word8)
 import WasmMod.Sections
 import WasmMod.Leb128
 import Errors
-
-data Type = I32 | I64 | F32 | F64 deriving (Show, Eq)
+import Types (Type(..), getTypeFromByte)
 
 data FuncType = FuncType {
   typeId :: Int,
@@ -36,13 +35,6 @@ instance Show FuncType where
 
 getVectorSize :: Bs.ByteString -> (Int64, Bs.ByteString)
 getVectorSize content = extractLEB128 content
-
-getTypeFromByte :: Word8 -> Type
-getTypeFromByte 0x7f = I32
-getTypeFromByte 0x7e = I64
-getTypeFromByte 0x7d = F32
-getTypeFromByte 0x7c = F64
-getTypeFromByte _ = throw $ WasmError "GetTypeFromByte: bad type"
 
 extractTypes :: (Int64, Bs.ByteString) -> ([Type], Bs.ByteString)
 extractTypes (0, content) = ([], content)
@@ -67,4 +59,4 @@ parseTypes :: Section -> [FuncType]
 parseTypes (Section TypeID _ content) = do
   let (vecSize, rest) = extractLEB128 content
   parseFuncTypes 0 vecSize rest
-parseTypes _ = []
+parseTypes _ = throw $ WasmError "ParseTypes: bad section"
