@@ -16,7 +16,7 @@ module AST
   , VarDeclaration
   , VarAssignation
   , Condition
-  ) where
+) where
 
 import Data.Int (Int32)
 
@@ -51,5 +51,5 @@ type VarDeclaration = (Var, Value)
 type VarAssignation = (Symbol, Value)
 
 data Instruction =
-  Function FuncCall | Return Value | Declaration VarDeclaration |
+  Call FuncCall | Return Value | Declaration VarDeclaration |
   Assignation VarAssignation | Cond Condition
