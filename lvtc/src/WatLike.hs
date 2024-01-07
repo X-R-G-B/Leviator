@@ -7,108 +7,279 @@
 
 module WatLike
 (
-
+    FuncDeclare
+    , Index
+    , aSTToWatLike
 ) where
 
 import AST
+import Builtins
 
-data WatLikeState = WLS [(Int, String)] [(Int, String)] [Instruction] [Instruction]
+import Data.Int (Int32)
+import Data.Char (ord)
 
-instance Eq WatLikeState where
-    (==) (WLS y z) (WLS y' z') = y == y' && z == z'
+------------------------------------------------------------------------------
+-- Named Index Vars / Func
 
-instance Show WatLikeState where
-    show (WLS y z) = "WLS[< " ++ show y ++ " >< " ++ show z ++ " >]"
+type Index = (Int, String)
+type FuncDeclare = (FuncDeclaration, [Index])
 
-getRegisterIndex' :: Int -> String -> [(Int, String)] -> [(Int, String), Int]
+getRegisterIndex' :: Int -> String -> [Index] -> ([Index], Int)
 getRegisterIndex' maxInd var [] = ([(maxInd, var)], maxInd)
 getRegisterIndex' maxInd var (x:xs)
-    | var == snd x = ((x:xs), fst x)
-    | maxInd > fst x = getRegisterIndex' (maxInd) var xs
-    | otherwise = getRegisterIndex' ((fst x) + 1) var xs
-
-getRegisterIndex :: String -> [(Int, String)] -> ([(Int, String)], Int)
-getRegisterIndex var indexes = getRegisterIndex' 0 var indexes
-
-getIndex :: String -> [(Int, String)] -> Maybe Int
-getIndex var [] = Nothing
-getIndex var (x:xs)
-    | var == snd x = Just (fst x)
-    | otherwise = getIndex var xs
-
-registerAllFuncs :: [FuncDeclaration] -> [(Int, String)] -> [(Int, String)]
-registerAllFuncs [] indexes = indexes
-registerAllFuncs (((fName, _, _), _):xs) indexes =
-    registerAllFuncs xs indexes'
+    | var == snd x = (x:xs, fst x)
+    | maxInd > fst x = (x : inds, ind)
+    | otherwise = (x : inds', ind')
     where
-        (indexes', _) = getRegisterIndex fName indexes
+        (inds, ind) = getRegisterIndex' maxInd var xs
+        (inds', ind') = getRegisterIndex' (fst x + 1) var xs
 
-registerAllVars :: [Instruction] -> [(Int, String)] -> [(Int, String)]
-registerAllVars [] indexes = indexes
-registerAllVars ((Declaration ((vName, _), _)):xs) indexes =
-    registerAllVars xs indexes'
+getRegisterIndex :: String -> [Index] -> ([Index], Int)
+getRegisterIndex = getRegisterIndex' 0
+
+newIndex' :: Int -> [Index] -> ([Index], Int)
+newIndex' maxInd [] = ([(maxInd, "_tmpValue")], maxInd)
+newIndex' maxInd (x:xs)
+    | maxInd > fst x = (x : inds, ind)
+    | otherwise = (x : inds', ind')
     where
-        (indexes', _) = getRegisterIndex vName indexes
+        (inds, ind) = newIndex' maxInd xs
+        (inds', ind') = newIndex' (fst x + 1) xs
 
-------------------------------------------------------------------------------
+newIndex :: [Index] -> ([Index], Int)
+newIndex = newIndex' 0
 
--- TODO: take a value, and split in multiple instruction to get the final value
--- return the final value under the form (Var ind) with the variable to where
--- the value will be
--- TODO: use the pattern matching of InstructionToWatLike
-ValueToWatLike :: Value -> WatLikeState -> (WatLikeState, [Instruction], Value)
-ValueToWatLike 
-
--- TODO: remove pattern matching for the value part and call ValueToWatLike
-InstructionToWatLike :: Instruction -> WatLikeState -> (WatLikeState, [Instruction])
-InstructionToWatLike
-    (Declaration ((vName, vTyp), FuncValue x))
-    (WLS varsIndex funcsIndex oldFunc newFunc) =
-InstructionToWatLike
-    (Assignation (vName, FuncValue x))
-    (WLS varsIndex funcsIndex oldFunc newFunc) =
-InstructionToWatLike
-    (Function x)
-    (WLS varsIndex funcsIndex oldFunc newFunc) =
-InstructionToWatLike
-    (Return (FuncValue x))
-    (WLS varsIndex funcsIndex oldFunc newFunc) =
-InstructionToWatLike
-    (Cond ())
-
-
-FuncToWatLike' :: FuncDeclaration -> WatLikeState -> (WatLikeState, FuncDeclaration)
-FuncToWatLike' ((fName, fParams, fRet), []) wls = (wls, ((fName, fParams, fRet), []))
-FuncToWatLike'  ((fName, fParams, fRet), (x:xs))
-                (WLS varsIndex funcsIndex oldFunc newFunc) =
-
-FuncToWatLike :: FuncDeclaration -> WatLikeState -> WatLikeState
-FuncToWatLike   ((fName, fParams, fRet), fInss)
-                (WLS varsIndex funcsIndex oldFunc newFunc) =
-    WLS varsIndex funcsIndex oldFunc newFunc'
+modifyAllValue :: [Value] -> [Index] -> [Index] -> ([Value], [Index], [Index])
+modifyAllValue [] varsIndex funcsIndex = ([], varsIndex, funcsIndex)
+modifyAllValue (x:xs) varsIndex funcsIndex = (val:vals, varsIndex'', funcsIndex'')
     where
-        varsIndex' = registerAllVars fInss varsIndex
-        (WLS _ _ _ newFunc') =
-            FuncToWatLike'
-                ((fName, fParams, fRet), fInss)
-                (WLS varsIndex' funcsIndex oldFunc newFunc)
+        (val, varsIndex', funcsIndex') = modifyAll' x varsIndex funcsIndex
+        (vals, varsIndex'', funcsIndex'') = modifyAllValue xs varsIndex' funcsIndex'
 
-------------------------------------------------------------------------------
-
-ASTToWatLike' :: [FuncDeclaration] -> WatLikeState -> WatLikeState
-ASTToWatLike' [] (WLS varsIndex funcsIndex oldFunc newFunc) = WLS varsIndex funcsIndex oldFunc newFunc
-ASTToWatLike'   (((fName, fParams, fRet), fInss):xs)
-                (WLS varsIndex funcsIndex oldFunc newFunc) =
-    ASTToWatLike' xs (WLS varsIndex funcsIndex'' oldFunc newFunc')
+modifyAll' :: Value -> [Index] -> [Index] -> (Value, [Index], [Index])
+modifyAll' (FuncValue (fName, vals)) varsIndex funcsIndex = (newFunc, varsIndex'', funcsIndex'')
     where
         (funcsIndex', indFunc) = getRegisterIndex fName funcsIndex
-        (WLS _ funcsIndex'' _ newFunc') =
-            FuncToWatLike
-                ((show indFunc, fParams, fRet), fInss)
-                (WLS varsIndex funcsIndex' oldFunc newFunc)
-
-ASTToWatLike :: [FuncDeclaration] -> [FuncDeclaration]
-ASTToWatLike funcs = newFunc
+        (vals', varsIndex'', funcsIndex'') = modifyAllValue vals varsIndex funcsIndex'
+        newFunc = FuncValue (show indFunc, vals')
+modifyAll' (Var vName) varsIndex funcsIndex = (newVar, varsIndex', funcsIndex)
     where
-        funcsIndex = registerAllFuncs funcs []
-        (WLS _ _ _ newFunc) = ASTToWatLike' funcs (WLS [] funcsIndex funcs [])
+        (varsIndex', indVar) = getRegisterIndex vName varsIndex
+        newVar = Var (show indVar)
+modifyAll' x varsIndex funcsIndex = (x, varsIndex, funcsIndex)
+
+modifyAll :: [Instruction] -> [Index] -> [Index] -> ([Instruction], [Index], [Index])
+modifyAll [] varsIndex funcsIndex = ([], varsIndex, funcsIndex)
+modifyAll ((Function (fName, vals)):xs) varsIndex funcsIndex =
+    (newFunc:ins', varsIndex''', funcsIndex''')
+    where
+        (funcsIndex', indFunc) = getRegisterIndex fName funcsIndex
+        (vals', varsIndex'', funcsIndex'') = modifyAllValue vals varsIndex funcsIndex'
+        newFunc = Function (show indFunc, vals')
+        (ins', varsIndex''', funcsIndex''') = modifyAll xs varsIndex'' funcsIndex''
+modifyAll ((Return vValue):xs) varsIndex funcsIndex =
+    (newReturn:ins', varsIndex'', funcsIndex'')
+    where
+        (vValue', varsIndex', funcsIndex') =modifyAll' vValue varsIndex funcsIndex
+        newReturn = Return vValue'
+        (ins', varsIndex'', funcsIndex'') = modifyAll xs varsIndex' funcsIndex'
+modifyAll ((Declaration ((vName, vTyp), vValue)):xs) varsIndex funcsIndex =
+    (newDeclaration : ins', varsIndex'', funcsIndex'')
+    where
+        (varsIndex', ind) = getRegisterIndex vName varsIndex
+        newDeclaration = Declaration ((show ind, vTyp), vValue)
+        (ins', varsIndex'', funcsIndex'') = modifyAll xs varsIndex' funcsIndex
+modifyAll ((Assignation (vName, vValue)):xs) varsIndex funcsIndex =
+    (newAssignation:ins', varsIndex''', funcsIndex''')
+    where
+        (varsIndex', ind) = getRegisterIndex vName varsIndex
+        (vValue', varsIndex'', funcsIndex'') = modifyAll' vValue varsIndex' funcsIndex
+        newAssignation = Assignation (show ind, vValue')
+        (ins', varsIndex''', funcsIndex''') = modifyAll xs varsIndex'' funcsIndex''
+modifyAll ((Cond (vValue, insIf, insElse)):xs) varsIndex funcsIndex =
+    (newCond:ins', varsIndex'''', funcsIndex'''')
+    where
+        (vValue', varsIndex', funcsIndex') = modifyAll' vValue varsIndex funcsIndex
+        (insIf', varsIndex'', funcsIndex'') = modifyAll insIf varsIndex' funcsIndex'
+        (insElse', varsIndex''', funcsIndex''') = modifyAll insElse varsIndex'' funcsIndex''
+        newCond = Cond (vValue', insIf', insElse')
+        (ins', varsIndex'''', funcsIndex'''') = modifyAll xs varsIndex''' funcsIndex'''
+
+transformType :: Type -> Type
+transformType "Void" = "Int"
+transformType "Char" = "Int"
+transformType "Bool" = "Int"
+transformType x = x
+
+registerParams :: FuncDeclare -> FuncDeclare
+registerParams (((fName, [], typ), ins), varsIndex) =
+    (((fName, [], transformType typ), ins), varsIndex)
+registerParams (((fName, (pName, pTyp):vParams, typ), ins), varsIndex) =
+    (((fName', (show indVar, transformType pTyp):vParams', vTyp'), ins), varsIndex'')
+    where
+        (varsIndex', indVar) = getRegisterIndex pName varsIndex
+        (((fName', vParams', vTyp'), _), varsIndex'') = registerParams (((fName, vParams, typ), ins), varsIndex')
+
+registerAllFuncs :: [FuncDeclaration] -> [Index] -> [Index]
+registerAllFuncs [] funcsIndex = funcsIndex
+registerAllFuncs (((fName, _, _), _):xs) funcsIndex = funcsIndex''
+    where
+        (funcsIndex', _) = getRegisterIndex fName funcsIndex
+        funcsIndex'' = registerAllFuncs xs funcsIndex'
+
+changeIndexes :: [FuncDeclaration] -> [Index] -> ([FuncDeclare], [Index])
+changeIndexes [] funcsIndex = ([], funcsIndex)
+changeIndexes (((fName, vars, typ), ins):xs) funcsIndex =
+    (newFunc:funcs, funcsIndex''')
+    where
+        (funcsIndex', indFunc) = getRegisterIndex fName funcsIndex
+        (((_, vars', typ'), ins'), varsIndex) = registerParams (((fName, vars, typ), ins), [])
+        (ins'', varsIndex'', funcsIndex'') = modifyAll ins' varsIndex funcsIndex'
+        newFunc = (((show indFunc, vars', typ'), ins''), varsIndex'')
+        (funcs, funcsIndex''') = changeIndexes xs funcsIndex''
+
+------------------------------------------------------------------------------
+
+data WatLikeState = WLS [Index] [FuncDeclare] [FuncDeclare]
+
+instance Eq WatLikeState where
+    (==) (WLS x y z) (WLS x' y' z') = x == x' && y == y' && z == z'
+
+instance Show WatLikeState where
+    show (WLS x y z) = "WLS[[ " ++ show x ++ " ][ " ++ show y ++ " ][ " ++ show z ++ " ]]"
+
+------------------------------------------------------------------------------
+
+getPrototype :: String -> [FuncDeclare] -> FuncPrototype
+getPrototype _ [] = undefined
+getPrototype fName ((((fName', vars, typ), _), _):xs)
+    | fName == fName' = (fName', vars, typ)
+    | otherwise = getPrototype fName xs
+
+------------------------------------------------------------------------------
+
+funcCallToWatLike :: FuncCall -> ([FuncDeclare], [Index]) -> [Index] -> ([Index], [Instruction], FuncCall)
+funcCallToWatLike (fName, []) _ varsIndex = (varsIndex, [], (fName, []))
+funcCallToWatLike (fName, vVal:vVals) oldFuncs varsIndex =
+    (varsIndex'', ins ++ inss, (fName, vVal':vVals'))
+    where
+        (varsIndex', ins, vVal') = valueToWatLike vVal oldFuncs varsIndex
+        (varsIndex'', inss, (_, vVals')) = funcCallToWatLike (fName, vVals) oldFuncs varsIndex'
+
+valueToWatLike :: Value -> ([FuncDeclare], [Index]) -> [Index] -> ([Index], [Instruction], Value)
+valueToWatLike (FuncValue x) (oldFuncs, funcsIndex) varsIndex =
+    (varsIndex'', ins ++ [newDeclaration], Var (show indVar))
+    where
+        (varsIndex', ins, (fName, vVals)) = funcCallToWatLike x (oldFuncs, funcsIndex) varsIndex
+        (varsIndex'', indVar) = newIndex varsIndex'
+        (_, _, typ) = getPrototype fName oldFuncs
+        newDeclaration = Declaration ((show indVar, typ), FuncValue (fName, vVals))
+valueToWatLike (Boolean True) _ varsIndex =
+    (varsIndex', [newDeclaration], Var (show indVar))
+    where
+        (varsIndex', indVar) = newIndex varsIndex
+        newDeclaration = Declaration ((show indVar, "Int"), Integer 1)
+valueToWatLike (Boolean False) _ varsIndex =
+    (varsIndex', [newDeclaration], Var (show indVar))
+    where
+        (varsIndex', indVar) = newIndex varsIndex
+        newDeclaration = Declaration ((show indVar, "Int"), Integer 0)
+valueToWatLike (Character x) _ varsIndex =
+    (varsIndex', [newDeclaration], Var (show indVar))
+    where
+        (varsIndex', indVar) = newIndex varsIndex
+        newDeclaration = Declaration ((show indVar, "Int"), Integer (read (show (ord x)) :: Int32))
+valueToWatLike (StringView _) _ _ = undefined
+valueToWatLike Void _ varsIndex =
+    (varsIndex', [newDeclaration], Var (show indVar))
+    where
+        (varsIndex', indVar) = newIndex varsIndex
+        newDeclaration = Declaration ((show indVar, "Int"), Integer 0)
+valueToWatLike (Integer x) _ varsIndex =
+    (varsIndex', [newDeclaration], Var (show indVar))
+    where
+        (varsIndex', indVar) = newIndex varsIndex
+        newDeclaration = Declaration ((show indVar, "Int"), Integer x)
+valueToWatLike (Var x) _ varsIndex = (varsIndex, [], Var x)
+
+instructionToWatLike :: Instruction -> ([FuncDeclare], [Index]) -> [Index] -> ([Index], [Instruction])
+instructionToWatLike
+    (Declaration ((vName, vTyp), vValue)) oldFuncs varsIndex =
+    (varsIndex', ins' ++ [newDeclaration])
+    where
+        (varsIndex', ins', vValue') = valueToWatLike vValue oldFuncs varsIndex
+        newDeclaration = Declaration ((vName, vTyp), vValue')
+instructionToWatLike
+    (Assignation (vName, vValue)) oldFuncs varsIndex =
+    (varsIndex', ins' ++ [newAssignation])
+    where
+        (varsIndex', ins', vValue') = valueToWatLike vValue oldFuncs varsIndex
+        newAssignation = Assignation (vName, vValue')
+instructionToWatLike
+    (Function (fName, fParams)) oldFuncs varsIndex =
+    (varsIndex', ins' ++ [newFunction])
+    where
+        (varsIndex', ins', (_, fParams')) = funcCallToWatLike (fName, fParams) oldFuncs varsIndex
+        newFunction = Function (fName, fParams')
+instructionToWatLike
+    (Return vValue) oldFuncs varsIndex =
+    (varsIndex', ins' ++ [newReturn])
+    where
+        (varsIndex', ins', vValue') = valueToWatLike vValue oldFuncs varsIndex
+        newReturn = Return vValue'
+instructionToWatLike
+    (Cond (vValCond, vInsTrue, vInsFalse)) oldFuncs varsIndex =
+    (varsIndex''', insCond ++ [newCond])
+    where
+        (varsIndex', insCond, vValCond') = valueToWatLike vValCond oldFuncs varsIndex
+        (varsIndex'', vInsTrue') = instructionsToWatLike vInsTrue oldFuncs varsIndex'
+        (varsIndex''', vInsFalse') = instructionsToWatLike vInsFalse oldFuncs varsIndex''
+        newCond = Cond (vValCond', vInsTrue', vInsFalse')
+
+instructionsToWatLike :: [Instruction] -> ([FuncDeclare], [Index]) -> [Index] -> ([Index], [Instruction])
+instructionsToWatLike [] _ varsIndex = (varsIndex, [])
+instructionsToWatLike (x:xs) oldFuncs varsIndex =
+    (varsIndex'', ins ++ inss)
+    where
+        (varsIndex', ins) = instructionToWatLike x oldFuncs varsIndex
+        (varsIndex'', inss) = instructionsToWatLike xs oldFuncs varsIndex'
+
+------------------------------------------------------------------------------
+
+funcToWatLike' :: FuncDeclare -> ([FuncDeclare], [Index]) -> FuncDeclare
+funcToWatLike' (((fName, fParams, fRet), []), varsIndex) _ = (((fName, fParams, fRet), []), varsIndex)
+funcToWatLike'  (((fName, fParams, fRet), ins:inss), varsIndex) oldFuncs =
+    (((fName, fParams, fRet), ins' ++ inss'), varsIndex'')
+    where
+        (varsIndex', ins') = instructionToWatLike ins oldFuncs varsIndex
+        (((_, _, _), inss'), varsIndex'') = funcToWatLike' (((fName, fParams, fRet), inss), varsIndex') oldFuncs
+
+funcToWatLike :: FuncDeclare -> WatLikeState -> WatLikeState
+funcToWatLike   (((fName, fParams, fRet), fInss), varsIndex)
+                (WLS funcsIndex oldFuncs newFunc) =
+    WLS funcsIndex oldFuncs (newFunc ++ [fFunc])
+    where
+        fFunc = funcToWatLike'
+            (((fName, fParams, fRet), fInss), varsIndex)
+            (oldFuncs, funcsIndex)
+
+------------------------------------------------------------------------------
+
+aSTToWatLike' :: [FuncDeclare] -> WatLikeState -> WatLikeState
+aSTToWatLike' [] (WLS funcsIndex oldFunc newFunc) = WLS funcsIndex oldFunc newFunc
+aSTToWatLike'   (func:xs)
+                (WLS funcsIndex oldFunc newFunc) =
+    aSTToWatLike' xs (WLS funcsIndex' oldFunc newFunc')
+    where
+        (WLS funcsIndex' _ newFunc') =
+            funcToWatLike
+                func
+                (WLS funcsIndex oldFunc newFunc)
+
+aSTToWatLike :: [FuncDeclaration] -> [FuncDeclare]
+aSTToWatLike funcs = newFunc
+    where
+        allFuncs = getBuiltinsFunc ++ funcs
+        funcsIndex = registerAllFuncs allFuncs []
+        (funcs', funcsIndex') = changeIndexes allFuncs funcsIndex
+        (WLS _ _ newFunc) = aSTToWatLike' funcs' (WLS funcsIndex' funcs' [])
