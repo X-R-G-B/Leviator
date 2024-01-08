@@ -46,6 +46,8 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - lvtc
+    - directory
+    - filepath
 
 tests:
   lvtc-test:
@@ -59,3 +61,4 @@ tests:
     - lvtc
     - tasty
     - tasty-hunit
+    - process
