@@ -2,7 +2,7 @@
 -- EPITECH PROJECT, 2023
 -- Leviator compiler
 -- File description:
--- WatLike
+-- Builtins
 -}
 
 module Builtins

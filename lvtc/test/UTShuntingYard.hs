@@ -1,3 +1,10 @@
+{-
+-- EPITECH PROJECT, 2023
+-- Leviator compiler
+-- File description:
+-- UTShuntingYard
+-}
+
 module UTShuntingYard (
     utShuntingYard
 ) where
