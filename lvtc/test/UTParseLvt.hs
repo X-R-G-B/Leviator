@@ -16,6 +16,13 @@ testParserHelper str restExpected expressionExpected =
             assertEqual str expressionExpected parsed
         Nothing -> assertFailure ("Parsing failed for: `" ++ str ++ "`")
 
+testParserFunc :: String -> String -> FuncDeclaration -> IO ()
+testParserFunc str restExpected expressionExpected =
+    case runParser parseFuncDeclaration str of
+        Just (parsed, rest) -> assertEqual str restExpected rest >>
+            assertEqual str expressionExpected parsed
+        Nothing -> assertFailure ("Parsing failed for: `" ++ str ++ "`")
+
 testParserHelpers :: String -> String -> [Instruction] -> IO ()
 testParserHelpers str restExpected expressionExpected =
     case runParser parseInstructions str of
@@ -86,4 +93,13 @@ utParserLvt = testGroup "Parse Lvt"
             Declaration (("c", "Int"), FuncValue ("b", [Var "a"])),
             Cond (Var "c", [Function ("d", [Var "a"])], [])
         ]
+  , testCase "test func" $
+      testParserFunc "fn abc(a: Int) -> Int\n{\n    <- a;\n};\n"
+        ""
+        (
+            ("abc", [("a", "Int")], "Int"),
+            [
+                Return (Var "a")
+            ]
+        )
   ]
