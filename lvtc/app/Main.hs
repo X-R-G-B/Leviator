@@ -11,6 +11,9 @@ import Expression (parseExpresion, parseAllExpression)
 import Parser (runParser)
 import Alias (proceedAlias)
 import ParseLvt (parseInstruction, parseInstructions, parseFuncDeclaration)
+import ParseLvt (parseInstruction, parseInstructions)
+import WatLike (aSTToWatLike)
+import AST
 
 test1 :: String
 test1 = "if (a)\n{\nb(0);\n};\n"
@@ -43,6 +46,15 @@ text = aliasInt ++ aliasRetValue ++ funcMain
 test8 :: String
 test8 = "fn abc(a: Int) -> Int\n{\n    <- a;\n};\n"
 
+test7 :: [FuncDeclaration]
+test7 =
+    [
+        (
+            ("add", [("a", "Int"), ("b", "Int")], "Int"),
+            [Return (FuncValue ("+", [Var "a", Var "b"]))]
+        )
+    ]
+
 main :: IO ()
 main =
     print (runParser parseInstruction test1)
@@ -53,3 +65,4 @@ main =
     >> print (runParser parseInstruction test6)
     >> print (runParser (proceedAlias <$> parseAllExpression) text)
     >> print (runParser parseFuncDeclaration test8)
+    >> print (aSTToWatLike test7)
