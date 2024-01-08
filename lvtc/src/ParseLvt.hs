@@ -24,6 +24,8 @@ module ParseLvt
     parseDeclaration,
     parseAssignation,
     parseCond,
+    -- Function
+    parseFuncDeclaration
 ) where
 
 import Control.Applicative
@@ -52,6 +54,8 @@ lexeme ('*':' ':xs) = lexeme ("*" ++ xs)
 lexeme ('/':' ':xs) = lexeme ("/" ++ xs)
 lexeme ('(':' ':xs) = lexeme ("(" ++ xs)
 lexeme (')':' ':xs) = lexeme (")" ++ xs)
+lexeme (':':' ':xs) = lexeme (":" ++ xs)
+lexeme (' ':':':xs) = lexeme (":" ++ xs)
 lexeme (x:xs) = x : lexeme xs
 
 parseBoolean :: Parser Value
@@ -113,15 +117,11 @@ parseOperatorFstVal = Parser f
 
 parseOperatorOp :: Parser Value
 parseOperatorOp =
-    f
-        <$> (parseString "+"
-            <|> parseString "-"
-            <|> parseString "*"
-            <|> parseString "/"
-            <|> parseString "("
-            <|> parseString ")")
-    where
-        f op = Var op
+    Var
+        <$> (parseString "+" <|> parseString "-" <|> parseString "*"
+            <|> parseString "/" <|> parseString "(" <|> parseString ")"
+            <|> parseString "==" <|> parseString "!=" <|> parseString "<"
+            <|> parseString ">" <|> parseString "<=" <|> parseString ">=")
 
 parseOperator' :: ShuntingYardState -> Parser ShuntingYardState
 parseOperator' sys =
@@ -131,32 +131,34 @@ parseOperator' sys =
         fVal val = shuntingYardValue val sys
         fOp op = shuntingYardOp op sys
 
-parseOperatorTransform' :: [Value] -> Maybe [Value]
-parseOperatorTransform' [] = Just []
-parseOperatorTransform' (_:(Var "+"):_) = Nothing
-parseOperatorTransform' (_:(Var "-"):_) = Nothing
-parseOperatorTransform' (_:(Var "*"):_) = Nothing
-parseOperatorTransform' (_:(Var "/"):_) = Nothing
-parseOperatorTransform' (x1:x2:(Var "+"):rest) =
-    Just ((FuncValue ("+", [x1, x2])) : rest)
-parseOperatorTransform' (x1:x2:(Var "-"):rest) =
-    Just ((FuncValue ("-", [x1, x2])) : rest)
-parseOperatorTransform' (x1:x2:(Var "*"):rest) =
-    Just ((FuncValue ("*", [x1, x2])) : rest)
-parseOperatorTransform' (x1:x2:(Var "/"):rest) =
-    Just ((FuncValue ("/", [x1, x2])) : rest)
-parseOperatorTransform' (x:xs) =
-    case parseOperatorTransform' xs of
+parseOperatorTransformOne' :: [Value] -> Maybe [Value]
+parseOperatorTransformOne' (x1:x2:(Var op):rest)
+    | isOperator op = Just (FuncValue (op, [x1, x2]) : rest)
+    | otherwise = case parseOperatorTransformOne rest of
         Nothing -> Nothing
-        Just ys -> Just (x:ys)
+        Just ys -> Just (x1:x2:ys)
+parseOperatorTransformOne' _ = Nothing
+
+parseOperatorTransformOne :: [Value] -> Maybe [Value]
+parseOperatorTransformOne [] = Just []
+parseOperatorTransformOne [x] = Just [x]
+parseOperatorTransformOne [_, _] = Nothing
+parseOperatorTransformOne (x1:(Var op):rest)
+    | isOperator op = Nothing
+    | otherwise = parseOperatorTransformOne' (x1 : Var op : rest)
+parseOperatorTransformOne (x1:x2:(Var op):rest) =
+    parseOperatorTransformOne' (x1 : x2 : Var op : rest)
+parseOperatorTransformOne (x:xs) = case parseOperatorTransformOne xs of
+    Nothing -> Nothing
+    Just ys -> Just (x:ys)
 
 parseOperatorTransform :: [Value] -> Maybe Value
 parseOperatorTransform [] = Nothing
 parseOperatorTransform vals =
-    case parseOperatorTransform' vals of
+    case parseOperatorTransformOne vals of
         Nothing -> Nothing
         Just [] -> Nothing
-        Just (x:[]) -> Just x
+        Just [x] -> Just x
         Just (x:rest) -> parseOperatorTransform (x:rest)
 
 parseOperatorS :: ShuntingYardState -> Parser ShuntingYardState
@@ -231,10 +233,10 @@ parseFunction :: Parser Instruction
 parseFunction = parseCall
 
 parseReturn :: Parser Instruction
-parseReturn = Return <$> (parseString "<- " *> parseValue)
+parseReturn = Return <$> ((parseString "<-") *> parseValue)
 
 parseType :: Parser String
-parseType = 
+parseType =
     parseString "Bool"
     <|> parseString "Int"
     <|> parseString "Char"
@@ -310,3 +312,52 @@ parseInstructions :: Parser [Instruction]
 parseInstructions = Parser f
     where
         f str = runParser (some parseInstruction) (lexeme str)
+
+parseFuncVar :: Parser Var
+parseFuncVar = Parser f
+    where
+        f str = case runParser (parseVar <* parseString ":") (lexeme str) of
+            Nothing -> Nothing
+            Just (Var x, xs) -> runParser (lmbda x <$> parseType) xs
+            _notVar -> Nothing
+        lmbda var typ = (var, typ)
+
+parseFuncVars :: Parser [Var]
+parseFuncVars =
+    parseChar '(' *>
+    some
+        (parseFuncVar
+            <* (parseString "," <|> parseString " ," <|> parseString ", ")
+        <|> parseFuncVar)
+    <* parseChar ')'
+
+parseFuncName :: Parser Symbol
+parseFuncName = Parser f
+    where
+        f str = case runParser
+                ((parseString "export fn " <|> parseString "fn ") *> parseVar)
+                str
+            of
+                Nothing -> Nothing
+                Just (Var x, xs) -> Just (x, xs)
+                _notVar -> Nothing
+
+parseFuncType :: Parser Type
+parseFuncType = 
+    (parseString " -> "
+    <|> parseString "-> "
+    <|> parseString "->") *> parseType <* parseString "\n{\n"
+
+parseFuncPrototype :: Parser FuncPrototype
+parseFuncPrototype =
+    (,,)
+        <$> parseFuncName
+            <*> parseFuncVars
+            <*> parseFuncType
+
+parseFuncDeclaration :: Parser FuncDeclaration
+parseFuncDeclaration =
+    (,)
+        <$> parseFuncPrototype
+            <*> parseInstructions
+            <* parseString "};\n"

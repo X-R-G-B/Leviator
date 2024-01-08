@@ -10,7 +10,7 @@ module Main (main) where
 import Expression (parseExpresion, parseAllExpression)
 import Parser (runParser)
 import Alias (proceedAlias)
-import ParseLvt (parseInstruction, parseInstructions)
+import ParseLvt (parseInstruction, parseInstructions, parseFuncDeclaration)
 import WatLike (aSTToWatLike)
 import AST
 
@@ -42,6 +42,9 @@ text = aliasInt ++ aliasRetValue ++ funcMain
         aliasRetValue = "alias retValue 0;\n"
         funcMain = "fn main () -> int \n{\n    <- retValue;\n};\n"
 
+test8 :: String
+test8 = "fn abc(a: Int) -> Int\n{\n    <- a;\n};\n"
+
 test7 :: [FuncDeclaration]
 test7 =
     [
@@ -60,4 +63,5 @@ main =
     >> print (runParser parseInstruction test5)
     >> print (runParser parseInstruction test6)
     >> print (runParser (proceedAlias <$> parseAllExpression) text)
+    >> print (runParser parseFuncDeclaration test8)
     >> print (aSTToWatLike test7)

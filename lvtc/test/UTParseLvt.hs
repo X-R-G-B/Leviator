@@ -23,6 +23,13 @@ testParserHelper str restExpected expressionExpected =
             assertEqual str expressionExpected parsed
         Nothing -> assertFailure ("Parsing failed for: `" ++ str ++ "`")
 
+testParserFunc :: String -> String -> FuncDeclaration -> IO ()
+testParserFunc str restExpected expressionExpected =
+    case runParser parseFuncDeclaration str of
+        Just (parsed, rest) -> assertEqual str restExpected rest >>
+            assertEqual str expressionExpected parsed
+        Nothing -> assertFailure ("Parsing failed for: `" ++ str ++ "`")
+
 testParserHelpers :: String -> String -> [Instruction] -> IO ()
 testParserHelpers str restExpected expressionExpected =
     case runParser parseInstructions str of
@@ -66,9 +73,9 @@ utParserLvt = testGroup "Parse Lvt"
         ""
         (Function ("a", [Integer 0, StringView "abc", Boolean False]))
   , testCase "return value" $
-      testParserHelper "<- 0;\n"
+      testParserHelpers "<- 0;\n"
         ""
-        (Return (Integer 0))
+        [(Return (Integer 0))]
   , testCase "condition if" $
       testParserHelper "if (a)\n{\nb(0);\n};\n"
         ""
@@ -93,4 +100,13 @@ utParserLvt = testGroup "Parse Lvt"
             Declaration (("c", "Int"), FuncValue ("b", [Var "a"])),
             Cond (Var "c", [Function ("d", [Var "a"])], [])
         ]
+  , testCase "test func" $
+      testParserFunc "fn abc(a: Int) -> Int\n{\n    <- a;\n};\n"
+        ""
+        (
+            ("abc", [("a", "Int")], "Int"),
+            [
+                Return (Var "a")
+            ]
+        )
   ]
