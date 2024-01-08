@@ -40,7 +40,10 @@ getFilesExpression [] = return []
 selectGoodFiles :: FilePath -> [FilePath] -> IO [FilePath]
 selectGoodFiles folder [] = return []
 selectGoodFiles folder (file:files)
-    | ".lvt" `isSuffixOf` trueFile = putStrLn ("- " ++ trueFile) >> selectGoodFiles folder files >>= (\others -> return (trueFile : others))
+    | ".lvt" `isSuffixOf` trueFile =
+            putStrLn ("- " ++ trueFile)
+            >> selectGoodFiles folder files
+                >>= (\others -> return (trueFile : others))
     | otherwise = selectGoodFiles folder files
     where
         trueFile = joinPath [folder, file]

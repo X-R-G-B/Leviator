@@ -47,7 +47,9 @@ parseArgs' (x:xs) args =
 parseArgs :: [String] -> IO (Either Args String)
 parseArgs args =
     getCurrentDirectory >>= \path ->
-    return (parseArgs' args (Args {action = Run, folderPath = path, outFile = "out.wasm"}))
+    return (parseArgs' args (Args {
+        action = Run, folderPath = path, outFile = "out.wasm"
+    }))
 
 hLine1 :: String
 hLine1 = "Usage: lvtc [OPTION] [FOLDER]\n"
