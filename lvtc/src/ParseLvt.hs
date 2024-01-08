@@ -131,31 +131,31 @@ parseOperator' sys =
         fVal val = shuntingYardValue val sys
         fOp op = shuntingYardOp op sys
 
-parseOperatorTransform'' :: [Value] -> Maybe [Value]
-parseOperatorTransform'' (x1:x2:(Var op):rest)
+parseOperatorTransformOne' :: [Value] -> Maybe [Value]
+parseOperatorTransformOne' (x1:x2:(Var op):rest)
     | isOperator op = Just (FuncValue (op, [x1, x2]) : rest)
-    | otherwise = case parseOperatorTransform' rest of
+    | otherwise = case parseOperatorTransformOne rest of
         Nothing -> Nothing
         Just ys -> Just (x1:x2:ys)
-parseOperatorTransform'' _ = Nothing
+parseOperatorTransformOne' _ = Nothing
 
-parseOperatorTransform' :: [Value] -> Maybe [Value]
-parseOperatorTransform' [] = Just []
-parseOperatorTransform' [x] = Just [x]
-parseOperatorTransform' [_, _] = Nothing
-parseOperatorTransform' (x1:(Var op):rest)
+parseOperatorTransformOne :: [Value] -> Maybe [Value]
+parseOperatorTransformOne [] = Just []
+parseOperatorTransformOne [x] = Just [x]
+parseOperatorTransformOne [_, _] = Nothing
+parseOperatorTransformOne (x1:(Var op):rest)
     | isOperator op = Nothing
-    | otherwise = parseOperatorTransform'' (x1 : Var op : rest)
-parseOperatorTransform' (x1:x2:(Var op):rest) =
-    parseOperatorTransform'' (x1 : x2 : Var op : rest)
-parseOperatorTransform' (x:xs) = case parseOperatorTransform' xs of
+    | otherwise = parseOperatorTransformOne' (x1 : Var op : rest)
+parseOperatorTransformOne (x1:x2:(Var op):rest) =
+    parseOperatorTransformOne' (x1 : x2 : Var op : rest)
+parseOperatorTransformOne (x:xs) = case parseOperatorTransformOne xs of
     Nothing -> Nothing
     Just ys -> Just (x:ys)
 
 parseOperatorTransform :: [Value] -> Maybe Value
 parseOperatorTransform [] = Nothing
 parseOperatorTransform vals =
-    case parseOperatorTransform' vals of
+    case parseOperatorTransformOne vals of
         Nothing -> Nothing
         Just [] -> Nothing
         Just [x] -> Just x
