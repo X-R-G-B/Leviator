@@ -27,12 +27,14 @@ library
   exposed-modules:
       Alias
       AST
+      Builtins
       Expression
       Lib
       ParseLvt
       Parser
       ParseUtil
       ShuntingYard
+      WatLike
   other-modules:
       Paths_lvtc
   autogen-modules:
@@ -64,6 +66,7 @@ test-suite lvtc-test
   other-modules:
       UTParseLvt
       UTShuntingYard
+      UTWatLike
       Paths_lvtc
   autogen-modules:
       Paths_lvtc
