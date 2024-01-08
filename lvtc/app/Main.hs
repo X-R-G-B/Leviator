@@ -11,7 +11,6 @@ import Expression (parseExpresion, parseAllExpression)
 import Parser (runParser)
 import Alias (proceedAlias)
 import ParseLvt (parseInstruction, parseInstructions, parseFuncDeclaration)
-import ParseLvt (parseInstruction, parseInstructions)
 import WatLike (aSTToWatLike)
 import AST
 

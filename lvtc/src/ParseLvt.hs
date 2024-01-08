@@ -233,7 +233,7 @@ parseFunction :: Parser Instruction
 parseFunction = parseCall
 
 parseReturn :: Parser Instruction
-parseReturn = Return <$> ((parseString "<- " <|> parseString "<-") *> parseValue)
+parseReturn = Return <$> ((parseString "<-") *> parseValue)
 
 parseType :: Parser String
 parseType =

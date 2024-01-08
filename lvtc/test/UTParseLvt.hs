@@ -73,9 +73,9 @@ utParserLvt = testGroup "Parse Lvt"
         ""
         (Function ("a", [Integer 0, StringView "abc", Boolean False]))
   , testCase "return value" $
-      testParserHelper "<- 0;\n"
+      testParserHelpers "<- 0;\n"
         ""
-        (Return (Integer 0))
+        [(Return (Integer 0))]
   , testCase "condition if" $
       testParserHelper "if (a)\n{\nb(0);\n};\n"
         ""
