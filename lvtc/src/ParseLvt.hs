@@ -325,7 +325,7 @@ parseFuncVar = Parser f
 parseFuncVars :: Parser [Var]
 parseFuncVars =
     parseChar '(' *>
-    some
+    many
         (parseFuncVar
             <* (parseString "," <|> parseString " ," <|> parseString ", ")
         <|> parseFuncVar)
@@ -343,7 +343,7 @@ parseFuncName = Parser f
                 _notVar -> Nothing
 
 parseFuncType :: Parser Type
-parseFuncType = 
+parseFuncType =
     (parseString " -> "
     <|> parseString "-> "
     <|> parseString "->") *> parseType <* parseString "\n{\n"
@@ -355,9 +355,14 @@ parseFuncPrototype =
             <*> parseFuncVars
             <*> parseFuncType
 
-parseFuncDeclaration :: Parser FuncDeclaration
-parseFuncDeclaration =
+parseFuncDeclaration' :: Parser FuncDeclaration
+parseFuncDeclaration' =
     (,)
         <$> parseFuncPrototype
             <*> parseInstructions
             <* parseString "};\n"
+
+parseFuncDeclaration :: Parser FuncDeclaration
+parseFuncDeclaration = Parser f
+    where
+        f str = runParser parseFuncDeclaration' (lexeme str)
