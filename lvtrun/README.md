@@ -48,11 +48,25 @@
 # ----------------------- 3 -----------------------
 
 # section 3 is the function section with 17 bytes of length
+# index of the signature (type) of each internal function
+# functionsec = section(vec(typeidx))
 03 11 10
-01 00 01
-01 01 02 02
-00 01 00 00
-00 00 02 03 00
+01
+00
+01
+01
+01
+02
+02
+00
+01
+00
+00
+00
+00
+02
+03
+00
 
 # ----------------------- 4 ----------------------- the table section
 
@@ -75,8 +89,7 @@
 
 # 01 = number of memory (its a vector)
 01
-01 c7
-02 c7 02
+01 c7 02 c7 02
 
 # ----------------------- 6 ----------------------- the global section
 

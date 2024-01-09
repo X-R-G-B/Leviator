@@ -5,7 +5,6 @@
 -- Main
 -}
 
-
 module Main (main) where
 
 import Control.Exception (try)

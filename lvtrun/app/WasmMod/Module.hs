@@ -22,6 +22,7 @@ import WasmMod.Header
 import WasmMod.Sections
 import WasmMod.Sections.Types
 import WasmMod.Sections.Global
+import WasmMod.Sections.Memory
 
 data WasmModule = WasmModule {
   header :: ModHeader,
@@ -46,6 +47,12 @@ getGlobalSection (x:xs)
   | identifier x == GlobalID = x
   | otherwise = getGlobalSection xs
 
+getMemorySection :: [Section] -> Section
+getMemorySection [] = throw (WasmError "No memory section")
+getMemorySection (x:xs)
+  | identifier x == MemoryID = x
+  | otherwise = getMemorySection xs
+
 loadModule :: String -> IO WasmModule
 loadModule filePath = do
   bytes <- getFileContent filePath
@@ -57,4 +64,6 @@ loadModule filePath = do
   print funcType
   let globals = parseGlobals $ getGlobalSection modSections
   print globals
+  let memory = parseMemory $ getMemorySection modSections
+  print memory
   return $ WasmModule modHeader modSections

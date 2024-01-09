@@ -49,6 +49,7 @@ executable lvtrun-exe
       WasmMod.Module
       WasmMod.Sections
       WasmMod.Sections.Global
+      WasmMod.Sections.Memory
       WasmMod.Sections.Types
       Paths_lvtrun
   autogen-modules:
