@@ -16,6 +16,7 @@ import UTParseLvt
 import UTShuntingYard
 import UTWatLike
 import UTWat
+import UTWasm
 
 main :: IO ()
 main = defaultMain tests
@@ -29,7 +30,8 @@ tests = testGroup "Leviator Tests - Compiler"
         utShuntingYard,
         utAlias,
         utWatLike,
-        utWat
+        utWat,
+        utWasm
     ]
 
 testParserHelper :: String -> String -> Expression -> IO ()

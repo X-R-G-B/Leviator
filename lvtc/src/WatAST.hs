@@ -64,3 +64,7 @@ instance Eq FuncDef where
     (==) (FuncDef aa aaa a b c d e) (FuncDef aa' aaa' a' b' c' d' e') =
         aa == aa' && aaa == aaa' && a == a'
         && b == b' && c == c' && d == d' && e == e'
+
+instance Ord FuncDef where
+    compare (FuncDef _ _ ind _ _ _ _) (FuncDef _ _ ind' _ _ _ _) =
+        compare ind ind'

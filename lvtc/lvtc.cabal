@@ -71,6 +71,7 @@ test-suite lvtc-test
   other-modules:
       UTParseLvt
       UTShuntingYard
+      UTWasm
       UTWat
       UTWatLike
       Paths_lvtc

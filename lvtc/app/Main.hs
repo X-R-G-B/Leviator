@@ -13,6 +13,9 @@ import Alias (proceedAlias)
 import ParseLvt (parseInstruction, parseInstructions, parseFuncDeclaration)
 import WatLike (aSTToWatLike)
 import AST
+import WatAST
+import Builtins (getBuiltinsWat)
+import WatToWasm (watToWasm)
 
 test1 :: String
 test1 = "if (a)\n{\nb(0);\n};\n"
@@ -50,8 +53,20 @@ test7 =
     [
         (
             (False, "add", [("a", "Int"), ("b", "Int")], "Int"),
-            [Return (FuncValue ("+", [Var "a", Var "b"]))]
+            [AST.Return (FuncValue ("+", [Var "a", Var "b"]))]
         )
+    ]
+
+test9 :: [FuncDef]
+test9 =
+    getBuiltinsWat ++
+    [
+        FuncDef False "add" 10 [] WatAST.I32 [
+            I32Const 97,
+            LocalSet 0,
+            LocalGet 0,
+            WatAST.Return
+        ] [(WatAST.I32, 1)]
     ]
 
 main :: IO ()
@@ -65,3 +80,4 @@ main =
     >> print (runParser (proceedAlias <$> parseAllExpression) text)
     >> print (runParser parseFuncDeclaration test8)
     >> print (aSTToWatLike test7)
+    >> print (watToWasm test9)

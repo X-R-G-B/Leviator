@@ -14,10 +14,13 @@ module WasmUtils
     getDefaultExportSection,
     getDefaultCodeSectionCode,
     getDefaultCodeSection,
+    getDefaultWasm,
     --
     fillBlankTypeSectionType,
     fillBlankTypeSection,
     fillBlankFunctionSection,
+    fillBlankMemorySection,
+    fillBlankExportSectionExport,
     fillBlankExportSection,
     fillBlankCodeSectionCode,
     fillBlankCodeSection,
@@ -96,6 +99,37 @@ getDefaultMemorySection = MS {
     maxMS = 0x0
 }
 
+fillBlankMemorySection :: MemorySection -> MemorySection
+fillBlankMemorySection (MS hM _ 0 miMS maMS) =
+    MS {
+        headerMS = hM,
+        sizeMS = size,
+        hasMax = 0,
+        minMS = miMS,
+        maxMS = maMS
+    }
+    where
+        size = 2
+fillBlankMemorySection (MS hM _ _ miMS maMS) =
+    MS {
+        headerMS = hM,
+        sizeMS = size,
+        hasMax = 1,
+        minMS = miMS,
+        maxMS = maMS
+    }
+    where
+        size = 3
+
+fillBlankExportSectionExport :: ExportSectionExport -> ExportSectionExport
+fillBlankExportSectionExport (ESE _ n t i) =
+    ESE {
+        nameLength = length n,
+        name = n,
+        typeESE = t,
+        indexESE = i
+    }
+
 getSizeExportSectionExport :: ExportSectionExport -> Int
 getSizeExportSectionExport (ESE _ n _ _) =
     1 + ((length n) * 1) + 1 + 1
@@ -169,3 +203,14 @@ fillBlankCodeSection (CS hC _ _ c) =
     }
     where
         size = 1 + sum (map getSizeCodeSectionCode c)
+
+getDefaultWasm :: Wasm
+getDefaultWasm = Wasm {
+    headerWasm = (0x00, 0x61, 0x73, 0x6d),
+    versionWasm = (0x01, 0x00, 0x00, 0x00),
+    typeSection = getDefaultTypeSection,
+    functionSection = getDefaultFunctionSection,
+    memorySection = getDefaultMemorySection,
+    exportSection = getDefaultExportSection,
+    codeSection = getDefaultCodeSection
+}
