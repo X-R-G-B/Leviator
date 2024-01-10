@@ -47,12 +47,14 @@ executable lvtrun-exe
       Leb128
       Loader
       Parsing.Exports
+      Parsing.Functions
       Parsing.FuncTypes
       Parsing.Global
       Parsing.Header
       Parsing.Memory
       Parsing.Parser
       Parsing.Sections
+      Run.Start
       Types
       Paths_lvtrun
   autogen-modules:

@@ -142,8 +142,13 @@ data ImportDesc =
 
 data Function = Function {
   funcType :: TypeIdx,
+  funcIdx :: FuncIdx,
   body :: [Instruction]
-} deriving (Show)
+}
+
+instance Show Function where
+  show func = "\n\t(func idx:" ++ (show $ funcIdx func) ++ " typeId:" ++ (show $ funcType func) ++ " " ++
+    (show $ body func) ++ ")"
 
 type Memory = Limit
 

@@ -22,8 +22,6 @@ import Leb128
 import Errors
 import Types
 
-import Debug.Trace
-
 isExportValid :: Word8 -> Bool
 isExportValid 0x00 = True
 isExportValid 0x01 = True
@@ -46,15 +44,15 @@ createExport _ _ _ = throw $ WasmError "createExport: bad export"
 
 parseExports :: Int32 -> Int64 -> Bs.ByteString -> [Export]
 parseExports idx maxIdx content
-    | idx >= (fromIntegral maxIdx) = []
-    | Bs.length content == 0 = []
-    | otherwise = do
-        let (nameLen, rest) = extractLEB128 content
-        let (name, rest2) = Bs.splitAt (fromIntegral nameLen) rest
-        let exportType = head (Bs.unpack rest2)
-        let (exportValue, rest3) = extractLEB128 (Bs.drop 1 rest2)
-        let export = createExport (Bs.unpack name) exportType (fromIntegral exportValue)
-        export : parseExports (idx + 1) maxIdx rest3
+  | idx >= (fromIntegral maxIdx) = []
+  | Bs.length content == 0 = []
+  | otherwise = do
+    let (nameLen, rest) = extractLEB128 content
+    let (name, rest2) = Bs.splitAt (fromIntegral nameLen) rest
+    let exportType = head (Bs.unpack rest2)
+    let (exportValue, rest3) = extractLEB128 (Bs.drop 1 rest2)
+    let export = createExport (Bs.unpack name) exportType (fromIntegral exportValue)
+    export : parseExports (idx + 1) maxIdx rest3
 
 printHex :: [Word8] -> String
 printHex [] = []
@@ -63,6 +61,5 @@ printHex (x:xs) = showHex x " " ++ printHex xs
 getExports :: Section -> [Export]
 getExports (Section ExportID _ content) = do
   let (exprtsNb, rest) = getExportNb content
-  trace ("content" ++ printHex (Bs.unpack content))
-    parseExports 0 exprtsNb rest
+  parseExports 0 exprtsNb rest
 getExports _ = throw $ WasmError "getExports: bad section"
