@@ -34,7 +34,9 @@ library
       Parser
       ParseUtil
       ShuntingYard
+      WatAST
       WatLike
+      WatLikeToWat
   other-modules:
       Paths_lvtc
   autogen-modules:
@@ -66,6 +68,7 @@ test-suite lvtc-test
   other-modules:
       UTParseLvt
       UTShuntingYard
+      UTWat
       UTWatLike
       Paths_lvtc
   autogen-modules:

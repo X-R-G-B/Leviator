@@ -7,6 +7,7 @@
 
 module UTWatLike (
     utWatLike
+    , builtinsWatLike
 ) where
 
 import Test.Tasty
@@ -15,8 +16,8 @@ import Test.Tasty.HUnit
 import WatLike
 import AST
 
-builtinsWat :: [FuncDeclare]
-builtinsWat = 
+builtinsWatLike :: [FuncDeclare]
+builtinsWatLike = 
     [
         (
             (("0", [("0", "Int"), ("1", "Int")], "Int"), []),
@@ -32,6 +33,30 @@ builtinsWat =
         ),
         (
             (("3", [("0", "Int"), ("1", "Int")], "Int"), []),
+            [(0, "x"), (1, "y")]
+        ),
+        (
+            (("4", [("0", "Int"), ("1", "Int")], "Int"), []),
+            [(0, "x"), (1, "y")]
+        ),
+        (
+            (("5", [("0", "Int"), ("1", "Int")], "Int"), []),
+            [(0, "x"), (1, "y")]
+        ),
+        (
+            (("6", [("0", "Int"), ("1", "Int")], "Int"), []),
+            [(0, "x"), (1, "y")]
+        ),
+        (
+            (("7", [("0", "Int"), ("1", "Int")], "Int"), []),
+            [(0, "x"), (1, "y")]
+        ),
+        (
+            (("8", [("0", "Int"), ("1", "Int")], "Int"), []),
+            [(0, "x"), (1, "y")]
+        ),
+        (
+            (("9", [("0", "Int"), ("1", "Int")], "Int"), []),
             [(0, "x"), (1, "y")]
         )
     ]
@@ -59,10 +84,10 @@ utWatLike = testGroup "Wat Like"
             [Return (FuncValue ("+", [Var "a", Var "b"]))]
         )
     basic1_rep =
-        builtinsWat ++ [
+        builtinsWatLike ++ [
             (
                 (
-                    ("4", [("0", "Int"), ("1", "Int")], "Int"),
+                    ("10", [("0", "Int"), ("1", "Int")], "Int"),
                     [
                         Declaration (("2", "Int"), FuncValue ("0", [Var "0", Var "1"])),
                         Return (Var "2")
@@ -83,10 +108,10 @@ utWatLike = testGroup "Wat Like"
             )
         ]
     basic2_rep =
-        builtinsWat ++ [
+        builtinsWatLike ++ [
             (
                 (
-                    ("4", [("0", "Int"), ("1", "Int")], "Int"),
+                    ("10", [("0", "Int"), ("1", "Int")], "Int"),
                     [
                         Declaration (("2", "Int"), FuncValue ("0", [Var "0", Var "1"])),
                         Return (Var "2")
@@ -96,11 +121,11 @@ utWatLike = testGroup "Wat Like"
             ),
             (
                 (
-                    ("5", [], "Int"),
+                    ("11", [], "Int"),
                     [
                         Declaration (("0", "Int"), Integer 1),
                         Declaration (("1", "Int"), Integer 2),
-                        Declaration (("2", "Int"), FuncValue ("4", [Var "0", Var "1"])),
+                        Declaration (("2", "Int"), FuncValue ("10", [Var "0", Var "1"])),
                         Return (Var "2")
                     ]
                 ),
@@ -113,10 +138,10 @@ utWatLike = testGroup "Wat Like"
             [Return (Character 'a')]
         )
     basic3_rep =
-        builtinsWat ++ [
+        builtinsWatLike ++ [
             (
                 (
-                    ("4", [], "Int"),
+                    ("10", [], "Int"),
                     [
                         Declaration (("0", "Int"), Integer 97),
                         Return (Var "0")
