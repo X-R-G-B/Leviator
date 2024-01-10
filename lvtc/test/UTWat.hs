@@ -37,7 +37,7 @@ utWat = testGroup "Wat"
             [
                 (
                     (
-                        ("10", [], "Int"),
+                        (False, "10", [], "Int"),
                         [
                             Declaration (("0", "Int"), Integer 97),
                             AST.Return (Var "0")
@@ -49,7 +49,7 @@ utWat = testGroup "Wat"
         basic1_rep =
             getBuiltinsWat ++
             [
-                FuncDef 10 [] I32 [
+                FuncDef False 10 [] I32 [
                     I32Const 97,
                     LocalSet 0,
                     LocalGet 0,
@@ -61,7 +61,7 @@ utWat = testGroup "Wat"
             [
                 (
                     (
-                        ("10", [("0", "Int"), ("1", "Int")], "Int"),
+                        (False, "10", [("0", "Int"), ("1", "Int")], "Int"),
                         [
                             Declaration (("2", "Int"), FuncValue ("0", [Var "0", Var "1"])),
                             AST.Return (Var "2")
@@ -71,7 +71,7 @@ utWat = testGroup "Wat"
                 ),
                 (
                     (
-                        ("11", [], "Int"),
+                        (False, "11", [], "Int"),
                         [
                             Declaration (("0", "Int"), Integer 1),
                             Declaration (("1", "Int"), Integer 2),
@@ -85,7 +85,7 @@ utWat = testGroup "Wat"
         basic2_rep =
             getBuiltinsWat ++
             [
-                FuncDef 10 [I32, I32] I32 [
+                FuncDef False 10 [I32, I32] I32 [
                     LocalGet 0,
                     LocalGet 1,
                     Call 0,
@@ -93,7 +93,7 @@ utWat = testGroup "Wat"
                     LocalGet 2,
                     WatAST.Return
                 ] [(I32, 1)],
-                FuncDef 11 [] I32 [
+                FuncDef False 11 [] I32 [
                     I32Const 1,
                     LocalSet 0,
                     I32Const 2,

@@ -91,17 +91,16 @@ parseStringView =
         *> parseAllCharUntil "\""
         )
 
-parseVar :: Parser Value
-parseVar = Parser f
+parseVarName :: Parser Symbol
+parseVarName =
+    f
+        <$> parseAnyChar alphabetLower
+            <*> many (parseAnyChar (alphabet ++ digit ++ "_"))
     where
-        f str = case runParser (parseAnyChar alphabetLower) str of
-            Nothing -> Nothing
-            Just (x, xs) ->
-                case runParser
-                    (many (parseAnyChar (alphabet ++ digit ++ "_"))) xs
-                of
-                    Nothing -> Nothing
-                    Just (y, ys) -> Just (Var (x:y), ys)
+        f fstChar restName = fstChar : restName
+
+parseVar :: Parser Value
+parseVar = Var <$> parseVarName
 
 parseVoid :: Parser Value
 parseVoid = f <$> parseString "Void"
@@ -233,7 +232,7 @@ parseFunction :: Parser Instruction
 parseFunction = parseCall
 
 parseReturn :: Parser Instruction
-parseReturn = Return <$> ((parseString "<-") *> parseValue)
+parseReturn = Return <$> (parseString "<-" *> parseValue)
 
 parseType :: Parser String
 parseType =
@@ -331,16 +330,10 @@ parseFuncVars =
         <|> parseFuncVar)
     <* parseChar ')'
 
-parseFuncName :: Parser Symbol
-parseFuncName = Parser f
-    where
-        f str = case runParser
-                ((parseString "export fn " <|> parseString "fn ") *> parseVar)
-                str
-            of
-                Nothing -> Nothing
-                Just (Var x, xs) -> Just (x, xs)
-                _notVar -> Nothing
+parseFuncName :: Parser (IsFuncExport, Symbol)
+parseFuncName =
+    ((\x -> (True, x)) <$> (parseString "export fn " *> parseVarName))
+    <|> ((\x -> (False, x)) <$> (parseString "fn " *> parseVarName))
 
 parseFuncType :: Parser Type
 parseFuncType = 
@@ -350,10 +343,12 @@ parseFuncType =
 
 parseFuncPrototype :: Parser FuncPrototype
 parseFuncPrototype =
-    (,,)
+    f
         <$> parseFuncName
             <*> parseFuncVars
             <*> parseFuncType
+    where
+        f (isExport, name) vars funcType = (isExport, name, vars, funcType)
 
 parseFuncDeclaration :: Parser FuncDeclaration
 parseFuncDeclaration =

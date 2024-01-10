@@ -49,7 +49,7 @@ test7 :: [FuncDeclaration]
 test7 =
     [
         (
-            ("add", [("a", "Int"), ("b", "Int")], "Int"),
+            (False, "add", [("a", "Int"), ("b", "Int")], "Int"),
             [Return (FuncValue ("+", [Var "a", Var "b"]))]
         )
     ]
