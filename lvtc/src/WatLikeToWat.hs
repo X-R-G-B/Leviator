@@ -28,12 +28,12 @@ paramsToTypes ((_, t):vars) = typeStringToType t : paramsToTypes vars
 
 nameIsInParams :: String -> [Var] -> Bool
 nameIsInParams _ [] = False
-nameIsInParams name ((_, name'):xs)
+nameIsInParams name ((name', _):xs)
     | name == name' = True
     | otherwise = nameIsInParams name xs
 
 findTypeFromInstructions :: String -> [Instruction] -> WatAST.Type
-findTypeFromInstructions _ [] = error "Type not found"
+findTypeFromInstructions name [] = error ("Type not found for: " ++ name)
 findTypeFromInstructions name ((Declaration ((name', typ), _)):xs)
     | name == name' = typeStringToType typ
     | otherwise = findTypeFromInstructions name xs
