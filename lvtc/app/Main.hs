@@ -69,6 +69,11 @@ test9 =
         ] [(WatAST.I32, 1)]
     ]
 
+main2 :: IO ()
+main2 =
+    print (aSTToWatLike test7)
+    >> print (watToWasm test9)
+
 main :: IO ()
 main =
     print (runParser parseInstruction test1)
@@ -79,5 +84,4 @@ main =
     >> print (runParser parseInstruction test6)
     >> print (runParser (proceedAlias <$> parseAllExpression) text)
     >> print (runParser parseFuncDeclaration test8)
-    >> print (aSTToWatLike test7)
-    >> print (watToWasm test9)
+    >> main2

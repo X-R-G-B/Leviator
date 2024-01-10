@@ -55,7 +55,8 @@ funcDefsToTypeSection f =
 -- Function Section
 
 getIndexType :: [([Type], Type)] -> Int -> FuncDef -> Int
-getIndexType [] _ (FuncDef _ oName _ _ _ _ _) = error ("No Type in type section: " ++ oName)
+getIndexType [] _ (FuncDef _ oName _ _ _ _ _) =
+    error ("No Type in type section: " ++ oName)
 getIndexType ((p', r'):xs) ind (FuncDef i o n p r b l)
     | p == p' && r == r' = ind
     | otherwise = getIndexType xs (ind + 1) (FuncDef i o n p r b l) 
