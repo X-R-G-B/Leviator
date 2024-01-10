@@ -135,14 +135,12 @@ b6
 # 01 is export type "table"
 01 00
 
-
 # size 6
 06
 # name "start"
 5f 73 74 61 72 74
 # its a type function with id 03
 00 03
-
 
 # size = 16 name = __errno_location "
 10

@@ -46,6 +46,7 @@ executable lvtrun-exe
       IO
       Leb128
       Loader
+      Parsing.Exports
       Parsing.FuncTypes
       Parsing.Global
       Parsing.Header

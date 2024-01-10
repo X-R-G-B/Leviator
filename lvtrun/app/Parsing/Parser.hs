@@ -17,6 +17,7 @@ import Parsing.Header
 import Parsing.Memory
 import Parsing.FuncTypes
 import Parsing.Global
+import Parsing.Exports
 
 import Debug.Trace
 
@@ -30,4 +31,4 @@ parseModule bytes = do
           []
             (getMemories (getSectionWithId sections MemoryID))
               (getGlobals (getSectionWithId sections GlobalID))
-                []
+                (getExports (getSectionWithId sections ExportID))

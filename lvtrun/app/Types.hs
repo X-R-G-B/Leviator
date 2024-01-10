@@ -159,12 +159,21 @@ instance Show Global where
   show global = "\n\t(global " ++ (show $ globalType global) ++ " " ++
     (show $ mutability global) ++ " " ++ (show $ initExpr global) ++ ")"
 
-data ExportDesc = ExportFunc FuncIdx deriving (Show)
+
+data ExportDesc =
+  ExportFunc FuncIdx
+  | ExportTable TableIdx
+  | ExportMemory MemIdx
+  | ExportGlobal GlobalIdx
+  deriving (Show)
 
 data Export = Export {
-  modName :: String
-  -- desc
-} deriving (Show)
+  expName :: String,
+  expDesc :: ExportDesc
+}
+
+instance Show Export where
+  show export = "\n\t(export \"" ++ (expName export) ++ "\" " ++ (show $ expDesc export) ++ ")"
 
 data Table = Table {
   notImpl :: String
