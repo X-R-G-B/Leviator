@@ -21,43 +21,43 @@ builtinsWatLike =
     [
         (
             ((False, "0", [("0", "Int"), ("1", "Int")], "Int"), []),
-            [(0, "x"), (1, "y")]
+            [(0, "x"), (1, "y")], "+"
         ),
         (
             ((False, "1", [("0", "Int"), ("1", "Int")], "Int"), []),
-            [(0, "x"), (1, "y")]
+            [(0, "x"), (1, "y")], "-"
         ),
         (
             ((False, "2", [("0", "Int"), ("1", "Int")], "Int"), []),
-            [(0, "x"), (1, "y")]
+            [(0, "x"), (1, "y")], "*"
         ),
         (
             ((False, "3", [("0", "Int"), ("1", "Int")], "Int"), []),
-            [(0, "x"), (1, "y")]
+            [(0, "x"), (1, "y")], "/"
         ),
         (
             ((False, "4", [("0", "Int"), ("1", "Int")], "Int"), []),
-            [(0, "x"), (1, "y")]
+            [(0, "x"), (1, "y")], "=="
         ),
         (
             ((False, "5", [("0", "Int"), ("1", "Int")], "Int"), []),
-            [(0, "x"), (1, "y")]
+            [(0, "x"), (1, "y")], "<"
         ),
         (
             ((False, "6", [("0", "Int"), ("1", "Int")], "Int"), []),
-            [(0, "x"), (1, "y")]
+            [(0, "x"), (1, "y")], ">"
         ),
         (
             ((False, "7", [("0", "Int"), ("1", "Int")], "Int"), []),
-            [(0, "x"), (1, "y")]
+            [(0, "x"), (1, "y")], "<="
         ),
         (
             ((False, "8", [("0", "Int"), ("1", "Int")], "Int"), []),
-            [(0, "x"), (1, "y")]
+            [(0, "x"), (1, "y")], ">="
         ),
         (
             ((False, "9", [("0", "Int"), ("1", "Int")], "Int"), []),
-            [(0, "x"), (1, "y")]
+            [(0, "x"), (1, "y")], "!="
         )
     ]
 
@@ -93,7 +93,7 @@ utWatLike = testGroup "Wat Like"
                         Return (Var "2")
                     ]
                 ),
-                [(0, "a"), (1, "b"), (2, "_tmpValue")]
+                [(0, "a"), (1, "b"), (2, "_tmpValue")], "add"
             )
         ]
     basic2 =
@@ -117,7 +117,7 @@ utWatLike = testGroup "Wat Like"
                         Return (Var "2")
                     ]
                 ),
-                [(0, "a"), (1, "b"), (2, "_tmpValue")]
+                [(0, "a"), (1, "b"), (2, "_tmpValue")], "add"
             ),
             (
                 (
@@ -129,7 +129,7 @@ utWatLike = testGroup "Wat Like"
                         Return (Var "2")
                     ]
                 ),
-                [(0, "_tmpValue"), (1, "_tmpValue"), (2, "_tmpValue")]
+                [(0, "_tmpValue"), (1, "_tmpValue"), (2, "_tmpValue")], "start"
             )
         ]
     basic3 = 
@@ -147,6 +147,6 @@ utWatLike = testGroup "Wat Like"
                         Return (Var "0")
                     ]
                 ),
-                [(0, "_tmpValue")]
+                [(0, "_tmpValue")], "getC"
             )
         ]

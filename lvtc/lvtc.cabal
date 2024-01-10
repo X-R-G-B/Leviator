@@ -39,6 +39,7 @@ library
       WatAST
       WatLike
       WatLikeToWat
+      WatToWasm
   other-modules:
       Paths_lvtc
   autogen-modules:

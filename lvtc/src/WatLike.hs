@@ -22,7 +22,7 @@ import Data.Char (ord)
 -- Named Index Vars / Func
 
 type Index = (Int, String)
-type FuncDeclare = (FuncDeclaration, [Index])
+type FuncDeclare = (FuncDeclaration, [Index], String)
 
 getRegisterIndex' :: Int -> String -> [Index] -> ([Index], Int)
 getRegisterIndex' maxInd var [] = ([(maxInd, var)], maxInd)
@@ -124,14 +124,14 @@ transformType "Bool" = "Int"
 transformType x = x
 
 registerParams :: FuncDeclare -> FuncDeclare
-registerParams (((isExp, fName, [], typ), ins), varsIndex) =
-    (((isExp, fName, [], transformType typ), ins), varsIndex)
-registerParams (((isExp, fName, (pName, pTyp):vParams, typ), ins), varsIndex) =
-    (((isExp, fName', newParams:vParams', vTyp'), ins), varsIndex'')
+registerParams (((isExp, fName, [], typ), ins), varsIndex, oName) =
+    (((isExp, fName, [], transformType typ), ins), varsIndex, oName)
+registerParams (((isExp, fName, (pName, pTyp):vParams, typ), ins), varsIndex, oName) =
+    (((isExp, fName', newParams:vParams', vTyp'), ins), varsIndex'', oName)
     where
         (varsIndex', indVar) = getRegisterIndex pName varsIndex
-        (((_, fName', vParams', vTyp'), _), varsIndex'') =
-            registerParams (((isExp, fName, vParams, typ), ins), varsIndex')
+        (((_, fName', vParams', vTyp'), _), varsIndex'', _) =
+            registerParams (((isExp, fName, vParams, typ), ins), varsIndex', oName)
         newParams = (show indVar, transformType pTyp)
 
 registerAllFuncs :: [FuncDeclaration] -> [Index] -> [Index]
@@ -147,11 +147,11 @@ changeIndexes (((isExp, fName, vars, typ), ins):xs) funcsIndex =
     (newFunc:funcs, funcsIndex''')
     where
         (funcsIndex', indFunc) = getRegisterIndex fName funcsIndex
-        (((_, _, vars', typ'), ins'), varsIndex) =
-            registerParams (((isExp, fName, vars, typ), ins), [])
+        (((_, _, vars', typ'), ins'), varsIndex, _) =
+            registerParams (((isExp, fName, vars, typ), ins), [], fName)
         (ins'', varsIndex'', funcsIndex'') =
             modifyAll ins' varsIndex funcsIndex'
-        newFunc = (((isExp, show indFunc, vars', typ'), ins''), varsIndex'')
+        newFunc = (((isExp, show indFunc, vars', typ'), ins''), varsIndex'', fName)
         (funcs, funcsIndex''') = changeIndexes xs funcsIndex''
 
 ------------------------------------------------------------------------------
@@ -169,7 +169,7 @@ instance Show WatLikeState where
 
 getPrototype :: String -> [FuncDeclare] -> FuncPrototype
 getPrototype _ [] = undefined
-getPrototype fName ((((isExp, fName', vars, typ), _), _):xs)
+getPrototype fName ((((isExp, fName', vars, typ), _), _, _):xs)
     | fName == fName' = (isExp, fName', vars, typ)
     | otherwise = getPrototype fName xs
 
@@ -274,22 +274,22 @@ instructionsToWatLike (x:xs) oldFuncs varsIndex =
 ------------------------------------------------------------------------------
 
 funcToWatLike' :: FuncDeclare -> ([FuncDeclare], [Index]) -> FuncDeclare
-funcToWatLike' (((isExp, fName, fParams, fRet), []), varsIndex) _ =
-    (((isExp, fName, fParams, fRet), []), varsIndex)
-funcToWatLike'  (((isExp, fName, fParams, fRet), ins:inss), varsIndex) oldFuncs =
-    (((isExp, fName, fParams, fRet), ins' ++ inss'), varsIndex'')
+funcToWatLike' (((isExp, fName, fParams, fRet), []), varsIndex, oName) _ =
+    (((isExp, fName, fParams, fRet), []), varsIndex, oName)
+funcToWatLike'  (((isExp, fName, fParams, fRet), ins:inss), varsIndex, oName) oldFuncs =
+    (((isExp, fName, fParams, fRet), ins' ++ inss'), varsIndex'', oName)
     where
         (varsIndex', ins') = instructionToWatLike ins oldFuncs varsIndex
-        thisFunc = (((isExp, fName, fParams, fRet), inss), varsIndex')
-        (((_, _, _, _), inss'), varsIndex'') = funcToWatLike' thisFunc oldFuncs
+        thisFunc = (((isExp, fName, fParams, fRet), inss), varsIndex', oName)
+        (((_, _, _, _), inss'), varsIndex'', _) = funcToWatLike' thisFunc oldFuncs
 
 funcToWatLike :: FuncDeclare -> WatLikeState -> WatLikeState
-funcToWatLike   (((isExp, fName, fParams, fRet), fInss), varsIndex)
+funcToWatLike   (((isExp, fName, fParams, fRet), fInss), varsIndex, originName)
                 (WLS funcsIndex oldFuncs newFunc) =
     WLS funcsIndex oldFuncs (newFunc ++ [fFunc])
     where
         fFunc = funcToWatLike'
-            (((isExp, fName, fParams, fRet), fInss), varsIndex)
+            (((isExp, fName, fParams, fRet), fInss), varsIndex, originName)
             (oldFuncs, funcsIndex)
 
 ------------------------------------------------------------------------------

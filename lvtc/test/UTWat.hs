@@ -43,13 +43,14 @@ utWat = testGroup "Wat"
                             AST.Return (Var "0")
                         ]
                     ),
-                    [(0, "_tmpValue")]
+                    [(0, "_tmpValue")],
+                    "add"
                 )
             ]
         basic1_rep =
             getBuiltinsWat ++
             [
-                FuncDef False 10 [] I32 [
+                FuncDef False "add" 10 [] I32 [
                     I32Const 97,
                     LocalSet 0,
                     LocalGet 0,
@@ -67,7 +68,8 @@ utWat = testGroup "Wat"
                             AST.Return (Var "2")
                         ]
                     ),
-                    [(0, "a"), (1, "b"), (2, "_tmpValue")]
+                    [(0, "a"), (1, "b"), (2, "_tmpValue")],
+                    "add"
                 ),
                 (
                     (
@@ -79,13 +81,14 @@ utWat = testGroup "Wat"
                             AST.Return (Var "2")
                         ]
                     ),
-                    [(0, "_tmpValue"), (1, "_tmpValue"), (2, "_tmpValue")]
+                    [(0, "_tmpValue"), (1, "_tmpValue"), (2, "_tmpValue")],
+                    "start"
                 )
             ]
         basic2_rep =
             getBuiltinsWat ++
             [
-                FuncDef False 10 [I32, I32] I32 [
+                FuncDef False "add" 10 [I32, I32] I32 [
                     LocalGet 0,
                     LocalGet 1,
                     Call 0,
@@ -93,7 +96,7 @@ utWat = testGroup "Wat"
                     LocalGet 2,
                     WatAST.Return
                 ] [(I32, 1)],
-                FuncDef False 11 [] I32 [
+                FuncDef False "start" 11 [] I32 [
                     I32Const 1,
                     LocalSet 0,
                     I32Const 2,

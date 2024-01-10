@@ -47,20 +47,20 @@ getStackRet op = [LocalGet 0, LocalGet 1] ++ op ++ [WatAST.Return]
 getBuiltinsWatOperator :: [FuncDef]
 getBuiltinsWatOperator =
     [
-        FuncDef False 0 [I32, I32] I32 (getStackRet [I32Add]) [],
-        FuncDef False 1 [I32, I32] I32 (getStackRet [I32Sub]) [],
-        FuncDef False 2 [I32, I32] I32 (getStackRet [I32Mul]) [],
-        FuncDef False 3 [I32, I32] I32 (getStackRet [I32Div]) []
+        FuncDef False "+" 0 [I32, I32] I32 (getStackRet [I32Add]) [],
+        FuncDef False "-" 1 [I32, I32] I32 (getStackRet [I32Sub]) [],
+        FuncDef False "*" 2 [I32, I32] I32 (getStackRet [I32Mul]) [],
+        FuncDef False "/" 3 [I32, I32] I32 (getStackRet [I32Div]) []
     ]
 
 getBuiltinsWatComp :: [FuncDef]
 getBuiltinsWatComp = [
-        FuncDef False 4 [I32, I32] I32 (getStackRet [I32EQ]) [],
-        FuncDef False 5 [I32, I32] I32 (getStackRet [I32LT_S]) [],
-        FuncDef False 6 [I32, I32] I32 (getStackRet [I32GT_S]) [],
-        FuncDef False 7 [I32, I32] I32 (getStackRet [I32LE_S]) [],
-        FuncDef False 8 [I32, I32] I32 (getStackRet [I32GE_S]) [],
-        FuncDef False 9 [I32, I32] I32 (getStackRet [I32NE]) []
+        FuncDef False "==" 4 [I32, I32] I32 (getStackRet [I32EQ]) [],
+        FuncDef False "<" 5 [I32, I32] I32 (getStackRet [I32LT_S]) [],
+        FuncDef False ">" 6 [I32, I32] I32 (getStackRet [I32GT_S]) [],
+        FuncDef False "<=" 7 [I32, I32] I32 (getStackRet [I32LE_S]) [],
+        FuncDef False ">=" 8 [I32, I32] I32 (getStackRet [I32GE_S]) [],
+        FuncDef False "!=" 9 [I32, I32] I32 (getStackRet [I32NE]) []
     ]
 
 getBuiltinsWat :: [FuncDef]
