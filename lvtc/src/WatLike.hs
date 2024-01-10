@@ -212,7 +212,7 @@ valueToWatLike (Character x) _ varsIndex =
         (varsIndex', indVar) = newIndex varsIndex
         ordChar = read (show (ord x)) :: Int32
         newDeclaration = Declaration ((show indVar, "Int"), Integer ordChar)
-valueToWatLike (StringView _) _ _ = undefined
+valueToWatLike (StringView _) _ _ = error "StringView not implemented for now"
 valueToWatLike Void _ varsIndex =
     (varsIndex', [newDeclaration], Var (show indVar))
     where
