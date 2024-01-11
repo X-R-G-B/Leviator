@@ -24,7 +24,7 @@ import Debug.Trace
 
 parseFunctionsIndex :: Int32 -> Int64 -> BSL.ByteString -> [Function]
 parseFunctionsIndex idx maxIdx content
-    | idx >= (fromIntegral maxIdx) = []
+    | idx > (fromIntegral maxIdx) = []
     | BSL.length content == 0 = []
     | otherwise = do
       let (typeIdx, rest) = extractLEB1282 content
@@ -33,5 +33,5 @@ parseFunctionsIndex idx maxIdx content
 getFunctions :: Section -> [Function]
 getFunctions (Section FunctionID _ content) = do
   let (vecSize, rest) = extractLEB128 content
-  parseFunctionsIndex 0 vecSize rest
+  parseFunctionsIndex 1 vecSize rest
 getFunctions _ = throw $ WasmError "getFunctions: bad section"

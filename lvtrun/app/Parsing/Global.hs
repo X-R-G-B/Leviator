@@ -40,6 +40,8 @@ extractOpCode bytes
   | (head $ BSL.unpack bytes) == 0x21 = ([0x21], 1, BSL.drop 1 bytes)
   | (head $ BSL.unpack bytes) == 0x23 = ([0x23], 1, BSL.drop 1 bytes)
   | (head $ BSL.unpack bytes) == 0x24 = ([0x24], 1, BSL.drop 1 bytes)
+  | (head $ BSL.unpack bytes) == 0x6a = ([0x6a], 1, BSL.drop 1 bytes)
+  | (head $ BSL.unpack bytes) == 0x6b = ([0x6b], 1, BSL.drop 1 bytes)
   | (BSL.unpack $ BSL.take 2 bytes) == [0x3f, 0x00] = ([0x3f, 0x00], 2, BSL.drop 2 bytes)
   | (BSL.unpack $ BSL.take 2 bytes) == [0x40, 0x00] = ([0x40, 0x00], 2, BSL.drop 2 bytes)
   | otherwise = throw $ WasmError "ExtractOpCode: bad opcode"
@@ -48,6 +50,8 @@ createInstruction :: OpCode -> BSL.ByteString -> (Instruction, BSL.ByteString)
 createInstruction [0x01] bytes = (Unreachable, bytes)
 createInstruction [0x01] bytes = (Nop, bytes)
 createInstruction [0x0f] bytes = (Return, bytes)
+createInstruction [0x6a] bytes = (I32Add, bytes)
+createInstruction [0x6b] bytes = (I32Sub, bytes)
 createInstruction [0x10] bytes = do
   let (value, rest) = extractLEB1282 bytes
   (Call value, rest)

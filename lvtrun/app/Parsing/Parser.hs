@@ -19,6 +19,7 @@ import Parsing.FuncTypes
 import Parsing.Global
 import Parsing.Exports
 import Parsing.Functions
+import Parsing.Code
 
 import Debug.Trace
 
@@ -28,7 +29,7 @@ parseModule bytes = do
   WasmModule (getModHeader (getSectionWithId sections CustomID))
     (getFuncTypes (getSectionWithId sections TypeID))
       []
-        (getFunctions (getSectionWithId sections FunctionID))
+        ((getFuncCode (getSectionWithId sections CodeID) (getFunctions (getSectionWithId sections FunctionID))))
           []
             (getMemories (getSectionWithId sections MemoryID))
               (getGlobals (getSectionWithId sections GlobalID))

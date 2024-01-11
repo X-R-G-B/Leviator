@@ -36,7 +36,8 @@ module Types
   SectionID(..),
   Section(..),
   Memory(..),
-  OpCode
+  OpCode,
+  Local(..)
 ) where
 
 import Data.Int (Int32, Int64)
@@ -96,6 +97,12 @@ instance Show MemArg where
 
 type OpCode = [Word8]
 
+data BlockType =
+  EmptyType
+  | ValType TypeName
+  | TypeIdx TypeIdx
+  deriving (Show)
+
 data Instruction =
   Unreachable
   | Nop
@@ -113,11 +120,60 @@ data Instruction =
   | SetLocal LocalIdx
   | GetGlobal GlobalIdx
   | SetGlobal GlobalIdx
+  | I32Add
+  | I32Sub
+  | I32And
+  | I32Eqz
+  | I32Gtu
+  | I32Leu
+  | LocalTee LocalIdx
+  | BrIf LabelIdx
+  | Br LabelIdx
+  | Block BlockType
+  | End
   | MemorySize
   | MemoryGrow
-  deriving (Show)
+
+instance Show Instruction where
+  show Unreachable = "\n\t\t\t\tunreachable"
+  show Nop = "\n\t\t\t\tnop"
+  show Return = "\n\t\t\t\treturn"
+  show (Call idx) = "\n\t\t\t\tcall " ++ (show idx)
+  show (I32Const value) = "\n\t\t\t\ti32.const " ++ (show value)
+  show (I64Const value) = "\n\t\t\t\ti64.const " ++ (show value)
+  show (F32Const value) = "\n\t\t\t\tf32.const " ++ (show value)
+  show (F64Const value) = "\n\t\t\t\tf64.const " ++ (show value)
+  show (I32Load memArg) = "\n\t\t\t\ti32.load " ++ (show memArg)
+  show (I64Load memArg) = "\n\t\t\t\ti64.load " ++ (show memArg)
+  show (I32Store memArg) = "\n\t\t\t\ti32.store " ++ (show memArg)
+  show (I64Store memArg) = "\n\t\t\t\ti64.store " ++ (show memArg)
+  show (GetLocal idx) = "\n\t\t\t\tget_local " ++ (show idx)
+  show (SetLocal idx) = "\n\t\t\t\tset_local " ++ (show idx)
+  show (GetGlobal idx) = "\n\t\t\t\tget_global " ++ (show idx)
+  show (SetGlobal idx) = "\n\t\t\t\tset_global " ++ (show idx)
+  show I32Add = "\n\t\t\t\ti32.add"
+  show I32Sub = "\n\t\t\t\ti32.sub"
+  show MemorySize = "\n\t\t\t\tmemory.size"
+  show MemoryGrow = "\n\t\t\t\tmemory.grow"
+  show I32And = "\n\t\t\t\ti32.and"
+  show I32Eqz = "\n\t\t\t\ti32.eqz"
+  show I32Gtu = "\n\t\t\t\ti32.gt_u"
+  show I32Leu = "\n\t\t\t\ti32.le_u"
+  show (LocalTee idx) = "\n\t\t\t\tlocal.tee " ++ (show idx)
+  show (BrIf idx) = "\n\t\t\t\tbr_if " ++ (show idx)
+  show (Br idx) = "\n\t\t\t\tbr " ++ (show idx)
+  show End = "\n\t\t\t\tend"
+  show (Block blockType) = "\n\t\t\t\tblock " ++ (show blockType)
 
 -- Module section
+
+data Local = Local {
+  lcIdx :: LocalIdx,
+  lcType :: TypeName
+}
+
+instance Show Local where
+  show local = "\n\t\t(local idx:" ++ (show $ lcIdx local) ++ " type:" ++ (show $ lcType local) ++ ")"
 
 data FuncType = FuncType {
   typeId :: TypeIdx,
@@ -143,12 +199,12 @@ data ImportDesc =
 data Function = Function {
   funcType :: TypeIdx,
   funcIdx :: FuncIdx,
+  locals :: [Local],
   body :: [Instruction]
 }
 
 instance Show Function where
-  show func = "\n\t(func idx:" ++ (show $ funcIdx func) ++ " typeId:" ++ (show $ funcType func) ++ " " ++
-    (show $ body func) ++ ")"
+  show func = "\n\t(func idx:" ++ (show $ funcIdx func) ++ " typeId:" ++ (show $ funcType func) ++ " " ++ (show $ locals func) ++ "\nIntructions:\n" ++ (show $ body func) ++ ")"
 
 type Memory = Limit
 

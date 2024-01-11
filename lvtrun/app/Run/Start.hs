@@ -2,7 +2,7 @@
 -- EPITECH PROJECT, 2023
 -- Leviator Run
 -- File description:
--- Start
+-- Code
 -}
 
 module Run.Start
@@ -41,7 +41,13 @@ getStartFunction exports functions =
 
   -------------------------
 
+execStartFunction :: Function -> IO ()
+execStartFunction (Function typeIdx funcIdx locals body) = do
+  print "----execStartFunction---"
+
 start :: WasmModule -> IO ()
 start wasmMod = do
   let startFunc = getStartFunction (exports wasmMod) (functions wasmMod)
   print startFunc
+  execStartFunction startFunc
+  return ()
