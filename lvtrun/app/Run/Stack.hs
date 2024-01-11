@@ -2,12 +2,11 @@
 -- EPITECH PROJECT, 2023
 -- Leviator Run
 -- File description:
--- Types
+-- stack
 -}
 
-module Run.Types
+module Run.Stack
   (
-    VMConfig(..),
     Stack(..),
     StackValue(..),
     addStackValue,
@@ -22,8 +21,13 @@ import Control.Exception (throw)
 import Types
 import Errors
 
-------------------------- stack
-data StackValue = I_32 Int32 | I_64 Int64 | F_32 Float | F_64 Double | Null deriving (Show, Eq)
+data StackValue =
+  I_32 Int32
+  | I_64 Int64
+  | F_32 Float
+  | F_64 Double
+  | Null
+  deriving (Show, Eq)
 
 data Stack = Stack [StackValue] deriving (Show)
 
@@ -37,12 +41,3 @@ stackPop (Stack (x:xs)) = (x, Stack xs)
 stackDrop :: Stack -> StackValue
 stackDrop (Stack []) = throw $ WasmError "stackDrop: empty stack"
 stackDrop (Stack (x:xs)) = x
-
-------------------------- config
-
-data VMConfig = VMConfig {
-  vmStack :: Stack,
-  instructionIdx :: Int32,
-  currentFunctionIdx :: Int32,
-  wasmModule :: WasmModule
-} deriving (Show)

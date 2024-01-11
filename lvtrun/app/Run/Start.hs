@@ -16,60 +16,53 @@ import Control.Exception (throw)
 
 import Types
 import Errors
-import Run.Types
+import Run.Vm
+import Run.Stack
+import Run.Functions
 
 import Debug.Trace
 
---------------------------------------
-
-getStartFunctionId :: [Export] -> Int32
-getStartFunctionId [] = throw $ WasmError "No start function"
-getStartFunctionId (x:xs)
-  | expName x == "_start" =
-    case expDesc x of
-      ExportFunc idx -> idx
-      _ -> throw $ WasmError "getStartFunctionId: bad export"
-  | otherwise = getStartFunctionId xs
-getStartFunctionId _ = throw $ WasmError "getStartFunctionId: bad export"
-
-getFunctionFromId :: Int32 -> [Function] -> Function
-getFunctionFromId id [] = throw $ WasmError "getFunctionFromId: bad id"
-getFunctionFromId id (x:xs)
-  | funcIdx x == id = x
-  | otherwise = getFunctionFromId id xs
-
-getStartFunction :: [Export] -> [Function] -> Function
-getStartFunction exports functions =
-  getFunctionFromId (getStartFunctionId exports) functions
 
 -----------------------------
 
-executeInstruction :: VMConfig -> Instruction -> VMConfig
-executeInstruction (VMConfig stack instructionIdx fnIdx wasmMod) (Block _) = VMConfig stack (instructionIdx + 1) fnIdx wasmMod
-executeInstruction (VMConfig stack instructionIdx fnIdx wasmMod) (End) = VMConfig stack (instructionIdx + 1) fnIdx wasmMod
-executeInstruction (VMConfig stack instructionIdx fnIdx wasmMod) (I32Const value) = VMConfig (addStackValue stack (I_32 value)) (instructionIdx + 1) fnIdx wasmMod
-executeInstruction (VMConfig stack instructionIdx fnIdx wasmMod) (I32Eqz) = do
-  case stackDrop stack of
-    I_32 0 -> trace "true" (VMConfig (addStackValue stack (I_32 1)) (instructionIdx + 1) fnIdx wasmMod)
-    _ -> trace "false" (VMConfig (addStackValue stack (I_32 0)) (instructionIdx + 1) fnIdx wasmMod)
-executeInstruction (VMConfig stack instructionIdx fnIdx wasmMod) (BrIf labelIdx)
-  | stackDrop stack == I_32 0 = executeInstruction (VMConfig stack (instructionIdx + 1) fnIdx wasmMod) (Br labelIdx)
-  | otherwise = executeInstruction (VMConfig stack (instructionIdx + 1) fnIdx wasmMod) (Br labelIdx)
-executeInstruction vmCOnf (Call funcIdx) = trace ("call") execFunction (vmCOnf { instructionIdx = 0 }) (getFunctionFromId funcIdx (functions (wasmModule vmCOnf)))
-executeInstruction vmConf Unreachable = throw $ WasmError "Unreachable"
+executeInstruction :: VM -> Instruction -> VM
+executeInstruction vm (Block _) = addLabelIdx vm (instructionIdx vm)
+executeInstruction vm (Nop) = vm
+executeInstruction vm (End) = vm
+executeInstruction vm (I32Const value) = vm { vmStack = addStackValue (vmStack vm) (I_32 value) }
+executeInstruction vm (I32Eqz) = case stackDrop (vmStack vm) of
+    I_32 0 -> vm { vmStack = addStackValue (vmStack vm) (I_32 1) }
+    _ -> vm { vmStack = addStackValue (vmStack vm) (I_32 0) }
+executeInstruction vm (Call idx) = execFunction vm (getFunctionFromId idx (functions (wasmModule vm)))
+executeInstruction vm (BrIf lIdx) = case stackDrop (vmStack vm) of
+    I_32 0 -> vm
+    _ -> executeInstruction (vm { instructionIdx = getInstructionIdxFromLabel vm lIdx }) (Nop)
 executeInstruction vmConf _ = vmConf
 
 ------------------------------
 
-execFunction :: VMConfig -> Function -> VMConfig
+execFunction' :: VM -> Function -> VM
+execFunction' vm (Function typeIdx funcIdx locals body)
+  | instructionIdx vm >= fromIntegral (length body) = vm
+  | otherwise = do
+    let instruction = body !! (fromIntegral (instructionIdx vm))
+    let newVm = executeInstruction vm instruction
+    execFunction' (incrementInstructionIdx newVm) (Function typeIdx funcIdx locals body)
+
+execFunction :: VM -> Function -> VM
 execFunction config (Function typeIdx funcIdx locals body) = do
-  let vmConf = trace ("execFunction: " ++ show body) config { currentFunctionIdx = funcIdx }
-  let finalVMConf = foldl executeInstruction vmConf body
-  finalVMConf
+  let vmConf = trace ("execFunction: " ++ show funcIdx) config { currentFunctionIdx = funcIdx }
+  execFunction' vmConf (Function typeIdx funcIdx locals body)
+
+getTestAddFunction :: Function
+getTestAddFunction = Function 3 2 [Local 0 I32, Local 1 I32] [GetLocal 0, GetLocal 1, I32Add, End]
+
+getMainTestFunction :: Function
+getMainTestFunction = Function 0 1 [] [I32Const 10, I32Const 5, Call 2, End]
 
 start :: WasmModule -> IO ()
 start wasmMod = do
-  let configVm = VMConfig (Stack []) 0 0 wasmMod
+  let configVm = VM (Stack []) 0 0 [] [] wasmMod
   let startFunc = getStartFunction (exports wasmMod) (functions wasmMod)
   let finalVMConf = execFunction configVm startFunc
   print (vmStack finalVMConf)

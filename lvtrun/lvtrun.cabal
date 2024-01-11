@@ -55,8 +55,10 @@ executable lvtrun-exe
       Parsing.Memory
       Parsing.Parser
       Parsing.Sections
+      Run.Functions
+      Run.Stack
       Run.Start
-      Run.Types
+      Run.Vm
       Types
       Paths_lvtrun
   autogen-modules:
