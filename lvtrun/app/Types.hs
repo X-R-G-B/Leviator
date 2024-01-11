@@ -37,7 +37,8 @@ module Types
   Section(..),
   Memory(..),
   OpCode,
-  Local(..)
+  Local(..),
+  BlockType(..)
 ) where
 
 import Data.Int (Int32, Int64)
