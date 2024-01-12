@@ -56,7 +56,6 @@ executable lvtrun-exe
       Parsing.Parser
       Parsing.Sections
       Run.Functions
-      Run.Stack
       Run.Start
       Run.Vm
       Types

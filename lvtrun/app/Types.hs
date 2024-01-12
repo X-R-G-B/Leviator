@@ -93,6 +93,9 @@ data MemArg = MemArg {
   align :: Int32
 }
 
+instance Eq MemArg where
+  (==) memArg1 memArg2 = (offset memArg1) == (offset memArg2) && (align memArg1) == (align memArg2)
+
 instance Show MemArg where
   show memArg = "[\n\toffset: " ++ (show $ offset memArg) ++ "\n\talign: " ++ (show $ align memArg) ++ "\n]"
 
@@ -102,7 +105,7 @@ data BlockType =
   EmptyType
   | ValType TypeName
   | TypeIdx TypeIdx
-  deriving (Show)
+  deriving (Show, Eq)
 
 data Instruction =
   Unreachable
@@ -134,6 +137,7 @@ data Instruction =
   | End
   | MemorySize
   | MemoryGrow
+  deriving (Eq)
 
 instance Show Instruction where
   show Unreachable = "\n\t\t\t\tunreachable"
