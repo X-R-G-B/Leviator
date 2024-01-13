@@ -32,5 +32,5 @@ parseModule bytes = do
         ((getFuncCode (getSectionWithId sections CodeID) (getFunctions (getSectionWithId sections FunctionID))))
           []
             (getMemories (getSectionWithId sections MemoryID))
-              (getGlobals (getSectionWithId sections GlobalID))
+              []
                 (getExports (getSectionWithId sections ExportID))

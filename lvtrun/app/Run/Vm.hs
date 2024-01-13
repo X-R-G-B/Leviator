@@ -90,6 +90,12 @@ getLocalFromId' idx id (x:xs)
 getLocalFromId :: CurrentExec -> LocalIdx -> Value
 getLocalFromId cEx id = getLocalFromId' 0 id (ceLocals cEx)
 
+setLocalWithId :: Locals -> Value -> LocalIdx -> Locals
+setLocalWithId [] _ _ = throw $ WasmError "setLocalWithId: bad id"
+setLocalWithId (x:xs) value id
+  | id == 0 = value : xs
+  | otherwise = x : setLocalWithId xs value (id - 1)
+
 -- pushResults StackToPushTo StackToPopFrom ResultTypes
 pushResults :: Stack -> Stack -> [TypeName] -> Stack
 pushResults stack1 stack2 [] = stack1
@@ -200,6 +206,10 @@ execOpCode vm cEx (Unreachable) = throw $ WasmError "execOpCode: unreachable"
 execOpCode vm cEx (GetLocal localIdx) = do
   let value = getLocalFromId cEx localIdx
   cEx { ceStack = stackPush (ceStack cEx) value }
+execOpCode vm cEx (SetLocal localIdx) = do
+  let (value, newStack) = stackPop (ceStack cEx)
+  let newLocals = setLocalWithId (ceLocals cEx) value localIdx
+  cEx { ceStack = newStack, ceLocals = newLocals }
 execOpCode vm cEx _ = cEx
 
 execOpCodes :: VM -> [Instruction] -> CurrentExec
@@ -243,7 +253,7 @@ startExecution vm funcIdx = do
   let function = getFunctionFromId funcIdx (functions (wasmModule vm))
   let funcTypee = getFuncTypeFromId (funcType function) (types (wasmModule vm))
   let cexec = CurrentExec {
-    ceLocals = [],
+    ceLocals = createEmptyLocals [] (locals function),
     ceStack = [],
     ceInstructions = body function,
     ceInstIdx = 0,

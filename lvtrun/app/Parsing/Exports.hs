@@ -17,6 +17,7 @@ import Data.Int (Int64, Int32)
 import Data.Word (Word8)
 import Numeric (showHex)
 import Data.Char (chr)
+import Control.Monad (when)
 
 import Leb128
 import Errors
@@ -48,7 +49,10 @@ parseExports idx maxIdx content
   | Bs.length content == 0 = []
   | otherwise = do
     let (nameLen, rest) = extractLEB128 content
+    when (nameLen == 0) (throw $ WasmError "parseExports: bad export")
+    when (Bs.length rest == 0) (throw $ WasmError "parseExports: bad export")
     let (name, rest2) = Bs.splitAt (fromIntegral nameLen) rest
+    when (Bs.length rest2 == 0) (throw $ WasmError "parseExports: bad export")
     let exportType = head (Bs.unpack rest2)
     let (exportValue, rest3) = extractLEB128 (Bs.drop 1 rest2)
     let export = createExport (Bs.unpack name) exportType (fromIntegral exportValue)

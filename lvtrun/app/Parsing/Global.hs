@@ -104,13 +104,13 @@ createInstruction [0x20] bytes = do
   (GetLocal value, rest)
 createInstruction [0x24] bytes = do
   let (value, rest) = extractLEB1282 bytes
-  (SetLocal value, rest)
+  (SetGlobal value, rest)
 createInstruction [0x23] bytes = do
   let (value, rest) = extractLEB1282 bytes
   (GetGlobal value, rest)
 createInstruction [0x21] bytes = do
   let (value, rest) = extractLEB1282 bytes
-  (SetGlobal value, rest)
+  (SetLocal value, rest)
 createInstruction [0x3f, 0x00] bytes = (MemorySize, bytes)
 createInstruction [0x40, 0x00] bytes = (MemoryGrow, bytes)
 createInstruction _ _ = throw $ WasmError "CreateInstruction: bad instruction"

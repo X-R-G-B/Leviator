@@ -22,7 +22,4 @@ import Run.Functions
 import Debug.Trace
 
 start :: WasmModule -> IO ()
-start wasmMod = do
-  print wasmMod
-  let res = startExecution (createVm wasmMod) (getStartFunctionId (exports wasmMod))
-  return ()
+start wasmMod = startExecution (createVm wasmMod) (getStartFunctionId (exports wasmMod))
