@@ -16,6 +16,11 @@ import ParseLvt (parseFuncDeclaration)
 import WatLike (aSTToWatLike, FuncDeclare)
 import Parser (runParser)
 import AST (FuncDeclaration)
+import WatAST (FuncDef)
+import WatLikeToWat (watsLikeToWat)
+import Wasm (Wasm)
+import WatToWasm (watToWasm)
+import WriteWasm (writeWasm)
 import Args
 
 import System.Directory (listDirectory)
@@ -38,7 +43,7 @@ getFilesExpression (file:files) =
 getFilesExpression [] = return []
 
 selectGoodFiles :: FilePath -> [FilePath] -> IO [FilePath]
-selectGoodFiles folder [] = return []
+selectGoodFiles _ [] = return []
 selectGoodFiles folder (file:files)
     | ".lvt" `isSuffixOf` trueFile =
             putStrLn ("- " ++ trueFile)
@@ -73,11 +78,19 @@ transformToWatLike funcsIo =
     funcsIo
         >>= (\funcs -> return (aSTToWatLike funcs))
 
+transformToWat :: IO [FuncDeclare] -> IO [FuncDef]
+transformToWat funcsIo = funcsIo >>= return . watsLikeToWat
+
+transformToWasm :: IO [FuncDef] -> IO Wasm
+transformToWasm funcsIo = funcsIo >>= return . watToWasm
+
 run :: Args -> IO ()
 run (Args Run fPath oFile) = putStrLn ("Compiling from: " ++ fPath) >>
-    transformed >>= print
+    transformedWasm >>= \wasm -> writeWasm wasm oFile
     where
         expressions = listAllFiles fPath >>= getFilesExpression
         funcs = expressions >>= getAllFunc
-        transformed = transformToWatLike (checkAst funcs)
+        transformedWatLike = transformToWatLike (checkAst funcs)
+        transformedWat = transformToWat (transformedWatLike)
+        transformedWasm = transformToWasm (transformedWat)
 run _ = fail "Invalid option called"
