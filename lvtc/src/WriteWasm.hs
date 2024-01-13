@@ -13,6 +13,7 @@ module WriteWasm
 
 import Wasm
 import WasmUtils
+import Leb128Encode
 import qualified Data.ByteString as B
 import WatAST (OpCode (..))
 import Data.Char (ord)
@@ -45,15 +46,25 @@ typeSectionTypeToByteString (Func a b lc d le) =
 
 typeSectionToByteString :: TypeSection -> B.ByteString
 typeSectionToByteString (TS a b c ld) =
-    extendBytes
-        (B.pack (map fromIntegral [a, b, c]))
-        (map typeSectionTypeToByteString ld)
+    extendsBytes
+        (B.pack [fromIntegral a])
+        [
+            [B.pack (map fromIntegral (leb128Encode b))],
+            [B.pack [fromIntegral c]],
+            map typeSectionTypeToByteString ld
+        ]
 
 --
 
 functionSectionToByteString :: FunctionSection -> B.ByteString
 functionSectionToByteString (FS a b c ld) =
-    B.pack (map fromIntegral ([a, b, c] ++ ld))
+    extendBytes
+        (B.pack [fromIntegral a])
+        [
+            B.pack (map (fromIntegral) (leb128Encode b)),
+            B.pack [fromIntegral c],
+            B.pack (map fromIntegral ld)
+        ]
 
 --
 
@@ -64,47 +75,62 @@ memorySectionLimitToByteString (MSL _ a b) =
     B.pack [0, fromIntegral a, fromIntegral b]
 
 memorySectionToByteString :: MemorySection -> B.ByteString
-memorySectionToByteString (MS a b e ld) =
-    extendBytes
-        (B.pack (map fromIntegral [a, b, e]))
-        (map memorySectionLimitToByteString ld)
+memorySectionToByteString (MS a b c ld) =
+    extendsBytes
+        (B.pack [fromIntegral a])
+        [
+            [B.pack (map fromIntegral (leb128Encode b))],
+            [B.pack [fromIntegral c]],
+            map memorySectionLimitToByteString ld
+        ]
 
 --
 
 exportSectionExportToByteString :: ExportSectionExport -> B.ByteString
 exportSectionExportToByteString (ESE a lb c d) =
-    B.pack (map fromIntegral ([a]
-        ++ map ord lb
-        ++ [exportSectionExportTypeByte c, d]))
+    extendBytes
+        (B.pack (map fromIntegral (leb128Encode a)))
+        [
+            B.pack (map (fromIntegral . ord) lb),
+            B.pack [
+                fromIntegral (exportSectionExportTypeByte c),
+                fromIntegral d
+            ]
+        ]
 
 exportSectionToByteString :: ExportSection -> B.ByteString
 exportSectionToByteString (ES a b c ld) =
-    extendBytes
-        (B.pack (map fromIntegral [a, b, c]))
-        (map exportSectionExportToByteString ld)
+    extendsBytes
+        (B.pack [fromIntegral a])
+        [
+            [B.pack (map fromIntegral (leb128Encode b))],
+            [B.pack [fromIntegral c]],
+            map exportSectionExportToByteString ld
+        ]
 
 --
 
 codeSectionCodeLocalsToByte :: CodeSectionCodeLocals -> B.ByteString
 codeSectionCodeLocalsToByte (a, b) =
-    B.pack (map fromIntegral [fromIntegral a, variableTypeByte b])
+    B.pack [fromIntegral a, fromIntegral (variableTypeByte b)]
 
 opCodeToByte :: OpCode -> B.ByteString
 opCodeToByte (LocalGet a) =
-    B.pack (map fromIntegral [opCodeByte (LocalGet a), fromIntegral a])
+    B.pack [fromIntegral (opCodeByte (LocalGet a)), fromIntegral a]
 opCodeToByte (LocalSet a) =
-    B.pack (map fromIntegral [opCodeByte (LocalSet a), fromIntegral a])
+    B.pack [fromIntegral (opCodeByte (LocalSet a)), fromIntegral a]
 opCodeToByte (I32Const a) =
-    B.pack (map fromIntegral [opCodeByte (I32Const a), fromIntegral a])
+    B.pack [fromIntegral (opCodeByte (I32Const a)), fromIntegral a]
 opCodeToByte (Call a) =
-    B.pack (map fromIntegral [opCodeByte (Call a), fromIntegral a])
+    B.pack [fromIntegral (opCodeByte (Call a)), fromIntegral a]
 opCodeToByte op = B.pack [fromIntegral (opCodeByte op)]
 
 codeSectionCodeToByte :: CodeSectionCode -> B.ByteString
 codeSectionCodeToByte (CSC a b lc ld e) =
     extendsBytes
-        (B.pack (map fromIntegral [a, b]))
+        (B.pack (map fromIntegral (leb128Encode a)))
         [
+            [B.pack [fromIntegral b]],
             map codeSectionCodeLocalsToByte lc,
             map opCodeToByte ld,
             [B.pack [fromIntegral e]]
@@ -112,9 +138,13 @@ codeSectionCodeToByte (CSC a b lc ld e) =
 
 codeSectionToByte :: CodeSection -> B.ByteString
 codeSectionToByte (CS a b c ld) =
-    extendBytes
-        (B.pack (map fromIntegral [a, b, c]))
-        (map codeSectionCodeToByte ld)
+    extendsBytes
+        (B.pack [fromIntegral a])
+        [
+            [B.pack (map fromIntegral (leb128Encode b))],
+            [B.pack [fromIntegral c]],
+            map (codeSectionCodeToByte) ld
+        ]
 
 wasmToByteString :: Wasm -> B.ByteString
 wasmToByteString (Wasm hW vW tS fS mS eS cS) =

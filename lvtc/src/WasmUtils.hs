@@ -33,6 +33,7 @@ module WasmUtils
 
 import Wasm
 import WatAST (OpCode (..))
+import Leb128Encode
 
 getDefaultTypeSectionType :: TypeSectionType
 getDefaultTypeSectionType = Func {
@@ -143,7 +144,7 @@ fillBlankExportSectionExport (ESE _ n t i) =
 
 getSizeExportSectionExport :: ExportSectionExport -> Int
 getSizeExportSectionExport (ESE _ n _ _) =
-    1 + ((length n) * 1) + 1 + 1
+    (length (leb128Encode (length n))) + (length n) + 1 + 1
 
 getDefaultExportSection :: ExportSection
 getDefaultExportSection = ES {
@@ -162,7 +163,7 @@ fillBlankExportSection (ES hE _ _ e) =
         exports = e
     }
     where
-        size = 1 + sum (map getSizeExportSectionExport e)
+        size = 1 + sum (map (getSizeExportSectionExport) e)
 
 getDefaultCodeSectionCode :: CodeSectionCode
 getDefaultCodeSectionCode = CSC {
@@ -201,8 +202,11 @@ getDefaultCodeSection = CS {
 }
 
 getSizeCodeSectionCode :: CodeSectionCode -> Int
-getSizeCodeSectionCode (CSC s _ _ _ _) =
-    1 + s
+getSizeCodeSectionCode csc = lN + s
+    where
+        newCsc = fillBlankCodeSectionCode csc
+        s = sizeCSC newCsc
+        lN = length (leb128Encode s)
 
 fillBlankCodeSection :: CodeSection -> CodeSection
 fillBlankCodeSection (CS hC _ _ c) =
@@ -213,7 +217,8 @@ fillBlankCodeSection (CS hC _ _ c) =
         codes = c
     }
     where
-        size = 1 + sum (map getSizeCodeSectionCode c)
+        size1 = sum (map getSizeCodeSectionCode c)
+        size = size1 + 1
 
 getDefaultWasm :: Wasm
 getDefaultWasm = Wasm {

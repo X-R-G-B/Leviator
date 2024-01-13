@@ -29,6 +29,7 @@ library
       AST
       Builtins
       Expression
+      Leb128Encode
       Lib
       LvtLibVersion
       ParseLvt
