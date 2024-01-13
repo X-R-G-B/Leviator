@@ -54,11 +54,17 @@ basic1Rep =
         },
         memorySection = MS {
             headerMS = 5,
-            sizeMS = 2,
-            hasMax = 0,
-            minMS = 1,
-            maxMS = 0
-        }, exportSection = ES {
+            sizeMS = 3,
+            nbLimits = 1,
+            limits = [
+                MSL {
+                    hasMax = 0,
+                    minMS = 1,
+                    maxMS = 0
+                }
+            ]
+        },
+        exportSection = ES {
             headerES = 7,
             sizeES = 1,
             nbExports = 0,
