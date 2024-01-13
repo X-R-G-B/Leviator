@@ -69,7 +69,9 @@ memorySectionToByteString (MS a b _ d e) =
 
 exportSectionExportToByteString :: ExportSectionExport -> B.ByteString
 exportSectionExportToByteString (ESE a lb c d) =
-    B.pack (map fromIntegral ([a] ++ (map ord lb) ++ [exportSectionExportTypeByte c, d]))
+    B.pack (map fromIntegral ([a]
+        ++ (map ord lb)
+        ++ [exportSectionExportTypeByte c, d]))
 
 exportSectionToByteString :: ExportSection -> B.ByteString
 exportSectionToByteString (ES a b c ld) =
@@ -84,9 +86,12 @@ codeSectionCodeLocalsToByte (a, b) =
     B.pack (map fromIntegral [fromIntegral a, variableTypeByte b])
 
 opCodeToByte :: OpCode -> B.ByteString
-opCodeToByte (LocalGet a) = B.pack (map fromIntegral [opCodeByte (LocalGet a), fromIntegral a])
-opCodeToByte (LocalSet a) = B.pack (map fromIntegral [opCodeByte (LocalSet a), fromIntegral a])
-opCodeToByte (I32Const a) = B.pack (map fromIntegral [opCodeByte (I32Const a), fromIntegral a])
+opCodeToByte (LocalGet a) =
+    B.pack (map fromIntegral [opCodeByte (LocalGet a), fromIntegral a])
+opCodeToByte (LocalSet a) =
+    B.pack (map fromIntegral [opCodeByte (LocalSet a), fromIntegral a])
+opCodeToByte (I32Const a) =
+    B.pack (map fromIntegral [opCodeByte (I32Const a), fromIntegral a])
 opCodeToByte op = B.pack [fromIntegral (opCodeByte op)]
 
 codeSectionCodeToByte :: CodeSectionCode -> B.ByteString
