@@ -104,16 +104,25 @@ utParserLvt = testGroup "Parse Lvt"
       testParserFunc "fn abc(a: Int) -> Int\n{\n    <- a;\n};\n"
         ""
         (
-            ("abc", [("a", "Int")], "Int"),
+            (False, "abc", [("a", "Int")], "Int"),
+            [
+                Return (Var "a")
+            ]
+        )
+  , testCase "test func export" $
+      testParserFunc "export fn abc(a: Int) -> Int\n{\n    <- a;\n};\n"
+        ""
+        (
+            (True, "abc", [("a", "Int")], "Int"),
             [
                 Return (Var "a")
             ]
         )
   , testCase "test func start" $
-      testParserFunc "fn start() -> Int\n{\n    <- 0;\n};\n"
+      testParserFunc "export fn start() -> Int\n{\n    <- 0;\n};\n"
         ""
         (
-            ("start", [], "Int"),
+            (True, "start", [], "Int"),
             [
                 Return (Integer 0)
             ]

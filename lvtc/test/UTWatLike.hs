@@ -20,44 +20,44 @@ builtinsWatLike :: [FuncDeclare]
 builtinsWatLike = 
     [
         (
-            (("0", [("0", "Int"), ("1", "Int")], "Int"), []),
-            [(0, "x"), (1, "y")]
+            ((False, "0", [("0", "Int"), ("1", "Int")], "Int"), []),
+            [(0, "x"), (1, "y")], "+"
         ),
         (
-            (("1", [("0", "Int"), ("1", "Int")], "Int"), []),
-            [(0, "x"), (1, "y")]
+            ((False, "1", [("0", "Int"), ("1", "Int")], "Int"), []),
+            [(0, "x"), (1, "y")], "-"
         ),
         (
-            (("2", [("0", "Int"), ("1", "Int")], "Int"), []),
-            [(0, "x"), (1, "y")]
+            ((False, "2", [("0", "Int"), ("1", "Int")], "Int"), []),
+            [(0, "x"), (1, "y")], "*"
         ),
         (
-            (("3", [("0", "Int"), ("1", "Int")], "Int"), []),
-            [(0, "x"), (1, "y")]
+            ((False, "3", [("0", "Int"), ("1", "Int")], "Int"), []),
+            [(0, "x"), (1, "y")], "/"
         ),
         (
-            (("4", [("0", "Int"), ("1", "Int")], "Int"), []),
-            [(0, "x"), (1, "y")]
+            ((False, "4", [("0", "Int"), ("1", "Int")], "Int"), []),
+            [(0, "x"), (1, "y")], "=="
         ),
         (
-            (("5", [("0", "Int"), ("1", "Int")], "Int"), []),
-            [(0, "x"), (1, "y")]
+            ((False, "5", [("0", "Int"), ("1", "Int")], "Int"), []),
+            [(0, "x"), (1, "y")], "<"
         ),
         (
-            (("6", [("0", "Int"), ("1", "Int")], "Int"), []),
-            [(0, "x"), (1, "y")]
+            ((False, "6", [("0", "Int"), ("1", "Int")], "Int"), []),
+            [(0, "x"), (1, "y")], ">"
         ),
         (
-            (("7", [("0", "Int"), ("1", "Int")], "Int"), []),
-            [(0, "x"), (1, "y")]
+            ((False, "7", [("0", "Int"), ("1", "Int")], "Int"), []),
+            [(0, "x"), (1, "y")], "<="
         ),
         (
-            (("8", [("0", "Int"), ("1", "Int")], "Int"), []),
-            [(0, "x"), (1, "y")]
+            ((False, "8", [("0", "Int"), ("1", "Int")], "Int"), []),
+            [(0, "x"), (1, "y")], ">="
         ),
         (
-            (("9", [("0", "Int"), ("1", "Int")], "Int"), []),
-            [(0, "x"), (1, "y")]
+            ((False, "9", [("0", "Int"), ("1", "Int")], "Int"), []),
+            [(0, "x"), (1, "y")], "!="
         )
     ]
 
@@ -80,30 +80,30 @@ utWatLike = testGroup "Wat Like"
   where
     basic1 = 
         (
-            ("add", [("a", "Int"), ("b", "Int")], "Int"),
+            (False, "add", [("a", "Int"), ("b", "Int")], "Int"),
             [Return (FuncValue ("+", [Var "a", Var "b"]))]
         )
     basic1_rep =
         builtinsWatLike ++ [
             (
                 (
-                    ("10", [("0", "Int"), ("1", "Int")], "Int"),
+                    (False, "10", [("0", "Int"), ("1", "Int")], "Int"),
                     [
                         Declaration (("2", "Int"), FuncValue ("0", [Var "0", Var "1"])),
                         Return (Var "2")
                     ]
                 ),
-                [(0, "a"), (1, "b"), (2, "_tmpValue")]
+                [(0, "a"), (1, "b"), (2, "_tmpValue")], "add"
             )
         ]
     basic2 =
         [
             (
-                ("add", [("a", "Int"), ("b", "Int")], "Int"),
+                (False, "add", [("a", "Int"), ("b", "Int")], "Int"),
                 [Return (FuncValue ("+", [Var "a", Var "b"]))]
             ),
             (
-                ("start", [], "Int"),
+                (False, "start", [], "Int"),
                 [Return (FuncValue ("add", [Integer 1, Integer 2]))]
             )
         ]
@@ -111,17 +111,17 @@ utWatLike = testGroup "Wat Like"
         builtinsWatLike ++ [
             (
                 (
-                    ("10", [("0", "Int"), ("1", "Int")], "Int"),
+                    (False, "10", [("0", "Int"), ("1", "Int")], "Int"),
                     [
                         Declaration (("2", "Int"), FuncValue ("0", [Var "0", Var "1"])),
                         Return (Var "2")
                     ]
                 ),
-                [(0, "a"), (1, "b"), (2, "_tmpValue")]
+                [(0, "a"), (1, "b"), (2, "_tmpValue")], "add"
             ),
             (
                 (
-                    ("11", [], "Int"),
+                    (False, "11", [], "Int"),
                     [
                         Declaration (("0", "Int"), Integer 1),
                         Declaration (("1", "Int"), Integer 2),
@@ -129,24 +129,24 @@ utWatLike = testGroup "Wat Like"
                         Return (Var "2")
                     ]
                 ),
-                [(0, "_tmpValue"), (1, "_tmpValue"), (2, "_tmpValue")]
+                [(0, "_tmpValue"), (1, "_tmpValue"), (2, "_tmpValue")], "start"
             )
         ]
     basic3 = 
         (
-            ("getC", [], "Char"),
+            (False, "getC", [], "Char"),
             [Return (Character 'a')]
         )
     basic3_rep =
         builtinsWatLike ++ [
             (
                 (
-                    ("10", [], "Int"),
+                    (False, "10", [], "Int"),
                     [
                         Declaration (("0", "Int"), Integer 97),
                         Return (Var "0")
                     ]
                 ),
-                [(0, "_tmpValue")]
+                [(0, "_tmpValue")], "getC"
             )
         ]

@@ -14,6 +14,7 @@ module WatAST
 
 import Data.Int (Int32)
 
+-- if opcode added, dont miss to add the right size in ./WasmUtils.hs
 data OpCode =
     LocalGet Int32
     | LocalSet Int32
@@ -47,13 +48,23 @@ instance Eq Type where
     (==) I32 I32 = True
 
 data FuncDef =
-    FuncDef Int32 [Type] Type [OpCode] [(Type, Int32)]
+    FuncDef Bool String Int32 [Type] Type [OpCode] [(Type, Int32)]
 
 instance Show FuncDef where
-    show (FuncDef indexName paramsType returnType bodyCode vars) =
-        show indexName ++ "(" ++ show paramsType ++ ") -> " ++ show returnType
-        ++ " {\n" ++ show bodyCode ++ "\n}\n" ++ show vars
+    show (FuncDef True name indexName paramsType returnType bodyCode vars) =
+        "export fn " ++ show name ++ "{" ++ show indexName ++ "}("
+        ++ show paramsType ++ ") -> " ++ show returnType ++ " {\n"
+        ++ show bodyCode ++ "\n}\n" ++ show vars
+    show (FuncDef False name indexName paramsType returnType bodyCode vars) =
+        "fn " ++ show name ++ "{" ++ show indexName ++ "}("
+        ++ show paramsType ++ ") -> " ++ show returnType ++ " {\n"
+        ++ show bodyCode ++ "\n}\n" ++ show vars
 
 instance Eq FuncDef where
-    (==) (FuncDef a b c d e) (FuncDef a' b' c' d' e') =
-        a == a' && b == b' && c == c' && d == d' && e == e'
+    (==) (FuncDef aa aaa a b c d e) (FuncDef aa' aaa' a' b' c' d' e') =
+        aa == aa' && aaa == aaa' && a == a'
+        && b == b' && c == c' && d == d' && e == e'
+
+instance Ord FuncDef where
+    compare (FuncDef _ _ ind _ _ _ _) (FuncDef _ _ ind' _ _ _ _) =
+        compare ind ind'

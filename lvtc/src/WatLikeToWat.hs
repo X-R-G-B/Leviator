@@ -120,14 +120,14 @@ instructionsToWat = concatMap instructionToWat
 -- instructionsToWat (x:xs) = instructionToWat x ++ instructionsToWat xs
 
 watLikeToWat :: FuncDeclare -> FuncDef
-watLikeToWat (((fName, params, returnType), ins), vars)
+watLikeToWat (((isExp, fName, params, returnType), ins), vars, originName)
     | isBuiltinsFunc fName = getBuiltinWat fName
-    | otherwise = FuncDef indexName paramType retType opcodes varsDecl
+    | otherwise = FuncDef isExp originName iName pType rType opcodes vDecl
     where
-        indexName = read fName :: Int32
-        paramType = paramsToTypes params
-        retType = typeStringToType returnType
-        varsDecl = groupVarsToDecl $ varsToDecl vars ins params
+        iName = read fName :: Int32
+        pType = paramsToTypes params
+        rType = typeStringToType returnType
+        vDecl = groupVarsToDecl $ varsToDecl vars ins params
         opcodes = instructionsToWat ins
 
 watsLikeToWat :: [FuncDeclare] -> [FuncDef]

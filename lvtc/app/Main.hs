@@ -17,7 +17,6 @@ dispatchArgs :: Args -> IO ()
 dispatchArgs (Args Run fPath oFile) = run (Args Run fPath oFile)
 dispatchArgs (Args ShowHelp _ _) = printHelp
 dispatchArgs (Args ShowVersion _ _) = printVersion
--- dispatchArgs (Args New _ _) =
 
 dispatchIfOk :: Either Args String -> IO ()
 dispatchIfOk (Left args) = dispatchArgs args
