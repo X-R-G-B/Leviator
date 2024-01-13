@@ -41,7 +41,8 @@ data CurrentExec = CurrentExec {
   ceInstIdx :: Int,
   ceLabels :: [Int],
   ceParams :: [TypeName],
-  ceResults :: [TypeName]
+  ceResults :: [TypeName],
+  crBlockIndents :: Int
 } deriving (Show)
 
 data InstMemory = Memory {
@@ -165,7 +166,7 @@ incrementInstIdx cEx = cEx { ceInstIdx = ceInstIdx cEx + 1 }
 
 execOpCode :: VM -> CurrentExec -> Instruction -> CurrentExec
 execOpCode vm cEx (I32Const val) = cEx { ceStack = stackPush (ceStack cEx) (I_32 val) }
-execOpCode vm cEx (Block _) = addLabel cEx
+execOpCode vm cEx (Block _) = addLabel cEx { crBlockIndents = (crBlockIndents cEx) + 1 }
 execOpCode vm cEx (I32Eqz) = do
   let value = stackTop (ceStack cEx)
   case value of
@@ -178,6 +179,12 @@ execOpCode vm cEx (I32Add) = do
   case (value1, value2) of
     (I_32 val1, I_32 val2) -> cEx { ceStack = stackPush newStack2 (I_32 (val1 + val2)) }
     _ -> throw $ WasmError "exec I32Add: bad type"
+execOpCode vm cEx (I32Sub) = do
+  let (value2, newStack1) = stackPop (ceStack cEx)
+  let (value1, newStack2) = stackPop newStack1
+  case (value1, value2) of
+    (I_32 val1, I_32 val2) -> cEx { ceStack = stackPush newStack2 (I_32 (val1 - val2)) }
+    _ -> throw $ WasmError "exec I32Sub: bad type"
 execOpCode vm cEx (BrIf labelIdx) = do
   let (value, newStack) = stackPop (ceStack cEx)
   case value of
@@ -188,6 +195,8 @@ execOpCode vm cEx (Call funcIdx) = do
   let newVm = execFunctionWithIdx vm funcIdx (ceStack cEx)
   let newStack = pushResults (ceStack cEx) (vmStack newVm) (ceResults (currentExec newVm))
   cEx { ceStack = newStack }
+execOpCode vm cEx (End) = cEx { crBlockIndents = (crBlockIndents cEx) - 1 }
+execOpCode vm cEx (Unreachable) = throw $ WasmError "execOpCode: unreachable"
 execOpCode vm cEx (GetLocal localIdx) = do
   let value = getLocalFromId cEx localIdx
   cEx { ceStack = stackPush (ceStack cEx) value }
@@ -198,7 +207,7 @@ execOpCodes vm [] = currentExec vm
 execOpCodes vm instructions
   | ceInstIdx cEx >= length instructions = cEx
   | ceInstIdx cEx < 0 = throw $ WasmError "execOpCodes: bad index"
-  | (instructions !! ceInstIdx cEx) == End = cEx
+  | (instructions !! ceInstIdx cEx) == End && crBlockIndents cEx == 0 = cEx
   | otherwise = do
     let newCEx = execOpCode vm cEx (instructions !! ceInstIdx cEx)
     let newVm = vm { currentExec = (incrementInstIdx newCEx) }
@@ -215,7 +224,7 @@ execFunctionWithIdx vm funcIdx currentStack = do
   let function = getFunctionFromId funcIdx (functions (wasmModule vm))
   let funcTypee = getFuncTypeFromId (funcType function) (types (wasmModule vm))
   let emptyLocals = createEmptyLocals [] (locals function)
-  let stack = currentStack
+  let stack = trace ("newFunc") currentStack
   let (newLocals, newStack) = initLocals (length (params funcTypee)) (params funcTypee) stack emptyLocals
   let cexec = CurrentExec {
     ceLocals = newLocals,
@@ -224,7 +233,8 @@ execFunctionWithIdx vm funcIdx currentStack = do
     ceInstIdx = 0,
     ceLabels = [],
     ceParams = params funcTypee,
-    ceResults = results funcTypee
+    ceResults = results funcTypee,
+    crBlockIndents = 0
   }
   execFunction vm { currentExec = cexec }
 
@@ -239,7 +249,8 @@ startExecution vm funcIdx = do
     ceInstIdx = 0,
     ceLabels = [],
     ceParams = params funcTypee,
-    ceResults = results funcTypee
+    ceResults = results funcTypee,
+    crBlockIndents = 0
   }
   let newVm = execFunction vm { currentExec = cexec }
   let resStack = []

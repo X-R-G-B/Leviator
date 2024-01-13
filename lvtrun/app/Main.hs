@@ -13,7 +13,7 @@ import Loader
 import Run.Start
 
 main :: IO ()
-main = try (loadModule "./test/simple.wasm") >>= \result ->
+main = try (loadModule "./test/out.wasm") >>= \result ->
     case result of
         Left err -> handleException err
         Right wasmMod -> start wasmMod

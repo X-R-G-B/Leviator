@@ -113,6 +113,7 @@ data Instruction =
   | Return
   | Call FuncIdx
   | I32Const Int32
+  
   | I64Const Int64
   | F32Const Float
   | F64Const Double
@@ -127,9 +128,17 @@ data Instruction =
   | I32Add
   | I32Sub
   | I32And
+  | I32Mul
+  | I32Divs
   | I32Eqz
   | I32Gtu
   | I32Leu
+  | I32Eq
+  | I32Lts
+  | I32Gts
+  | I32Les
+  | I32Ges
+  | I32Ne
   | LocalTee LocalIdx
   | BrIf LabelIdx
   | Br LabelIdx
@@ -158,10 +167,18 @@ instance Show Instruction where
   show (SetGlobal idx) = "\n\t\t\t\tset_global " ++ (show idx)
   show I32Add = "\n\t\t\t\ti32.add"
   show I32Sub = "\n\t\t\t\ti32.sub"
+  show I32Mul = "\n\t\t\t\ti32.mul"
+  show I32Divs = "\n\t\t\t\ti32.div_s"
   show MemorySize = "\n\t\t\t\tmemory.size"
   show MemoryGrow = "\n\t\t\t\tmemory.grow"
   show I32And = "\n\t\t\t\ti32.and"
   show I32Eqz = "\n\t\t\t\ti32.eqz"
+  show I32Gts = "\n\t\t\t\ti32.gt_s"
+  show I32Les = "\n\t\t\t\ti32.le_s"
+  show I32Eq = "\n\t\t\t\ti32.eq"
+  show I32Ne = "\n\t\t\t\ti32.ne"
+  show I32Ges = "\n\t\t\t\ti32.ge_s"
+  show I32Lts = "\n\t\t\t\ti32.lt_s"
   show I32Gtu = "\n\t\t\t\ti32.gt_u"
   show I32Leu = "\n\t\t\t\ti32.le_u"
   show (LocalTee idx) = "\n\t\t\t\tlocal.tee " ++ (show idx)
@@ -169,6 +186,7 @@ instance Show Instruction where
   show (Br idx) = "\n\t\t\t\tbr " ++ (show idx)
   show End = "\n\t\t\t\tend"
   show (Block blockType) = "\n\t\t\t\tblock " ++ (show blockType)
+  show _ = throw $ WasmError "Show Instruction: bad instruction"
 
 -- Module section
 

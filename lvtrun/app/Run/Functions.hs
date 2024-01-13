@@ -25,7 +25,7 @@ import Errors
 getStartFunctionId :: [Export] -> Int32
 getStartFunctionId [] = throw $ WasmError "No start function"
 getStartFunctionId (x:xs)
-  | expName x == "_start" =
+  | expName x == "start" =
     case expDesc x of
       ExportFunc idx -> idx
       _ -> throw $ WasmError "getStartFunctionId: bad export"
