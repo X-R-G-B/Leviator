@@ -94,11 +94,14 @@ modifyAll ((Return vValue):xs) varsIndex funcsIndex =
         newReturn = Return vValue'
         (ins', varsIndex'', funcsIndex'') = modifyAll xs varsIndex' funcsIndex'
 modifyAll ((Declaration ((vName, vTyp), vValue)):xs) varsIndex funcsIndex =
-    (newDeclaration : ins', varsIndex'', funcsIndex'')
+    (newDeclaration : ins', varsIndex''', funcsIndex''')
     where
         (varsIndex', ind) = getRegisterIndex vName varsIndex
-        newDeclaration = Declaration ((show ind, vTyp), vValue)
-        (ins', varsIndex'', funcsIndex'') = modifyAll xs varsIndex' funcsIndex
+        (vValue'', varsIndex'', funcsIndex'') =
+            modifyAll' vValue varsIndex' funcsIndex
+        newDeclaration = Declaration ((show ind, vTyp), vValue'')
+        (ins', varsIndex''', funcsIndex''') =
+            modifyAll xs varsIndex'' funcsIndex''
 modifyAll ((Assignation (vName, vValue)):xs) varsIndex funcsIndex =
     (newAssignation:ins', varsIndex''', funcsIndex''')
     where
