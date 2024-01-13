@@ -118,4 +118,13 @@ utParserLvt = testGroup "Parse Lvt"
                 Return (Var "a")
             ]
         )
+  , testCase "test func start" $
+      testParserFunc "export fn start() -> Int\n{\n    <- 0;\n};\n"
+        ""
+        (
+            (True, "start", [], "Int"),
+            [
+                Return (Integer 0)
+            ]
+        )
   ]

@@ -1,0 +1,9 @@
+fn abc(a: Int) -> Int
+{
+    <- a;
+};
+
+fn main() -> Int
+{
+    <- abc(1);
+};
