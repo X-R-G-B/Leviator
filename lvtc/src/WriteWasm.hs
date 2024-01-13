@@ -59,11 +59,17 @@ functionSectionToByteString (FS a b c ld) =
 
 --
 
+memorySectionLimitToByteString :: MemorySectionLimits -> B.ByteString
+memorySectionLimitToByteString (MSL 0 a _) =
+    B.pack [0, fromIntegral a]
+memorySectionLimitToByteString (MSL _ a b) =
+    B.pack [0, fromIntegral a, fromIntegral b]
+
 memorySectionToByteString :: MemorySection -> B.ByteString
-memorySectionToByteString (MS a b 0 d _) =
-    B.pack (map fromIntegral ([a, b, 0, d]))
-memorySectionToByteString (MS a b _ d e) =
-    B.pack (map fromIntegral ([a, b, 1, d, e]))
+memorySectionToByteString (MS a b e ld) =
+    extendBytes
+        (B.pack (map fromIntegral ([a, b, e])))
+        (map memorySectionLimitToByteString ld)
 
 --
 

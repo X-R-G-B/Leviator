@@ -19,6 +19,7 @@ module WasmUtils
     fillBlankTypeSectionType,
     fillBlankTypeSection,
     fillBlankFunctionSection,
+    fillBlankMemorySectionLimits,
     fillBlankMemorySection,
     fillBlankExportSectionExport,
     fillBlankExportSection,
@@ -98,32 +99,38 @@ getDefaultMemorySection :: MemorySection
 getDefaultMemorySection = MS {
     headerMS = 0x05,
     sizeMS = 0x0,
-    hasMax = 0x0,
-    minMS = 0x0,
-    maxMS = 0x0
+    nbLimits = 0,
+    limits = []
 }
 
-fillBlankMemorySection :: MemorySection -> MemorySection
-fillBlankMemorySection (MS hM _ 0 miMS maMS) =
-    MS {
-        headerMS = hM,
-        sizeMS = size,
+fillBlankMemorySectionLimits :: MemorySectionLimits -> MemorySectionLimits
+fillBlankMemorySectionLimits (MSL 0 miMS maMS) =
+    MSL {
         hasMax = 0,
         minMS = miMS,
         maxMS = maMS
     }
-    where
-        size = 2
-fillBlankMemorySection (MS hM _ _ miMS maMS) =
-    MS {
-        headerMS = hM,
-        sizeMS = size,
+fillBlankMemorySectionLimits (MSL _ miMS maMS) =
+    MSL {
         hasMax = 1,
         minMS = miMS,
         maxMS = maMS
     }
+
+getSizeMemorySectionLimits :: MemorySectionLimits -> Int
+getSizeMemorySectionLimits (MSL 0 _ _) = 1 + 1
+getSizeMemorySectionLimits (MSL _ _ _) = 1 + 1 + 1
+
+fillBlankMemorySection :: MemorySection -> MemorySection
+fillBlankMemorySection (MS hM _ _ m) =
+    MS {
+        headerMS = hM,
+        sizeMS = size,
+        nbLimits = length m,
+        limits = m
+    }
     where
-        size = 3
+        size = 1 + sum (map getSizeMemorySectionLimits m)
 
 fillBlankExportSectionExport :: ExportSectionExport -> ExportSectionExport
 fillBlankExportSectionExport (ESE _ n t i) =

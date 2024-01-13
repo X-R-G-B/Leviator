@@ -74,8 +74,13 @@ funcDefsToFunctionSection fs =
 funcDefsToMemorySection :: [FuncDef] -> MemorySection
 funcDefsToMemorySection _ =
     fillBlankMemorySection (getDefaultMemorySection {
-        hasMax = 0,
-        minMS = 1
+        limits = [
+            fillBlankMemorySectionLimits (MSL {
+                hasMax = 0,
+                minMS = 1,
+                maxMS = 0
+            })
+        ]
     })
 
 -- Export Section

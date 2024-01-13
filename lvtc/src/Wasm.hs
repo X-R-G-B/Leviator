@@ -11,6 +11,7 @@ module Wasm
     , TypeSectionType (..)
     , TypeSection (..)
     , FunctionSection (..)
+    , MemorySectionLimits (..)
     , MemorySection (..)
     , ExportSectionExportType (..)
     , ExportSectionExport (..)
@@ -56,13 +57,20 @@ data FunctionSection =
     }
     deriving (Show, Eq)
 
+data MemorySectionLimits =
+    MSL {
+        hasMax :: Int,
+        minMS :: Int,
+        maxMS :: Int
+    }
+    deriving (Show, Eq)
+
 data MemorySection =
     MS {
         headerMS :: Int,
         sizeMS :: Int,
-        hasMax :: Int,
-        minMS :: Int,
-        maxMS :: Int
+        nbLimits :: Int,
+        limits :: [MemorySectionLimits]
     }
     deriving (Show, Eq)
 
