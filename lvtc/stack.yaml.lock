@@ -67,6 +67,20 @@ packages:
       size: 3346
   original:
     hackage: filepath-1.4.100.4
+- completed:
+    hackage: Win32-2.13.4.0@sha256:6a1299d051c514aa5ac7b77ef5f86be6c0aa6940b00302c6dc246192c7a97d99,5769
+    pantry-tree:
+      sha256: d9d803aee91429f95e4de4795fc41451765761f73df5c009edd7333e2f3a49a1
+      size: 8011
+  original:
+    hackage: Win32-2.13.4.0
+- completed:
+    hackage: time-1.12.2@sha256:88e8493d9130038d3b9968a2530a0900141cd3d938483c83dde56e12b875ebc8,6510
+    pantry-tree:
+      sha256: de0ab314661da3788b5dad20254e44929b1659b00d32b5a0cd54922a05e006e8
+      size: 7264
+  original:
+    hackage: time-1.12.2
 snapshots:
 - completed:
     sha256: e176944bc843f740e05242fa7a66ca1f440c127e425254f7f1257f9b19add23f
