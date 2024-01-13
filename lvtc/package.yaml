@@ -35,6 +35,8 @@ ghc-options:
 
 library:
   source-dirs: src
+  dependencies:
+  - bytestring
 
 executables:
   lvtc-exe:

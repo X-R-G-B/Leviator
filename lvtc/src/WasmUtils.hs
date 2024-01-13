@@ -24,6 +24,10 @@ module WasmUtils
     fillBlankExportSection,
     fillBlankCodeSectionCode,
     fillBlankCodeSection,
+    --
+    opCodeByte,
+    variableTypeByte,
+    exportSectionExportTypeByte
 ) where
 
 import Wasm
@@ -214,3 +218,34 @@ getDefaultWasm = Wasm {
     exportSection = getDefaultExportSection,
     codeSection = getDefaultCodeSection
 }
+
+opCodeByte :: OpCode -> Int
+opCodeByte (LocalGet _) = 0x20
+opCodeByte (LocalSet _) = 0x21
+opCodeByte (I32Const _) = 0x41
+opCodeByte I32Store = 0x36
+opCodeByte I32Load = 0x28
+opCodeByte I32GT_S = 0x4a
+opCodeByte I32LT_S = 0x48
+opCodeByte I32GE_S = 0x4e
+opCodeByte I32LE_S = 0x4c
+opCodeByte I32EQ = 0x46
+opCodeByte I32NE = 0x47
+opCodeByte I32Add = 0x6a
+opCodeByte I32Sub = 0x6b
+opCodeByte I32Mul = 0x6c
+opCodeByte I32Div = 0x6d
+opCodeByte Return = 0x0f
+opCodeByte (Call _) = 0x10
+opCodeByte If = 0x04
+opCodeByte Else = 0x05
+opCodeByte End = 0x0b
+
+variableTypeByte :: VariableType -> Int
+variableTypeByte I32 = 0x7f
+
+exportSectionExportTypeByte :: ExportSectionExportType -> Int
+exportSectionExportTypeByte (FuncExport) = 0x00
+exportSectionExportTypeByte (TableExport) = 0x01
+exportSectionExportTypeByte (MemoryExport) = 0x02
+exportSectionExportTypeByte (GlobalExport) = 0x03
