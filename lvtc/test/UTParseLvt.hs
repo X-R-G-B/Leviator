@@ -119,10 +119,10 @@ utParserLvt = testGroup "Parse Lvt"
             ]
         )
   , testCase "test func start" $
-      testParserFunc "fn start() -> Int\n{\n    <- 0;\n};\n"
+      testParserFunc "export fn start() -> Int\n{\n    <- 0;\n};\n"
         ""
         (
-            ("start", [], "Int"),
+            (True, "start", [], "Int"),
             [
                 Return (Integer 0)
             ]
