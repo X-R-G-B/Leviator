@@ -3,7 +3,7 @@ fn abc(a: Int) -> Int
     <- a;
 };
 
-fn main() -> Int
+export fn start() -> Int
 {
     <- abc(1);
 };
