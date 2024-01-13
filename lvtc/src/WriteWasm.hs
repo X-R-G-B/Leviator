@@ -20,12 +20,10 @@ import Data.Char (ord)
 -- extend
 
 extendBytes :: B.ByteString -> [B.ByteString] -> B.ByteString
-extendBytes l [] = l
-extendBytes l (x:xs) = extendBytes (l `B.append` x) xs
+extendBytes = foldl B.append
 
 extendsBytes :: B.ByteString -> [[B.ByteString]] -> B.ByteString
-extendsBytes a [] = a
-extendsBytes a (x:xs) = extendsBytes (extendBytes a x) xs
+extendsBytes = foldl extendBytes
 
 --
 
@@ -68,7 +66,7 @@ memorySectionLimitToByteString (MSL _ a b) =
 memorySectionToByteString :: MemorySection -> B.ByteString
 memorySectionToByteString (MS a b e ld) =
     extendBytes
-        (B.pack (map fromIntegral ([a, b, e])))
+        (B.pack (map fromIntegral [a, b, e]))
         (map memorySectionLimitToByteString ld)
 
 --
@@ -76,7 +74,7 @@ memorySectionToByteString (MS a b e ld) =
 exportSectionExportToByteString :: ExportSectionExport -> B.ByteString
 exportSectionExportToByteString (ESE a lb c d) =
     B.pack (map fromIntegral ([a]
-        ++ (map ord lb)
+        ++ map ord lb
         ++ [exportSectionExportTypeByte c, d]))
 
 exportSectionToByteString :: ExportSection -> B.ByteString
@@ -98,6 +96,8 @@ opCodeToByte (LocalSet a) =
     B.pack (map fromIntegral [opCodeByte (LocalSet a), fromIntegral a])
 opCodeToByte (I32Const a) =
     B.pack (map fromIntegral [opCodeByte (I32Const a), fromIntegral a])
+opCodeToByte (Call a) =
+    B.pack (map fromIntegral [opCodeByte (Call a), fromIntegral a])
 opCodeToByte op = B.pack [fromIntegral (opCodeByte op)]
 
 codeSectionCodeToByte :: CodeSectionCode -> B.ByteString
@@ -105,9 +105,9 @@ codeSectionCodeToByte (CSC a b lc ld e) =
     extendsBytes
         (B.pack (map fromIntegral [a, b]))
         [
-            (map codeSectionCodeLocalsToByte lc),
-            (map opCodeToByte ld),
-            ([B.pack [fromIntegral e]])
+            map codeSectionCodeLocalsToByte lc,
+            map opCodeToByte ld,
+            [B.pack [fromIntegral e]]
         ]
 
 codeSectionToByte :: CodeSection -> B.ByteString
