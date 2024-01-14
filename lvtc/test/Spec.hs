@@ -18,6 +18,7 @@ import UTWatLike
 import UTWat
 import UTWasm
 import UTLexeme
+import UTTypeCheck
 
 main :: IO ()
 main = defaultMain tests
@@ -33,7 +34,8 @@ tests = testGroup "Leviator Tests - Compiler"
         utWatLike,
         utWat,
         utWasm,
-        utLexeme
+        utLexeme,
+        uTTypeCheck
     ]
 
 testParserHelper :: String -> String -> Expression -> IO ()
