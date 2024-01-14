@@ -46,16 +46,13 @@ parseExports :: Int32 -> Int64 -> Bs.ByteString -> [Export]
 parseExports idx maxIdx content
   | idx >= (fromIntegral maxIdx) = []
   | Bs.length content == 0 = []
-  | otherwise = do
-    let (nameLen, rest) = getLEB128ToI64 content
-    when (nameLen == 0) (throw $ WasmError "parseExports: bad export")
-    when (Bs.length rest == 0) (throw $ WasmError "parseExports: bad export")
-    let (name, rest2) = Bs.splitAt nameLen rest
-    when (Bs.length rest2 == 0) (throw $ WasmError "parseExports: bad export")
-    let exportType = head (Bs.unpack rest2)
-    let (exportValue, rest3) = getLEB128ToI32 (Bs.drop 1 rest2)
-    let export = createExport (Bs.unpack name) exportType exportValue
-    export : parseExports (idx + 1) maxIdx rest3
+  | otherwise = export : parseExports (idx + 1) maxIdx rest3
+  where
+    (nameLen, rest) = getLEB128ToI64 content
+    (name, rest2) = Bs.splitAt nameLen rest
+    exportType = head (Bs.unpack rest2)
+    (exportValue, rest3) = getLEB128ToI32 (Bs.drop 1 rest2)
+    export = createExport (Bs.unpack name) exportType exportValue
 
 getExports :: Section -> [Export]
 getExports (Section ExportID _ content) = parseExports 0 exprtsNb rest

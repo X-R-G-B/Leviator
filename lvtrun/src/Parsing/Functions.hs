@@ -32,7 +32,6 @@ parseFunctionsIndex idx maxIdx content
   where (typeIdx, rest) = getLEB128ToI32 content
 
 getFunctions :: Section -> [Function]
-getFunctions (Section FunctionID _ content) = do
-  let (vecSize, rest) = getLEB128ToI64 content
-  parseFunctionsIndex 0 vecSize rest
+getFunctions (Section FunctionID _ content) = parseFunctionsIndex 0 vecSize rest
+  where (vecSize, rest) = getLEB128ToI64 content
 getFunctions _ = throw $ WasmError "getFunctions: bad section"

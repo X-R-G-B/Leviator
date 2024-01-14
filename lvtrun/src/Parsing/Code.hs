@@ -54,7 +54,8 @@ extractLocals id idMax bytes
 
 parseInstruction :: BSL.ByteString -> (Instruction, BSL.ByteString)
 parseInstruction bytes
-  | BSL.length bytes == 0 = throw $ WasmError "ParseInstruction: no instruction"
+  | BSL.length bytes == 0 =
+    throw $ WasmError "ParseInstruction: no instruction"
   | otherwise = createInstruction opCode rest
   where
     (opCode, rest) = extractOpCode bytes
