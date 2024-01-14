@@ -23,7 +23,7 @@ alias A = Int;
 
 ```hs
 @Int a = 1;
-@String b = "hello";
+@StringView b = "hello";
 ```
 
 - **Variables Assignment**
@@ -114,18 +114,11 @@ while (i < 10)
 };
 ```
 
-- **Imports**
-
-```c
-// Circular imports are not allowed
-import "path/to/file.lvt"
-```
-
 - **Entrypoint**
 
 ```rust
 // If you don't have this function, the program will not be run
-fn start() -> Int
+export fn start() -> Int
 {
     <- 0;
 };
@@ -140,35 +133,8 @@ a * b
 a / b
 a == b
 a != b
-```
-
-- **Structs**
-
-```c
-struct Point
-{
-    x: Int,
-    y: Int,
-};
-```
-
-- **Structs Initialization**
-```
-@Point p = {1, 2};
-```
-
-- **Structs Access**
-```
-p:x
-```
-
-- **Nested Structs**
-```
-struct Rect
-{
-    Point size; 
-    Point pos; 
-};
-@Rect r = {{1, 2}, {3, 4}};
-r:size:x
+a < b
+a <= b
+a > b
+a >= b
 ```
