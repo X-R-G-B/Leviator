@@ -11,31 +11,32 @@ module Parsing.Global
   )
 where
 
-import qualified Data.ByteString.Lazy as BSL
-import Control.Exception (throw)
-import Data.Word (Word8)
 import Data.Int (Int64)
+import Data.Word (Word8)
+import Control.Exception (throw)
+import qualified Data.ByteString.Lazy as BSL
 
-import Leb128
 import Types
-import Errors
-import OpCodes
+import Errors (CustomException(..))
+import Leb128 (getLEB128ToI64)
+import OpCodes (extractOpCode, createInstruction)
 
 parseInstruction :: BSL.ByteString -> (Instruction, BSL.ByteString)
 parseInstruction bytes
-  | BSL.length bytes == 0 = throw $ WasmError "ParseInstruction: no instruction"
-  | otherwise = do
-    let (opCode, rest) = extractOpCode bytes
-    let (instruction, rest2) = createInstruction opCode rest
-    (instruction, rest2)
+  | BSL.length bytes == 0 =
+    throw $ WasmError "ParseInstruction: no instruction"
+  | otherwise = (instruction, rest2)
+  where
+    (opCode, rest) = extractOpCode bytes
+    (instruction, rest2) = createInstruction opCode rest
 
 parseInstructions :: BSL.ByteString -> [Instruction]
 parseInstructions bytes
   | BSL.length bytes == 0 = []
   | head (BSL.unpack bytes) == 0x0b = []
-  | otherwise = do
-    let (instruction, rest) = parseInstruction bytes
-    instruction : parseInstructions rest
+  | otherwise = instruction : parseInstructions rest
+  where
+    (instruction, rest) = parseInstruction bytes
 
 parseMutability :: Word8 -> Mutability
 parseMutability 0x00 = Const
@@ -44,16 +45,17 @@ parseMutability _ = throw $ WasmError "ParseMutability: bad mutability"
 
 getHexaIndex :: BSL.ByteString -> Int64 -> Int64
 getHexaIndex content idx
-  | idx >= (fromIntegral $ BSL.length content) = throw $ WasmError "GetHexaIndex: no 0x0b found"
+  | idx >= (fromIntegral $ BSL.length content) =
+    throw $ WasmError "GetHexaIndex: no 0x0b found"
   | (head $ BSL.unpack $ BSL.drop (fromIntegral idx) content) == 0x0b = idx
   | otherwise = getHexaIndex content (idx + 1)
 
 extractExpression :: BSL.ByteString -> (BSL.ByteString, BSL.ByteString)
-extractExpression content = do
-    let idx = getHexaIndex content 0
-    let expression = BSL.take (fromIntegral (idx + 1)) content
-    let rest = BSL.drop (fromIntegral (idx + 1)) content
-    (expression, rest)
+extractExpression content = (expression, rest)
+  where
+    idx = getHexaIndex content 0
+    expression = BSL.take (fromIntegral (idx + 1)) content
+    rest = BSL.drop (fromIntegral (idx + 1)) content
 
 parseGlobal :: BSL.ByteString -> (Global, BSL.ByteString)
 parseGlobal content = do
@@ -66,12 +68,13 @@ parseGlobal content = do
 parseGlobals :: Int64 -> Int64 -> BSL.ByteString -> [Global]
 parseGlobals idx maxIdx content
   | idx >= maxIdx = []
-  | otherwise = do
-    let (global, rest) = parseGlobal content
-    global : parseGlobals (idx + 1) maxIdx rest
+  | otherwise = global : parseGlobals (idx + 1) maxIdx rest
+  where
+    (global, rest) = parseGlobal content
 
 getGlobals :: Section -> [Global]
-getGlobals (Section GlobalID _ content) = do
-  let (vecSize, rest) = getLEB128ToI64 content
+getGlobals (Section GlobalID _ content) =
   parseGlobals 0 vecSize rest
+  where
+    (vecSize, rest) = getLEB128ToI64 content
 getGlobals _ = throw $ WasmError "getGlobals: bad section"
