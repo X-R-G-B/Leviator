@@ -21,8 +21,6 @@ import Parsing.Exports
 import Parsing.Functions
 import Parsing.Code
 
-import Debug.Trace
-
 parseModule :: FileContent -> WasmModule
 parseModule bytes = do
   let sections = getSections bytes

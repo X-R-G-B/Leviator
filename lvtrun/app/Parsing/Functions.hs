@@ -20,8 +20,6 @@ import Types
 import Errors
 import Leb128
 
-import Debug.Trace
-
 parseFunctionsIndex :: Int32 -> Int64 -> BSL.ByteString -> [Function]
 parseFunctionsIndex idx maxIdx content
   | idx > (fromIntegral maxIdx) = []

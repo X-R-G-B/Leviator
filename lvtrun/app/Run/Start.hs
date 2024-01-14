@@ -19,7 +19,5 @@ import Errors
 import Run.Vm
 import Run.Functions
 
-import Debug.Trace
-
 start :: WasmModule -> IO ()
 start wasmMod = startExecution (createVm wasmMod) (getStartFunctionId (exports wasmMod))

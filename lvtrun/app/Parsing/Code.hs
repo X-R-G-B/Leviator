@@ -22,8 +22,6 @@ import Leb128
 import Types
 import Errors
 
-import Debug.Trace
-
 -- GET LOCALS
 
 diviseBytes :: BSL.ByteString -> [BSL.ByteString]
@@ -101,7 +99,7 @@ extractOpCode bytes
   | (head $ BSL.unpack bytes) == 0x47 = ([0x47], 1, BSL.drop 1 bytes)
   | (BSL.unpack $ BSL.take 2 bytes) == [0x3f, 0x00] = ([0x3f, 0x00], 2, BSL.drop 2 bytes)
   | (BSL.unpack $ BSL.take 2 bytes) == [0x40, 0x00] = ([0x40, 0x00], 2, BSL.drop 2 bytes)
-  | otherwise = trace ("extractOpCode: " ++ showBytes bytes) throw $ WasmError "ExtractOpCode2: bad opcode"
+  | otherwise = throw $ WasmError "ExtractOpCode2: bad opcode"
 
 createInstruction :: OpCode -> BSL.ByteString -> (Instruction, BSL.ByteString)
 createInstruction [0x03] bytes = (Nop, bytes)
@@ -180,7 +178,7 @@ createInstruction [0x21] bytes = do
   (SetLocal value, rest)
 createInstruction [0x3f, 0x00] bytes = (MemorySize, bytes)
 createInstruction [0x40, 0x00] bytes = (MemoryGrow, bytes)
-createInstruction opCode _ = trace ("createInstruction: " ++ show opCode) throw $ WasmError "createInstruction: bad instruction"
+createInstruction opCode _ = throw $ WasmError "createInstruction: bad instruction"
 
 parseInstruction :: BSL.ByteString -> (Instruction, BSL.ByteString)
 parseInstruction bytes
