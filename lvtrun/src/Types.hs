@@ -123,6 +123,7 @@ data Instruction =
   | I32Ne
   | LocalTee LocalIdx
   | BrIf LabelIdx
+  | If
   | Br LabelIdx
   | Block BlockType
   | End
@@ -157,12 +158,13 @@ instance Show Instruction where
   show I32Eqz = "\n\t\t\t\ti32.eqz"
   show I32Gts = "\n\t\t\t\ti32.gt_s"
   show I32Les = "\n\t\t\t\ti32.le_s"
-  show I32Eq = "\n\t\t\t\ti32.eq"
   show I32Ne = "\n\t\t\t\ti32.ne"
   show I32Ges = "\n\t\t\t\ti32.ge_s"
   show I32Lts = "\n\t\t\t\ti32.lt_s"
   show I32Gtu = "\n\t\t\t\ti32.gt_u"
   show I32Leu = "\n\t\t\t\ti32.le_u"
+  show If = "\n\t\t\t\tif"
+  show I32Eq = "\n\t\t\t\ti32.eq"
   show (LocalTee idx) = "\n\t\t\t\tlocal.tee " ++ (show idx)
   show (BrIf idx) = "\n\t\t\t\tbr_if " ++ (show idx)
   show (Br idx) = "\n\t\t\t\tbr " ++ (show idx)
