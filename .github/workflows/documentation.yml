@@ -50,7 +50,7 @@ jobs:
 
       - name: Copy OnlineRunner
         if: steps.filter.outputs.docs == 'true' || steps.filter.outputs.docs2 == 'true' || steps.filter.outputs.workflow == 'true' || github.ref == 'refs/heads/main'
-        run: cp ./lvtext/webrunner/index.html ./book/OnlineVm.html
+        run: cp ./lvtext/webrunner/index.html ./book/OnlineVM.html
 
       - name: Setup Pages
         if: github.ref == 'refs/heads/main'
