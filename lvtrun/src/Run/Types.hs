@@ -12,7 +12,8 @@ module Run.Types
   VM(..),
   createVm,
   incrementInstIdx,
-  createEmptyExec
+  createEmptyExec,
+  decrementBlockIdx
 )
 where
 
@@ -59,6 +60,9 @@ createVm wasmMod = VM { vmStack = [],
 
 incrementInstIdx :: CurrentExec -> CurrentExec
 incrementInstIdx cEx = cEx { ceInstIdx = ceInstIdx cEx + 1 }
+
+decrementBlockIdx :: CurrentExec -> CurrentExec
+decrementBlockIdx cEx = cEx { crBlockIndents = (crBlockIndents cEx) - 1 }
 
 createEmptyExec :: CurrentExec
 createEmptyExec = CurrentExec {
