@@ -25,9 +25,9 @@ import Run.Stack (Stack, stackPopN)
 type Locals = [Value]
 
 getLocalFromId' :: Int32 -> LocalIdx -> Locals -> Value
-getLocalFromId' _ _ [] = throw $ WasmError "getLocalFromId: bad id"
+getLocalFromId' _ _ [] = throw $ RuntimeError "getLocalFromId: bad id"
 getLocalFromId' idx idntifier (x:xs)
-  | idx > idntifier = throw $ WasmError "getLocalFromId: bad id"
+  | idx > idntifier = throw $ RuntimeError "getLocalFromId: bad id"
   | idx == idntifier = x
   | otherwise = getLocalFromId' (idx + 1) idntifier xs
 
@@ -35,9 +35,9 @@ getLocalFromId :: Locals -> LocalIdx -> Value
 getLocalFromId lcals idntifier = getLocalFromId' 0 idntifier lcals
 
 setLocalWithId :: Int32 -> Locals -> Value -> LocalIdx -> Locals
-setLocalWithId _ [] _ _ = throw $ WasmError "setLocalWithId: bad id"
+setLocalWithId _ [] _ _ = throw $ RuntimeError "setLocalWithId: bad id"
 setLocalWithId idx (x:xs) value idntifier
-  | idx > idntifier = throw $ WasmError "setLocalWithId: bad id"
+  | idx > idntifier = throw $ RuntimeError "setLocalWithId: bad id"
   | idx == idntifier = value : xs
   | otherwise = x : setLocalWithId (idx + 1) xs value idntifier
 
@@ -64,7 +64,7 @@ createLocalsParams (F32:xs) (F_32 val:xs2) =
   (F_32 val : createLocalsParams xs xs2)
 createLocalsParams (F64:xs) (F_64 val:xs2) =
   (F_64 val : createLocalsParams xs xs2)
-createLocalsParams _ _ = throw $ WasmError "createLocalsParams: bad type"
+createLocalsParams _ _ = throw $ RuntimeError "createLocalsParams: bad type"
 
 initLocalsParams' :: (Locals, Stack) -> [TypeName] -> (Locals, Stack)
 initLocalsParams' ([], newStack) _ = ([], newStack)
@@ -74,7 +74,7 @@ initLocalsParams' (values, newStack) prms =
 initLocalsParams :: [TypeName] -> Stack -> (Locals, Stack)
 initLocalsParams [] stack = ([], stack)
 initLocalsParams prms stack 
-  | length prms > length stack = throw $ WasmError "initLocalsParam: bad nb"
+  | length prms > length stack = throw $ RuntimeError "initLocalsParam: bad nb"
   | otherwise = initLocalsParams' (stackPopN stack (length prms)) prms
 
 initLocals :: [Local] -> [TypeName] -> Stack -> (Locals, Stack)
