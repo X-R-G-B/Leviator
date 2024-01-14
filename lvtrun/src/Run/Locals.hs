@@ -20,26 +20,26 @@ import Control.Exception (throw)
 
 import Types
 import Errors (CustomException(..))
-import Run.Stack (Stack, stackPop, stackPopN)
+import Run.Stack (Stack, stackPopN)
 
 type Locals = [Value]
 
 getLocalFromId' :: Int32 -> LocalIdx -> Locals -> Value
 getLocalFromId' _ _ [] = throw $ WasmError "getLocalFromId: bad id"
-getLocalFromId' idx id (x:xs)
-  | idx > id = throw $ WasmError "getLocalFromId: bad id"
-  | idx == id = x
-  | otherwise = getLocalFromId' (idx + 1) id xs
+getLocalFromId' idx idntifier (x:xs)
+  | idx > idntifier = throw $ WasmError "getLocalFromId: bad id"
+  | idx == idntifier = x
+  | otherwise = getLocalFromId' (idx + 1) idntifier xs
 
 getLocalFromId :: Locals -> LocalIdx -> Value
-getLocalFromId locals id = getLocalFromId' 0 id locals
+getLocalFromId lcals idntifier = getLocalFromId' 0 idntifier lcals
 
 setLocalWithId :: Int32 -> Locals -> Value -> LocalIdx -> Locals
 setLocalWithId _ [] _ _ = throw $ WasmError "setLocalWithId: bad id"
-setLocalWithId idx (x:xs) value id
-  | idx > id = throw $ WasmError "setLocalWithId: bad id"
-  | idx == id = value : xs
-  | otherwise = x : setLocalWithId (idx + 1) xs value id
+setLocalWithId idx (x:xs) value idntifier
+  | idx > idntifier = throw $ WasmError "setLocalWithId: bad id"
+  | idx == idntifier = value : xs
+  | otherwise = x : setLocalWithId (idx + 1) xs value idntifier
 
 ----------- INITIALISATION ----------------
 
@@ -68,14 +68,14 @@ createLocalsParams _ _ = throw $ WasmError "createLocalsParams: bad type"
 
 initLocalsParams' :: (Locals, Stack) -> [TypeName] -> (Locals, Stack)
 initLocalsParams' ([], newStack) _ = ([], newStack)
-initLocalsParams' (values, newStack) params =
-  (createLocalsParams params (reverse values), newStack)
+initLocalsParams' (values, newStack) prms =
+  (createLocalsParams prms (reverse values), newStack)
 
 initLocalsParams :: [TypeName] -> Stack -> (Locals, Stack)
 initLocalsParams [] stack = ([], stack)
-initLocalsParams params stack 
+initLocalsParams prms stack 
   | length params > length stack = throw $ WasmError "initLocalsParam: bad nb"
-  | otherwise = initLocalsParams' (stackPopN stack (length params)) params
+  | otherwise = initLocalsParams' (stackPopN stack (length params)) prms
 
 initLocals :: [Local] -> [TypeName] -> Stack -> (Locals, Stack)
 initLocals localVarTypes paramTypes stack = do

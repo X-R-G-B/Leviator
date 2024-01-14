@@ -35,7 +35,7 @@ module Types
   FileContent,
   SectionID(..),
   Section(..),
-  Memory(..),
+  Memory,
   Local(..),
   BlockType(..),
   Value(..)
@@ -96,7 +96,6 @@ data Instruction =
   | Return
   | Call FuncIdx
   | I32Const Int32
-  
   | I64Const Int64
   | F32Const Float
   | F64Const Double
