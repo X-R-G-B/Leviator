@@ -138,6 +138,11 @@ checkCondition (v, fst_, snd_) env xs
     checkInstructions snd_ env = checkInstructions xs env
 checkCondition _ _ _ = False
 
+checkWhile :: WhileBlock -> Env -> [Instruction] -> Bool
+checkWhile (v, instructions) env _ | assertTypeAndValue "Bool" v env =
+  checkInstructions instructions env
+checkWhile _ _ _ = False
+
 checkInstructions :: [Instruction] -> Env -> Bool
 checkInstructions [] _ = True
 checkInstructions ((Function func):xs) env = checkCall func env xs
@@ -147,6 +152,7 @@ checkInstructions ((Declaration declaration):xs) env =
 checkInstructions ((Assignation assignation):xs) env =
   checkAssignation assignation env xs
 checkInstructions ((Cond condition):xs) env = checkCondition condition env xs
+checkInstructions ((While while):xs) env = checkWhile while env xs
 
 checkVarTypes :: [Var] -> Bool
 checkVarTypes [] = True
@@ -203,5 +209,11 @@ defaultEnv :: Maybe [FuncPrototype]
 defaultEnv = Just (createCalcOp ["+", "-", "*", "%", "/"] ++
               createCompOp ["==", "!=", "<", ">", "<=", ">="])
 
+checkStart :: [FuncDeclaration] -> Bool
+checkStart (((True, "start", _, _), _):_) = True
+checkStart (((_, _, _, _), _):xs) = checkStart xs
+checkStart [] = False
+
 typeCheck :: [FuncDeclaration] -> Bool
-typeCheck expressions = checkDeclarations expressions defaultEnv
+typeCheck expressions | checkStart expressions = checkDeclarations expressions defaultEnv
+typeCheck _ = False

@@ -18,6 +18,7 @@ module AST
   , VarAssignation
   , Condition
   , Export
+  , WhileBlock
 ) where
 
 import Data.Int (Int32)
@@ -77,12 +78,15 @@ type VarDeclaration = (Var, Value)
 
 type VarAssignation = (Symbol, Value)
 
+type WhileBlock = (Value, [Instruction])
+
 data Instruction =
     Function FuncCall
     | Return Value
     | Declaration VarDeclaration
     | Assignation VarAssignation
     | Cond Condition
+    | While WhileBlock
 
 instance Show Instruction where
     show (Function x) =
@@ -95,6 +99,8 @@ instance Show Instruction where
         "Assignation[< " ++ show x ++ " >]"
     show (Cond x) =
         "Cond[< " ++ show x ++ " >]"
+    show (While x) =
+        "While[< " ++ show x ++ " >]"
 
 instance Eq Instruction where
     (==) (Function x) (Function y) = x == y

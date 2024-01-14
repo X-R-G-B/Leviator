@@ -63,14 +63,14 @@ opOnStack (Var op1) (SYS ((Var op2):ops) out)
 opOnStack _ sys = sys
 
 shuntingYardOp :: Value -> ShuntingYardState -> ShuntingYardState
-shuntingYardOp (Var "(") (SYS ops out) =
-    SYS (Var "(" : ops) out
-shuntingYardOp (Var ")") (SYS [] _) =
+shuntingYardOp (Var "{") (SYS ops out) =
+    SYS (Var "{" : ops) out
+shuntingYardOp (Var "}") (SYS [] _) =
     SYS [] []
-shuntingYardOp (Var ")") (SYS ((Var "("):ops) out) =
+shuntingYardOp (Var "}") (SYS ((Var "{"):ops) out) =
     SYS ops out
-shuntingYardOp (Var ")") (SYS (op:ops) out) =
-    shuntingYardOp (Var ")") (SYS ops (out ++ [op]))
+shuntingYardOp (Var "}") (SYS (op:ops) out) =
+    shuntingYardOp (Var "}") (SYS ops (out ++ [op]))
 shuntingYardOp (Var op) sys =
     SYS (Var op:ops') out'
     where

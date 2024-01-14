@@ -30,12 +30,12 @@ getBuiltinsFuncOperator =
 getBuiltinsFuncComp :: [FuncDeclaration]
 getBuiltinsFuncComp =
     [
-        ((False, "==", [("x", "Int"), ("y", "Int")], "Int"), []),
-        ((False, "<", [("x", "Int"), ("y", "Int")], "Int"), []),
-        ((False, ">", [("x", "Int"), ("y", "Int")], "Int"), []),
-        ((False, "<=", [("x", "Int"), ("y", "Int")], "Int"), []),
-        ((False, ">=", [("x", "Int"), ("y", "Int")], "Int"), []),
-        ((False, "!=", [("x", "Int"), ("y", "Int")], "Int"), [])
+        ((False, "==", [("x", "Int"), ("y", "Int")], "Bool"), []),
+        ((False, "<", [("x", "Int"), ("y", "Int")], "Bool"), []),
+        ((False, ">", [("x", "Int"), ("y", "Int")], "Bool"), []),
+        ((False, "<=", [("x", "Int"), ("y", "Int")], "Bool"), []),
+        ((False, ">=", [("x", "Int"), ("y", "Int")], "Bool"), []),
+        ((False, "!=", [("x", "Int"), ("y", "Int")], "Bool"), [])
     ]
 
 getBuiltinsFunc :: [FuncDeclaration]

@@ -1,0 +1,30 @@
+<head>
+    <title>Leviator Web Runner</title>
+</head>
+<body>
+    <h1>Leviator Web Runner</h1>
+    <a href="https://x-r-g-b.github.io/Leviator/">online docs</a><br/><br/>
+
+    <label for="fileWasm">Wasm File: </label><input type="file" id="fileWasm" />
+
+    <p>Output:<br/></p>
+    <pre><code id="output"></code></pre>
+
+    <script>
+        const importObject = {
+            imports: {},
+        };
+
+        document.getElementById("fileWasm").addEventListener("change", (event) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+                const arrayBuffer = reader.result;
+                WebAssembly.instantiate(arrayBuffer, importObject).then((result) => {
+                    const res = result.instance.exports.start();
+                    document.getElementById("output").innerText = res;
+                })
+            }
+            reader.readAsArrayBuffer(event.target.files[0]);
+        })
+    </script>
+</body>

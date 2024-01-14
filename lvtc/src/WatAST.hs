@@ -10,9 +10,14 @@ module WatAST
     OpCode (..)
     , Type (..)
     , FuncDef (..)
+    , IfType (..)
 ) where
 
 import Data.Int (Int32)
+
+data IfType =
+    EmptyType
+    deriving (Show, Eq)
 
 -- if opcode added, dont miss to add the right size in ./WasmUtils.hs
 data OpCode =
@@ -33,9 +38,11 @@ data OpCode =
     | I32Div
     | Return
     | Call Int32
-    | If
+    | If IfType
     | Else
     | End
+    | Loop IfType
+    | Br Int32
     deriving (Show, Eq)
 
 data Type =

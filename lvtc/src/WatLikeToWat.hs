@@ -37,6 +37,10 @@ findTypeFromInstructions name [] = error ("Type not found for: " ++ name)
 findTypeFromInstructions name ((Declaration ((name', typ), _)):xs)
     | name == name' = typeStringToType typ
     | otherwise = findTypeFromInstructions name xs
+findTypeFromInstructions name ((Cond (_, insIf, insElse)):xs) =
+    findTypeFromInstructions name (insIf ++ insElse ++ xs)
+findTypeFromInstructions name ((While (_, ins)):xs) =
+    findTypeFromInstructions name (ins ++ xs)
 findTypeFromInstructions name (_:xs) = findTypeFromInstructions name xs
 
 varsToDecl :: [Index] -> [Instruction] -> [Var] -> [(WatAST.Type, Int32)]
@@ -74,43 +78,47 @@ valueToWat _ = error "value not supported"
 valuesToWat :: [Value] -> [OpCode]
 valuesToWat = concatMap valueToWat
 
-instructionToWat :: Instruction -> [OpCode]
-instructionToWat (AST.Return (Var indexName)) =
+instructionToWat :: Instruction -> Int32 -> [OpCode]
+instructionToWat (AST.Return (Var indexName)) _ =
     [
         LocalGet (read indexName :: Int32)
         , WatAST.Return
     ]
-instructionToWat (AST.Return _) = error "Return need a var"
-instructionToWat (Declaration ((indexName, _), val)) =
+instructionToWat (AST.Return _) _ = error "Return need a var"
+instructionToWat (Declaration ((indexName, _), val)) _ =
     valueToWat val
-    ++ [
-        LocalSet (read indexName :: Int32)
-    ]
-instructionToWat (Assignation (indexName, val)) =
+    ++ [ LocalSet (read indexName :: Int32) ]
+instructionToWat (Assignation (indexName, val)) _ =
     valueToWat val
-    ++ [
-        LocalSet (read indexName :: Int32)
-    ]
-instructionToWat (Function (indexName, values)) =
+    ++ [ LocalSet (read indexName :: Int32) ]
+instructionToWat (Function (indexName, values)) _ =
     valuesToWat values
-    ++ [
-        Call (read indexName :: Int32)
-    ]
-instructionToWat (Cond (value, ifTrue, [])) =
+    ++ [ Call (read indexName :: Int32) ]
+instructionToWat (Cond (value, ifTrue, [])) n =
     valueToWat value
-    ++ [ If ]
-    ++ instructionsToWat ifTrue
-    ++ [ End ]
-instructionToWat (Cond (value, ifTrue, ifFalse)) =
+    ++ [ If EmptyType ] ++ ins ++ [ End ]
+    where
+        ins = instructionsToWat ifTrue (n + 1)
+instructionToWat (Cond (value, ifTrue, ifFalse)) n =
     valueToWat value
-    ++ [ If ]
-    ++ instructionsToWat ifTrue
-    ++ [ Else ]
-    ++ instructionsToWat ifFalse
-    ++ [ End ]
+    ++ [ If EmptyType ] ++ insT ++ [ Else ] ++ insF ++ [ End ]
+    where
+        insT = instructionsToWat ifTrue (n + 1)
+        insF = instructionsToWat ifFalse (n + 1)
+instructionToWat (While (value, ins)) n =
+    valueToWat value
+    ++ [ If EmptyType, Loop EmptyType ]
+    ++ ins' ++ valueToWat value ++ [ If EmptyType, Br (n + 1), End]
+    ++ [ End, End ]
+    where
+        ins' = instructionsToWat ins (n + 2)
 
-instructionsToWat :: [Instruction] -> [OpCode]
-instructionsToWat = concatMap instructionToWat
+instructionsToWat :: [Instruction] -> Int32 -> [OpCode]
+instructionsToWat [] _ = []
+instructionsToWat (x:xs) n = ins ++ inss
+    where
+        ins = instructionToWat x n
+        inss = instructionsToWat xs n
 --
 -- instructionsToWat = foldr ((++) . instructionToWat) []
 --
@@ -128,7 +136,7 @@ watLikeToWat (((isExp, fName, params, returnType), ins), vars, originName)
         pType = paramsToTypes params
         rType = typeStringToType returnType
         vDecl = groupVarsToDecl $ varsToDecl vars ins params
-        opcodes = instructionsToWat ins
+        opcodes = instructionsToWat ins 0
 
 watsLikeToWat :: [FuncDeclare] -> [FuncDef]
 watsLikeToWat = map watLikeToWat

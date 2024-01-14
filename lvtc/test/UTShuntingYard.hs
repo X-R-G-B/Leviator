@@ -34,8 +34,8 @@ utShuntingYard = testGroup "ShuntingYard"
       assertEqual "3-4/5"
         (SYS [] [Integer 3, Integer 4, Integer 5, Var "/", Var "-"])
         priority_div_end
-  , testCase "3+4*2/(1-5)" $
-      assertEqual "3+4*2/(1-5)"
+  , testCase "3+4*2/{1-5}" $
+      assertEqual "3+4*2/{1-5}"
         (SYS [] [Integer 3, Integer 4, Integer 2, Var "*", Integer 1, Integer 5, Var "-", Var "/", Var "+"])
         priority_end
   ]
@@ -72,9 +72,9 @@ utShuntingYard = testGroup "ShuntingYard"
     priority_4 = shuntingYardOp (Var "*") priority_3
     priority_5 = shuntingYardValue (Integer 2) priority_4
     priority_6 = shuntingYardOp (Var "/") priority_5
-    priority_7 = shuntingYardOp (Var "(") priority_6
+    priority_7 = shuntingYardOp (Var "{") priority_6
     priority_8 = shuntingYardValue (Integer 1) priority_7
     priority_9 = shuntingYardOp (Var "-") priority_8
     priority_10 = shuntingYardValue (Integer 5) priority_9
-    priority_11 = shuntingYardOp (Var ")") priority_10
+    priority_11 = shuntingYardOp (Var "}") priority_10
     priority_end = shuntingYardEnd priority_11
