@@ -14,25 +14,26 @@ import Test.Tasty.HUnit
 
 import Parser
 import ParseLvt
+import Lexeme
 import AST
 
 testParserHelper :: String -> String -> Instruction -> IO ()
 testParserHelper str restExpected expressionExpected =
-    case runParser parseInstruction str of
+    case runParser parseInstruction (lexeme1 str) of
         Just (parsed, rest) -> assertEqual str restExpected rest >>
             assertEqual str expressionExpected parsed
         Nothing -> assertFailure ("Parsing failed for: `" ++ str ++ "`")
 
 testParserFunc :: String -> String -> FuncDeclaration -> IO ()
 testParserFunc str restExpected expressionExpected =
-    case runParser parseFuncDeclaration str of
+    case runParser parseFuncDeclaration (lexeme1 str) of
         Just (parsed, rest) -> assertEqual str restExpected rest >>
             assertEqual str expressionExpected parsed
         Nothing -> assertFailure ("Parsing failed for: `" ++ str ++ "`")
 
 testParserHelpers :: String -> String -> [Instruction] -> IO ()
 testParserHelpers str restExpected expressionExpected =
-    case runParser parseInstructions str of
+    case runParser parseInstructions (lexeme1 str) of
         Just (parsed, rest) -> assertEqual str restExpected rest >>
             assertEqual str expressionExpected parsed
         Nothing -> assertFailure ("Parsing failed for: `" ++ str ++ "`")

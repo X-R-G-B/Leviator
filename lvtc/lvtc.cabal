@@ -30,6 +30,7 @@ library
       Builtins
       Expression
       Leb128Encode
+      Lexeme
       Lib
       LvtLibVersion
       ParseLvt
@@ -78,6 +79,7 @@ test-suite lvtc-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      UTLexeme
       UTParseLvt
       UTShuntingYard
       UTWasm

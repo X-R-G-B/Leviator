@@ -35,28 +35,7 @@ import AST
 import Parser
 import ParseUtil
 import ShuntingYard
-
-lexeme :: String -> String
-lexeme [] = []
-lexeme (',':' ':xs) = lexeme (',':xs)
-lexeme ('\n':' ':xs) = lexeme ('\n':xs)
-lexeme ('e':'l':'s':'e':' ':xs) = lexeme ("else" ++ xs)
-lexeme ('i':'f':' ':xs) = lexeme ("if" ++ xs)
-lexeme (' ':'(':xs) = lexeme ("(" ++ xs)
-lexeme (' ':')':xs) = lexeme (")" ++ xs)
-lexeme (' ':'+':xs) = lexeme ("+" ++ xs)
-lexeme (' ':'-':xs) = lexeme ("-" ++ xs)
-lexeme (' ':'*':xs) = lexeme ("*" ++ xs)
-lexeme (' ':'/':xs) = lexeme ("/" ++ xs)
-lexeme ('+':' ':xs) = lexeme ("+" ++ xs)
-lexeme ('-':' ':xs) = lexeme ("-" ++ xs)
-lexeme ('*':' ':xs) = lexeme ("*" ++ xs)
-lexeme ('/':' ':xs) = lexeme ("/" ++ xs)
-lexeme ('(':' ':xs) = lexeme ("(" ++ xs)
-lexeme (')':' ':xs) = lexeme (")" ++ xs)
-lexeme (':':' ':xs) = lexeme (":" ++ xs)
-lexeme (' ':':':xs) = lexeme (":" ++ xs)
-lexeme (x:xs) = x : lexeme xs
+import Lexeme
 
 parseBoolean :: Parser Value
 parseBoolean =
@@ -108,11 +87,7 @@ parseVoid = f <$> parseString "Void"
         f _ = Void
 
 parseOperatorFstVal :: Parser Value
-parseOperatorFstVal = Parser f
-    where
-        f str = case runParser parseValueWithoutOperator str of
-            Nothing -> Nothing
-            Just (fstVal, xs) -> Just (fstVal, xs)
+parseOperatorFstVal = parseValueWithoutOperator
 
 parseOperatorOp :: Parser Value
 parseOperatorOp =
@@ -133,9 +108,7 @@ parseOperator' sys =
 parseOperatorTransformOne' :: [Value] -> Maybe [Value]
 parseOperatorTransformOne' (x1:x2:(Var op):rest)
     | isOperator op = Just (FuncValue (op, [x1, x2]) : rest)
-    | otherwise = case parseOperatorTransformOne rest of
-        Nothing -> Nothing
-        Just ys -> Just (x1:x2:ys)
+    | otherwise = (\ys -> x1:x2:ys) <$> parseOperatorTransformOne rest
 parseOperatorTransformOne' _ = Nothing
 
 parseOperatorTransformOne :: [Value] -> Maybe [Value]
@@ -147,9 +120,7 @@ parseOperatorTransformOne (x1:(Var op):rest)
     | otherwise = parseOperatorTransformOne' (x1 : Var op : rest)
 parseOperatorTransformOne (x1:x2:(Var op):rest) =
     parseOperatorTransformOne' (x1 : x2 : Var op : rest)
-parseOperatorTransformOne (x:xs) = case parseOperatorTransformOne xs of
-    Nothing -> Nothing
-    Just ys -> Just (x:ys)
+parseOperatorTransformOne (x:xs) = (x :) <$> parseOperatorTransformOne xs
 
 parseOperatorTransform :: [Value] -> Maybe Value
 parseOperatorTransform [] = Nothing
@@ -172,7 +143,7 @@ parseOperatorS sys = Parser f
 parseOperator :: Parser Value
 parseOperator = Parser f
     where
-        f str = case runParser (parseOperatorS (SYS [] [])) (lexeme str) of
+        f str = case runParser (parseOperatorS (SYS [] [])) str of
             Nothing -> Nothing
             Just (x, xs) -> pat (shuntingYardEnd x) xs
         pat (SYS _ vals) str = case parseOperatorTransform vals of
@@ -263,7 +234,7 @@ parseDeclaration = Parser f
 parseAssignation :: Parser Instruction
 parseAssignation = Parser f
     where
-        f str = case runParser (parseVar <* parseString " = ") str of
+        f str = case runParser (parseVar <* parseString "=") str of
             Nothing -> Nothing
             Just (Var x, xs) ->
                 case runParser parseValue xs of
@@ -272,26 +243,26 @@ parseAssignation = Parser f
             _notVar -> Nothing
 
 parseCondComp :: Parser Value
-parseCondComp = parseString "if(" *> parseValue <* parseString ")\n"
+parseCondComp = parseString "if(" *> parseValue <* parseString ")"
 
 parseCondIf :: Parser [Instruction]
-parseCondIf = parseString "{\n" *> parseInstructions <* parseString "}"
+parseCondIf = parseString "{" *> parseInstructions <* parseString "}"
 
 parseCondElse :: Parser [Instruction]
-parseCondElse = parseString "else\n{\n" *> parseInstructions <* parseString "}"
+parseCondElse = parseString "else{" *> parseInstructions <* parseString "}"
 
 parseCond' :: Value -> [Instruction] -> Parser Instruction
 parseCond' val ifBlock = Parser f
     where
-        f ('\n':xs) = case runParser parseCondElse xs of
+        f (';':str) = Just (Cond (val, ifBlock, []), ';':str)
+        f str = case runParser parseCondElse str of
             Nothing -> Nothing
             Just (elseBlock, ys) -> Just (Cond (val, ifBlock, elseBlock), ys)
-        f str = Just (Cond (val, ifBlock, []), str)
 
 parseCond :: Parser Instruction
 parseCond = Parser f
     where
-        f str = case runParser parseCondComp (lexeme str) of
+        f str = case runParser parseCondComp str of
             Nothing -> Nothing
             Just (val, xs) ->
                 case runParser parseCondIf xs of
@@ -305,17 +276,15 @@ parseInstruction =
     <|> parseDeclaration
     <|> parseAssignation
     <|> parseFunction
-    ) <* parseString ";\n"
+    ) <* parseString ";"
 
 parseInstructions :: Parser [Instruction]
-parseInstructions = Parser f
-    where
-        f str = runParser (some parseInstruction) (lexeme str)
+parseInstructions = some parseInstruction
 
 parseFuncVar :: Parser Var
 parseFuncVar = Parser f
     where
-        f str = case runParser (parseVar <* parseString ":") (lexeme str) of
+        f str = case runParser (parseVar <* parseString ":") str of
             Nothing -> Nothing
             Just (Var x, xs) -> runParser (lmbda x <$> parseType) xs
             _notVar -> Nothing
@@ -336,10 +305,7 @@ parseFuncName =
     <|> ((\x -> (False, x)) <$> (parseString "fn " *> parseVarName))
 
 parseFuncType :: Parser Type
-parseFuncType =
-    (parseString " -> "
-    <|> parseString "-> "
-    <|> parseString "->") *> parseType <* parseString "\n{\n"
+parseFuncType = parseString "->" *> parseType <* parseString "{"
 
 parseFuncPrototype :: Parser FuncPrototype
 parseFuncPrototype =
@@ -355,9 +321,9 @@ parseFuncDeclaration' =
     (,)
         <$> parseFuncPrototype
             <*> parseInstructions
-            <* parseString "};\n"
+            <* parseString "};"
 
 parseFuncDeclaration :: Parser FuncDeclaration
 parseFuncDeclaration = Parser f
     where
-        f str = runParser parseFuncDeclaration' (lexeme str)
+        f str = runParser parseFuncDeclaration' (lexeme1 str)
