@@ -95,10 +95,12 @@ execBrIf cEx@(CurrentExec {ceStack = stack}) =
     _ -> throw $ RuntimeError "exec brIf: bad type"
 
 execCall :: VM -> CurrentExec -> FuncIdx -> CurrentExec
-execCall vm cEx funcIdx = do
-  let newVm = execFunctionWithIdx vm funcIdx (ceStack cEx)
-  let newStack = pushResults (ceStack cEx) (vmStack newVm) (ceResults (currentExec newVm))
-  cEx { ceStack = newStack }
+execCall vm cEx funcIdx = cEx { ceStack = newStack }
+  where
+    newVm = execFunctionWithIdx vm funcIdx currentStack
+    newStack = pushResults currentStack (vmStack newVm) res
+    currentStack = ceStack cEx
+    res = ceResults (currentExec newVm)
 
 execIf :: CurrentExec -> CurrentExec
 execIf cEx@(CurrentExec {ceStack = stack}) = case stackTop stack of
