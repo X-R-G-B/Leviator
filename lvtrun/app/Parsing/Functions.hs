@@ -14,7 +14,6 @@ where
 import qualified Data.ByteString.Lazy as BSL
 import Control.Exception (throw)
 import Data.Int (Int64, Int32)
-import Data.Word (Word8)
 
 import Types
 import Errors
@@ -26,7 +25,11 @@ parseFunctionsIndex idx maxIdx content
   | BSL.length content == 0 = []
   | otherwise = do
     let (typeIdx, rest) = getLEB128ToI32 content
-    Function {funcType = fromIntegral typeIdx, funcIdx = idx, body = []} : parseFunctionsIndex (idx + 1) maxIdx rest
+    Function {
+      funcType = fromIntegral typeIdx,
+      funcIdx = idx,
+      body = []
+    } : parseFunctionsIndex (idx + 1) maxIdx rest
 
 getFunctions :: Section -> [Function]
 getFunctions (Section FunctionID _ content) = do

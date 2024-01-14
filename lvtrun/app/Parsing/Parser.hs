@@ -12,23 +12,28 @@ module Parsing.Parser
 where
 
 import Types
-import Parsing.Sections
-import Parsing.Header
-import Parsing.Memory
-import Parsing.FuncTypes
-import Parsing.Global
-import Parsing.Exports
-import Parsing.Functions
-import Parsing.Code
+import qualified Parsing.Header as PH
+import qualified Parsing.FuncTypes as FT
+import qualified Parsing.Functions as FN
+import qualified Parsing.Memory as M
+import qualified Parsing.Exports as E
+import qualified Parsing.Sections as S
+import qualified Parsing.Global as G
+import qualified Parsing.Code as C
 
 parseModule :: FileContent -> WasmModule
-parseModule bytes = do
-  let sections = getSections bytes
-  WasmModule (getModHeader (getSectionWithId sections CustomID))
-    (getFuncTypes (getSectionWithId sections TypeID))
-      []
-        ((getFuncCode (getSectionWithId sections CodeID) (getFunctions (getSectionWithId sections FunctionID))))
-          []
-            (getMemories (getSectionWithId sections MemoryID))
-              []
-                (getExports (getSectionWithId sections ExportID))
+parseModule bytes =
+  WasmModule {
+    header = PH.getModHeader (S.getSectionWithId sections CustomID),
+    types = FT.getFuncTypes (S.getSectionWithId sections TypeID),
+    imports = [],
+    functions = C.getFuncCode codeSection funcs,
+    tables = [],
+    globals = G.getGlobals (S.getSectionWithId sections GlobalID),
+    memory = M.getMemories (S.getSectionWithId sections MemoryID),
+    exports = E.getExports (S.getSectionWithId sections ExportID)
+  }
+  where
+    sections = S.getSections bytes
+    codeSection = S.getSectionWithId sections CodeID
+    funcs = FN.getFunctions (S.getSectionWithId sections FunctionID)

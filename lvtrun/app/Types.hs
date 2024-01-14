@@ -44,7 +44,6 @@ module Types
 
 import Data.Int (Int32, Int64)
 import Data.Word (Word8)
-import Numeric (showHex)
 import Control.Exception (throw)
 import qualified Data.ByteString.Lazy as BSL
 
@@ -187,7 +186,6 @@ instance Show Instruction where
   show (Br idx) = "\n\t\t\t\tbr " ++ (show idx)
   show End = "\n\t\t\t\tend"
   show (Block blockType) = "\n\t\t\t\tblock " ++ (show blockType)
-  show _ = throw $ WasmError "Show Instruction: bad instruction"
 
 -- Module section
 
@@ -196,25 +194,24 @@ data Value =
   | I_64 Int64
   | F_32 Float
   | F_64 Double
-  deriving (Show)
+  deriving (Eq)
+
+instance Show Value where
+  show (I_32 val) = show val
+  show (I_64 val) = show val
+  show (F_32 val) = show val
+  show (F_64 val) = show val
 
 data Local = Local {
   lcIdx :: LocalIdx,
   lcType :: TypeName
-}
-
-instance Show Local where
-  show local = "\n\t\t(local idx:" ++ (show $ lcIdx local) ++ " type:" ++ (show $ lcType local) ++ ")"
+} deriving (Show)
 
 data FuncType = FuncType {
   typeId :: TypeIdx,
   params :: [TypeName],
   results :: [TypeName]
-}
-
-instance Show FuncType where
-  show funcType = "\n\t(type " ++ (show $ typeId funcType) ++ " (func " ++
-    (show $ params funcType) ++ ") " ++ (show $ results funcType) ++ ")"
+} deriving (Show)
 
 data Import = Import {
   mod :: String,
@@ -232,10 +229,7 @@ data Function = Function {
   funcIdx :: FuncIdx,
   locals :: [Local],
   body :: [Instruction]
-}
-
-instance Show Function where
-  show func = "\n\t(func idx:" ++ (show $ funcIdx func) ++ " typeId:" ++ (show $ funcType func) ++ " " ++ (show $ locals func) ++ "\nIntructions:\n" ++ (show $ body func) ++ ")"
+} deriving (Show)
 
 type Memory = Limit
 
@@ -245,12 +239,7 @@ data Global = Global {
   globalType :: TypeName,
   mutability :: Mutability,
   initExpr :: [Instruction]
-}
-
-instance Show Global where
-  show global = "\n\t(global " ++ (show $ globalType global) ++ " " ++
-    (show $ mutability global) ++ " " ++ (show $ initExpr global) ++ ")"
-
+} deriving (Show)
 
 data ExportDesc =
   ExportFunc FuncIdx
@@ -262,10 +251,7 @@ data ExportDesc =
 data Export = Export {
   expName :: String,
   expDesc :: ExportDesc
-}
-
-instance Show Export where
-  show export = "\n\t(export \"" ++ (expName export) ++ "\" " ++ (show $ expDesc export) ++ ")"
+} deriving (Show)
 
 data Table = Table {
   notImpl :: String
@@ -297,13 +283,7 @@ data Section = Section {
   identifier :: SectionID,
   size :: Int,
   content :: BSL.ByteString
-}
-
-instance Show Section where
-  show section =
-    "\nSection " ++ (show $ identifier section) ++
-    " Size: " ++ (show $ size section) ++
-    " Content: " ++ (concat $ map (\x -> showHex x " ") (BSL.unpack $ content section))
+} deriving (Show)
 
 data WasmModule = WasmModule {
   header :: ModHeader,

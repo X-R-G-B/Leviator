@@ -6,17 +6,16 @@
 -}
 
 module Parsing.Memory
-  (
-    getMemories
-  ) where
+(
+  getMemories
+) where
 
-import qualified Data.ByteString.Lazy as BS
 import Control.Exception (throw)
-import Control.Monad (when)
+import qualified Data.ByteString.Lazy as BS (ByteString, drop, unpack, empty)
 
-import Leb128
 import Types
-import Errors
+import Leb128 (getLEB128ToI32)
+import Errors (CustomException(..))
 
 parseMinMax :: BS.ByteString -> Memory
 parseMinMax content
@@ -44,5 +43,3 @@ getMemories (Section MemoryID _ content)
   | head (BS.unpack content) == 0x01 = parseMemory (BS.drop 1 content)
   | otherwise = throw $ WasmError "getMemories: v1 allow 1 memory only"
 getMemories _ = throw $ WasmError "getMemories: bad memory section"
-
---https://webassembly.github.io/spec/core/exec/runtime.html#memory-instances

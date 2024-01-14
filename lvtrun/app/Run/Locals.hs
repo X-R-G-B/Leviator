@@ -15,8 +15,7 @@ module Run.Locals
 )
 where
 
-import Data.Int (Int32, Int64)
-import Data.Word (Word8)
+import Data.Int (Int32)
 import Control.Exception (throw)
 
 import Types
@@ -42,21 +41,29 @@ setLocalWithId idx (x:xs) value id
   | idx == id = value : xs
   | otherwise = x : setLocalWithId (idx + 1) xs value id
 
----------------------------
+----------- INITIALISATION ----------------
 
 initLocalsVar :: Locals -> [Local] -> Locals
 initLocalsVar newLocals [] = newLocals
-initLocalsVar newLocals ((Local _ I32):xs) = initLocalsVar (I_32 0 : newLocals) xs
-initLocalsVar newLocals ((Local _ I64):xs) = initLocalsVar (I_64 0 : newLocals) xs
-initLocalsVar newLocals ((Local _ F32):xs) = initLocalsVar (F_32 0 : newLocals) xs
-initLocalsVar newLocals ((Local _ F64):xs) = initLocalsVar (F_64 0 : newLocals) xs
+initLocalsVar newLocals ((Local _ I32):xs) =
+  initLocalsVar (I_32 0 : newLocals) xs
+initLocalsVar newLocals ((Local _ I64):xs) =
+  initLocalsVar (I_64 0 : newLocals) xs
+initLocalsVar newLocals ((Local _ F32):xs) =
+  initLocalsVar (F_32 0 : newLocals) xs
+initLocalsVar newLocals ((Local _ F64):xs) =
+  initLocalsVar (F_64 0 : newLocals) xs
 
 createLocalsParams :: [TypeName] -> [Value] -> Locals
 createLocalsParams [] [] = []
-createLocalsParams (I32:xs) (I_32 val:xs2) = (I_32 val : createLocalsParams xs xs2)
-createLocalsParams (I64:xs) (I_64 val:xs2) = (I_64 val : createLocalsParams xs xs2)
-createLocalsParams (F32:xs) (F_32 val:xs2) = (F_32 val : createLocalsParams xs xs2)
-createLocalsParams (F64:xs) (F_64 val:xs2) = (F_64 val : createLocalsParams xs xs2)
+createLocalsParams (I32:xs) (I_32 val:xs2) =
+  (I_32 val : createLocalsParams xs xs2)
+createLocalsParams (I64:xs) (I_64 val:xs2) =
+  (I_64 val : createLocalsParams xs xs2)
+createLocalsParams (F32:xs) (F_32 val:xs2) =
+  (F_32 val : createLocalsParams xs xs2)
+createLocalsParams (F64:xs) (F_64 val:xs2) =
+  (F_64 val : createLocalsParams xs xs2)
 createLocalsParams _ _ = throw $ WasmError "createLocalsParams: bad type"
 
 initLocalsParams :: [TypeName] -> Stack -> (Locals, Stack)
@@ -77,7 +84,11 @@ initLocals localVarTypes paramTypes stack = do
 
 createEmptyLocals :: Locals -> [Local] -> Locals
 createEmptyLocals newLocals [] = newLocals
-createEmptyLocals newLocals ((Local _ I32):xs) = createEmptyLocals (I_32 0 : newLocals) xs
-createEmptyLocals newLocals ((Local _ I64):xs) = createEmptyLocals (I_64 0 : newLocals) xs
-createEmptyLocals newLocals ((Local _ F32):xs) = createEmptyLocals (F_32 0 : newLocals) xs
-createEmptyLocals newLocals ((Local _ F64):xs) = createEmptyLocals (F_64 0 : newLocals) xs
+createEmptyLocals newLocals ((Local _ I32):xs) =
+  createEmptyLocals (I_32 0 : newLocals) xs
+createEmptyLocals newLocals ((Local _ I64):xs) =
+  createEmptyLocals (I_64 0 : newLocals) xs
+createEmptyLocals newLocals ((Local _ F32):xs) =
+  createEmptyLocals (F_32 0 : newLocals) xs
+createEmptyLocals newLocals ((Local _ F64):xs) =
+  createEmptyLocals (F_64 0 : newLocals) xs

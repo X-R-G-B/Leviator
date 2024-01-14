@@ -8,15 +8,13 @@
 module Run.Vm
 (
   VM(..),
-  startExecution2,
+  runMain,
   createVm
 )
 where
 
-import Data.Int (Int32, Int64)
 import Data.Word (Word8)
 import Control.Exception (throw)
-import System.Exit
 
 import Types
 import Errors
@@ -67,36 +65,33 @@ createVm wasmMod = VM {
   wasmModule = wasmMod
 }
 
-addLabel :: CurrentExec -> CurrentExec
-addLabel cEx = cEx { ceLabels = (ceLabels cEx) ++ [ceInstIdx cEx] }
-
 incrementInstIdx :: CurrentExec -> CurrentExec
 incrementInstIdx cEx = cEx { ceInstIdx = ceInstIdx cEx + 1 }
 
 ---------------------------
 
 execOpCode :: VM -> CurrentExec -> Instruction -> CurrentExec
-execOpCode vm cEx (I32Const val) = cEx { ceStack = stackPush (ceStack cEx) (I_32 val) }
-execOpCode vm cEx (Block _) = cEx { crBlockIndents = (crBlockIndents cEx) + 1 }
-execOpCode vm cEx (I32Eqz) = do
+execOpCode _ cEx (I32Const val) = cEx { ceStack = stackPush (ceStack cEx) (I_32 val) }
+execOpCode _ cEx (Block _) = cEx { crBlockIndents = (crBlockIndents cEx) + 1 }
+execOpCode _ cEx (I32Eqz) = do
   let value = stackTop (ceStack cEx)
   case value of
     I_32 0 -> cEx { ceStack = stackPush (ceStack cEx) (I_32 1) }
     I_32 _ -> cEx { ceStack = stackPush (ceStack cEx) (I_32 0) }
     _ -> throw $ WasmError "exec I32eqz: bad type"
-execOpCode vm cEx (I32Add) = do
+execOpCode _ cEx (I32Add) = do
   let (value2, newStack1) = stackPop (ceStack cEx)
   let (value1, newStack2) = stackPop newStack1
   case (value1, value2) of
     (I_32 val1, I_32 val2) -> cEx { ceStack = stackPush newStack2 (I_32 (val1 + val2)) }
     _ -> throw $ WasmError "exec I32Add: bad type"
-execOpCode vm cEx (I32Sub) = do
+execOpCode _ cEx (I32Sub) = do
   let (value2, newStack1) = stackPop (ceStack cEx)
   let (value1, newStack2) = stackPop newStack1
   case (value1, value2) of
     (I_32 val1, I_32 val2) -> cEx { ceStack = stackPush newStack2 (I_32 (val1 - val2)) }
     _ -> throw $ WasmError "exec I32Sub: bad type"
-execOpCode vm cEx (BrIf labelIdx) = do
+execOpCode _ cEx (BrIf labelIdx) = do
   let (value, newStack) = stackPop (ceStack cEx)
   case value of
     I_32 0 -> cEx
@@ -106,17 +101,17 @@ execOpCode vm cEx (Call funcIdx) = do
   let newVm = execFunctionWithIdx vm funcIdx (ceStack cEx)
   let newStack = pushResults (ceStack cEx) (vmStack newVm) (ceResults (currentExec newVm))
   cEx { ceStack = newStack }
-execOpCode vm cEx (End) = cEx { crBlockIndents = (crBlockIndents cEx) - 1 }
-execOpCode vm cEx (Return) = cEx { crBlockIndents = (crBlockIndents cEx) - 1 }
-execOpCode vm cEx (Unreachable) = throw $ WasmError "execOpCode: unreachable"
-execOpCode vm cEx (GetLocal localIdx) = do
+execOpCode _ cEx (End) = cEx { crBlockIndents = (crBlockIndents cEx) - 1 }
+execOpCode _ cEx (Return) = cEx { crBlockIndents = (crBlockIndents cEx) - 1 }
+execOpCode _ cEx (Unreachable) = throw $ WasmError "execOpCode: unreachable"
+execOpCode _ cEx (GetLocal localIdx) = do
   let value = getLocalFromId (ceLocals cEx) localIdx
   cEx { ceStack = stackPush (ceStack cEx) value }
-execOpCode vm cEx (SetLocal localIdx) = do
+execOpCode _ cEx (SetLocal localIdx) = do
   let (value, newStack) = stackPop (ceStack cEx)
   let newLocals = setLocalWithId 0 (ceLocals cEx) value localIdx
   cEx { ceStack = newStack, ceLocals = newLocals }
-execOpCode vm cEx _ = cEx
+execOpCode _ cEx _ = cEx
 
 execOpCodes :: VM -> [Instruction] -> CurrentExec
 execOpCodes vm [] = currentExec vm
@@ -152,8 +147,8 @@ execFunctionWithIdx vm funcIdx currentStack = do
   }
   execFunction vm { currentExec = cexec }
 
-startExecution2 :: VM -> FuncIdx -> IO ()
-startExecution2 vm funcIdx = do
+runMain :: VM -> FuncIdx -> Stack
+runMain vm funcIdx = do
   let function = getFunctionFromId funcIdx (functions (wasmModule vm))
   let funcTypee = getFuncTypeFromId (funcType function) (types (wasmModule vm))
   let cexec = CurrentExec {
@@ -167,11 +162,4 @@ startExecution2 vm funcIdx = do
     crBlockIndents = 0
   }
   let newVm = execFunction vm { currentExec = cexec }
-  let resStack = []
-  let res = pushResults resStack (vmStack newVm) (ceResults (currentExec newVm))
-  let exitCode = case res of
-        [] -> 0
-        (x:xs) -> case x of
-          I_32 val -> val
-          _ -> 0
-  putStrLn $ "Exit correctly with code: " ++ show exitCode
+  pushResults [] (vmStack newVm) (ceResults (currentExec newVm))

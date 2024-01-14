@@ -11,13 +11,17 @@ module Run.Start
 )
 where
 
-import Data.Int (Int32, Int64)
-import Control.Exception (throw)
-
 import Types
-import Errors
 import Run.Vm
 import Run.Functions
+import Run.Stack
+
+exitCorrectly :: Stack -> IO ()
+exitCorrectly [] = putStrLn "Exit correctly with code: 0"
+exitCorrectly (x:_) = putStrLn $ "Exit correctly with code: " ++ show x
 
 startExecution :: WasmModule -> IO ()
-startExecution wasmMod = startExecution2 (createVm wasmMod) (getStartFunctionId (exports wasmMod))
+startExecution wasmMod = exitCorrectly $ vmAtEnd
+  where
+    vmAtEnd = runMain (createVm wasmMod) startFuncId
+    startFuncId = getStartFunctionId (exports wasmMod)

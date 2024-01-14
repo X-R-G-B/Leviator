@@ -18,37 +18,40 @@ where
 
 import Control.Exception (throw)
 
-import Types
-import Errors
+import Types (Value(..), TypeName(..))
+import Errors (CustomException(..))
 
 type Stack = [Value]
 
 pushResults :: Stack -> Stack -> [TypeName] -> Stack
-pushResults stack1 stack2 [] = stack1
-pushResults stack1 stack2 ((I32):xs) = case stackTop stack2 of
-  I_32 val -> pushResults (stackPush stack1 (I_32 val)) (tail stack2) xs
-  _ -> throw $ WasmError "pushResults: bad type"
-pushResults stack1 stack2 ((I64):xs) = case stackTop stack2 of
-  I_64 val -> pushResults (stackPush stack1 (I_64 val)) (tail stack2) xs
-  _ -> throw $ WasmError "pushResults: bad type"
-pushResults stack1 stack2 ((F32):xs) = case stackTop stack2 of
-  F_32 val -> pushResults (stackPush stack1 (F_32 val)) (tail stack2) xs
-  _ -> throw $ WasmError "pushResults: bad type"
-pushResults stack1 stack2 ((F64):xs) = case stackTop stack2 of
-  F_64 val -> pushResults (stackPush stack1 (F_64 val)) (tail stack2) xs
-  _ -> throw $ WasmError "pushResults: bad type"
-pushResults stack1 stack2 _ = throw $ WasmError "pushResults: bad type"
+pushResults toStack _ [] = toStack
+pushResults toStack fromStack ((I32):xs) =
+  case stackTop fromStack of
+    I_32 val -> pushResults (stackPush toStack (I_32 val)) (tail fromStack) xs
+    _ -> throw $ RuntimeError "pushResults: bad type"
+pushResults toStack fromStack ((I64):xs) =
+  case stackTop fromStack of
+    I_64 val -> pushResults (stackPush toStack (I_64 val)) (tail fromStack) xs
+    _ -> throw $ RuntimeError "pushResults: bad type"
+pushResults toStack fromStack ((F32):xs) =
+  case stackTop fromStack of
+    F_32 val -> pushResults (stackPush toStack (F_32 val)) (tail fromStack) xs
+    _ -> throw $ RuntimeError "pushResults: bad type"
+pushResults toStack fromStack ((F64):xs) =
+  case stackTop fromStack of
+    F_64 val -> pushResults (stackPush toStack (F_64 val)) (tail fromStack) xs
+    _ -> throw $ RuntimeError "pushResults: bad type"
 
 stackPush :: Stack -> Value -> Stack
 stackPush stack value = value:stack
 
 stackPop :: Stack -> (Value, Stack)
-stackPop [] = throw $ WasmError "stackPop: empty stack"
+stackPop [] = throw $ RuntimeError "stackPop: empty stack"
 stackPop (x:xs) = (x, xs)
 
 stackTop :: Stack -> Value
-stackTop [] = throw $ WasmError "stackTop: empty stack"
-stackTop (x:xs) = x
+stackTop [] = throw $ RuntimeError "stackTop: empty stack"
+stackTop (x:_) = x
 
 stackPopN :: Stack -> Int -> ([Value], Stack)
 stackPopN stack 0 = ([], stack)

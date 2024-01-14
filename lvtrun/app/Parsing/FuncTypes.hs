@@ -6,19 +6,18 @@
 -}
 
 module Parsing.FuncTypes
-  (
-    getFuncTypes
-  )
+(
+  getFuncTypes
+)
 where
 
 import qualified Data.ByteString.Lazy as Bs
 import Control.Exception (throw)
 import Data.Int (Int64, Int32)
-import Data.Word (Word8)
 
-import Leb128
-import Errors
-import Types
+import Leb128 (getLEB128ToI64)
+import Errors (CustomException(..))
+import Types (TypeName(..), FuncType(..), Section(..), SectionID(..), getTypeFromByte)
 
 getVectorSize :: Bs.ByteString -> (Int64, Bs.ByteString)
 getVectorSize content = getLEB128ToI64 content
@@ -29,10 +28,10 @@ extractTypes (idx, content) = (getTypeFromByte (head $ Bs.unpack content) : type
   where (types, rest) = extractTypes (idx - 1, Bs.drop 1 content)
 
 parseFuncType :: Int32 -> Bs.ByteString -> (FuncType, Bs.ByteString)
-parseFuncType id content = do
+parseFuncType id content =
   let (params, rest) = extractTypes (getVectorSize content)
-  let (results, rest2) = extractTypes (getVectorSize rest)
-  ((FuncType id params results), rest2)
+      (results, rest2) = extractTypes (getVectorSize rest)
+  in (FuncType id params results, rest2)
 
 parseFuncTypes :: Int32 -> Int64 -> Bs.ByteString -> [FuncType]
 parseFuncTypes idx maxIdx content

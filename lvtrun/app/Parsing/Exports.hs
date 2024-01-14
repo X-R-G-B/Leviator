@@ -6,9 +6,9 @@
 -}
 
 module Parsing.Exports
-  (
-    getExports
-  )
+(
+  getExports
+)
 where
 
 import qualified Data.ByteString.Lazy as Bs
@@ -57,10 +57,6 @@ parseExports idx maxIdx content
     let (exportValue, rest3) = getLEB128ToI32 (Bs.drop 1 rest2)
     let export = createExport (Bs.unpack name) exportType exportValue
     export : parseExports (idx + 1) maxIdx rest3
-
-printHex :: [Word8] -> String
-printHex [] = []
-printHex (x:xs) = showHex x " " ++ printHex xs
 
 getExports :: Section -> [Export]
 getExports (Section ExportID _ content) = do

@@ -6,18 +6,20 @@
 -}
 
 module Parsing.Header
-  (
-    getModHeader,
-    isHeaderValid
-  )
+(
+  getModHeader,
+  isHeaderValid
+)
 where
 
-import qualified Data.ByteString.Lazy as BSL (ByteString, take, drop, pack)
+import qualified Data.ByteString.Lazy as BSL (take, drop, pack)
 
-import Types
+import Types (ModHeader(..), Section(..))
 
 getModHeader :: Section -> ModHeader
-getModHeader bytes = ModHeader (BSL.take 4 $ content bytes) (BSL.take 4 $ BSL.drop 4 $ content bytes)
+getModHeader bytes = ModHeader
+  (BSL.take 4 $ content bytes)
+    (BSL.take 4 $ BSL.drop 4 $ content bytes)
 
 isHeaderValid :: ModHeader -> Bool
 isHeaderValid header =
