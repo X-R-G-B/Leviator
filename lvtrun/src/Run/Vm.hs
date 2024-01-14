@@ -102,13 +102,13 @@ execOpCodes vm [] = currentExec vm
 execOpCodes vm instructions
   | ceInstIdx cEx >= length instructions = cEx
   | ceInstIdx cEx < 0 = throw $ RuntimeError "execOpCodes: bad index"
-  | (instructions !! ceInstIdx cEx) == End && crBlockIndents cEx == 0 = cEx
-  | (instructions !! ceInstIdx cEx) == Return = cEx { ceInstIdx = (length instructions) }
+  | currentInst == End && crBlockIndents cEx == 0 = cEx
+  | currentInst == Return = cEx { ceInstIdx = (length instructions) }
   | otherwise = execOpCodes newVm instructions
-  where
-    cEx = currentExec vm
-    newCEx = execOpCode vm cEx (instructions !! ceInstIdx cEx)
-    newVm = vm { currentExec = (incrementInstIdx newCEx) }
+  where cEx = currentExec vm
+        newCEx = execOpCode vm cEx (instructions !! ceInstIdx cEx)
+        newVm = vm { currentExec = (incrementInstIdx newCEx) }
+        currentInst = instructions !! ceInstIdx cEx
 
 execFunction :: VM -> VM
 execFunction vm = vm { currentExec = newCEx, vmStack = stackWithRes }
