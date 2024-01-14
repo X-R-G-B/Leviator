@@ -127,7 +127,8 @@ executeElse cEx@(CurrentExec {ceStack = stack}) =
 execIf :: CurrentExec -> CurrentExec
 execIf cEx@(CurrentExec {ceStack = stack}) = case stackTop stack of
   I_32 0 -> goToEndInstruction cEx
-  I_32 1 -> executeElse (addLabel (cEx { crBlockIndents = (crBlockIndents cEx) + 1 }))
+  I_32 1 ->
+    executeElse (addLabel (cEx { crBlockIndents = (crBlockIndents cEx) + 1 }))
   I_32 _ -> throw $ RuntimeError "execIf: bad if statement"
   _ -> throw $ RuntimeError "execIf: bad type"
 
