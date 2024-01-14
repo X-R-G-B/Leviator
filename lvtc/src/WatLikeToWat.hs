@@ -37,6 +37,8 @@ findTypeFromInstructions name [] = error ("Type not found for: " ++ name)
 findTypeFromInstructions name ((Declaration ((name', typ), _)):xs)
     | name == name' = typeStringToType typ
     | otherwise = findTypeFromInstructions name xs
+findTypeFromInstructions name ((Cond (_, insIf, insElse)):xs) =
+    findTypeFromInstructions name (insIf ++ insElse ++ xs)
 findTypeFromInstructions name (_:xs) = findTypeFromInstructions name xs
 
 varsToDecl :: [Index] -> [Instruction] -> [Var] -> [(WatAST.Type, Int32)]
@@ -98,12 +100,12 @@ instructionToWat (Function (indexName, values)) =
     ]
 instructionToWat (Cond (value, ifTrue, [])) =
     valueToWat value
-    ++ [ If ]
+    ++ [ If EmptyType ]
     ++ instructionsToWat ifTrue
     ++ [ End ]
 instructionToWat (Cond (value, ifTrue, ifFalse)) =
     valueToWat value
-    ++ [ If ]
+    ++ [ If EmptyType ]
     ++ instructionsToWat ifTrue
     ++ [ Else ]
     ++ instructionsToWat ifFalse

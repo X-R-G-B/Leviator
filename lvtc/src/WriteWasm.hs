@@ -123,6 +123,8 @@ opCodeToByte (I32Const a) =
     B.pack [fromIntegral (opCodeByte (I32Const a)), fromIntegral a]
 opCodeToByte (Call a) =
     B.pack [fromIntegral (opCodeByte (Call a)), fromIntegral a]
+opCodeToByte (If a) =
+    B.pack [fromIntegral (opCodeByte (If a)), fromIntegral (ifTypeByte a)]
 opCodeToByte op = B.pack [fromIntegral (opCodeByte op)]
 
 codeSectionCodeToByte :: CodeSectionCode -> B.ByteString

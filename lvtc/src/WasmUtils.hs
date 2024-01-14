@@ -28,11 +28,12 @@ module WasmUtils
     --
     opCodeByte,
     variableTypeByte,
-    exportSectionExportTypeByte
+    exportSectionExportTypeByte,
+    ifTypeByte
 ) where
 
 import Wasm
-import WatAST (OpCode (..))
+import WatAST (OpCode (..), IfType (..))
 import Leb128Encode
 
 getDefaultTypeSectionType :: TypeSectionType
@@ -179,6 +180,7 @@ getSizeOpCode (LocalGet _) = 2
 getSizeOpCode (LocalSet _) = 2
 getSizeOpCode (I32Const _) = 2
 getSizeOpCode (Call _) = 2
+getSizeOpCode (If _) = 2
 getSizeOpCode _ = 1
 
 fillBlankCodeSectionCode :: CodeSectionCode -> CodeSectionCode
@@ -249,9 +251,12 @@ opCodeByte I32Mul = 0x6c
 opCodeByte I32Div = 0x6d
 opCodeByte Return = 0x0f
 opCodeByte (Call _) = 0x10
-opCodeByte If = 0x04
+opCodeByte (If EmptyType) = 0x04
 opCodeByte Else = 0x05
 opCodeByte End = 0x0b
+
+ifTypeByte :: IfType -> Int
+ifTypeByte EmptyType = 0x40
 
 variableTypeByte :: VariableType -> Int
 variableTypeByte I32 = 0x7f

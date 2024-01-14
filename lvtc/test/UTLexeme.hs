@@ -38,6 +38,10 @@ utLexeme = testGroup "UTLexeme"
             assertEqual "5"
                 l5_rep
                 (lexeme1 l5)
+    ,   testCase "lexeme6" $
+            assertEqual "6"
+                l6_rep
+                (lexeme1 l6)
     ]
     where
         l1 = "@Int a = 0;"
@@ -50,3 +54,5 @@ utLexeme = testGroup "UTLexeme"
         l4_rep = "@Int a=0;@Int c=b(a);if(c){d(a);};"
         l5 = "foo(a);\n    foo(b);\n"
         l5_rep = "foo(a);foo(b);"
+        l6 = "export fn start() -> Int\n{\n    @Int one = 15;\n    @Int two = 5;\n    three = 0;\n    if (one == 5)\n    {\n        three = 15;\n    };\n    if (two == 5)\n{\n        three = 5;\n    };\n    <- three;\n};\n"
+        l6_rep = "export fn start()->Int{@Int one=15;@Int two=5;three=0;if(one==5){three=15;};if(two==5){three=5;};<-three;};"
