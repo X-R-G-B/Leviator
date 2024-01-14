@@ -74,8 +74,8 @@ initLocalsParams' (values, newStack) prms =
 initLocalsParams :: [TypeName] -> Stack -> (Locals, Stack)
 initLocalsParams [] stack = ([], stack)
 initLocalsParams prms stack 
-  | length params > length stack = throw $ WasmError "initLocalsParam: bad nb"
-  | otherwise = initLocalsParams' (stackPopN stack (length params)) prms
+  | length prms > length stack = throw $ WasmError "initLocalsParam: bad nb"
+  | otherwise = initLocalsParams' (stackPopN stack (length prms)) prms
 
 initLocals :: [Local] -> [TypeName] -> Stack -> (Locals, Stack)
 initLocals localVarTypes paramTypes stack = do
