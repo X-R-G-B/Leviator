@@ -37,9 +37,9 @@ extractLocal id bytes
   | BSL.length bytes == 0 = throw $ WasmError "extractLocal: bad section"
   | otherwise = (locals, BSL.drop 1 rest)
   where
-    (nbOfThisType, rest) = getLEB128ToI64 bytes
+    (nb, rest) = getLEB128ToI64 bytes
     typee = getTypeFromByte (head (BSL.unpack (BSL.take 1 rest)))
-    locals = map (\x -> createLocal (fromIntegral id) typee) [0..nbOfThisType - 1]
+    locals = map (\x -> createLocal (fromIntegral id) typee) [0..nb - 1]
 
 extractLocals :: Int64 -> Int64 -> BSL.ByteString -> ([Local], BSL.ByteString)
 extractLocals id idMax bytes

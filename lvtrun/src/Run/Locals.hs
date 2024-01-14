@@ -78,10 +78,10 @@ initLocalsParams prms stack
   | otherwise = initLocalsParams' (stackPopN stack (length prms)) prms
 
 initLocals :: [Local] -> [TypeName] -> Stack -> (Locals, Stack)
-initLocals localVarTypes paramTypes stack = do
-  let (newLocals, newStack) = initLocalsParams paramTypes stack
-  let localsVar = initLocalsVar newLocals localVarTypes
-  (newLocals ++ localsVar, newStack)
+initLocals localVarTypes paramTypes stack = (newLocals ++ localsVar, newStack)
+  where
+    (newLocals, newStack) = initLocalsParams paramTypes stack
+    localsVar = initLocalsVar newLocals localVarTypes
 
 createEmptyLocals :: Locals -> [Local] -> Locals
 createEmptyLocals newLocals [] = newLocals

@@ -45,21 +45,13 @@ data VM = VM {
 } deriving (Show)
 
 createVm :: WasmModule -> VM
-createVm wasmMod = VM {
-  vmStack = [],
-  currentExec = CurrentExec {
-    ceLocals = [],
-    ceStack = [],
-    ceInstructions = [],
-    ceParams = [],
-    ceResults = [],
-    ceInstIdx = 0,
-    ceLabels = [],
-    crBlockIndents = 0
-  },
+createVm wasmMod = VM { vmStack = [],
+  currentExec = CurrentExec { ceLocals = [],
+    ceStack = [], ceInstructions = [],
+    ceParams = [], ceResults = [], ceInstIdx = 0,
+    ceLabels = [], crBlockIndents = 0},
   vmMemory = Memory {
-    memRange = Limit 0 Nothing,
-    memData = []
+    memRange = Limit 0 Nothing, memData = []
   },
   wasmModule = wasmMod
 }

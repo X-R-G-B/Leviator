@@ -56,8 +56,8 @@ stackTop (x:_) = x
 stackPopN :: Stack -> Int -> ([Value], Stack)
 stackPopN stack 0 = ([], stack)
 stackPopN stack n
-  | n > 0 = do
-    let (value, newStack) = stackPop stack
-    let (values, finalStack) = stackPopN newStack (n - 1)
-    (value : values, finalStack)
+  | n > 0 = (value : values, finalStack)
   | otherwise = error "stackPopN: bad n"
+  where
+    (value, newStack) = stackPop stack
+    (values, finalStack) = stackPopN newStack (n - 1)

@@ -22,17 +22,13 @@ import qualified Parsing.Global as G
 import qualified Parsing.Code as C
 
 parseModule :: FileContent -> WasmModule
-parseModule bytes =
-  WasmModule {
+parseModule bytes = WasmModule {
     header = PH.getModHeader (S.getSectionWithId sections CustomID),
     types = FT.getFuncTypes (S.getSectionWithId sections TypeID),
-    imports = [],
-    functions = C.getFuncCode codeSection funcs,
-    tables = [],
-    globals = G.getGlobals (S.getSectionWithId sections GlobalID),
+    imports = [], functions = C.getFuncCode codeSection funcs,
+    tables = [], globals = G.getGlobals (S.getSectionWithId sections GlobalID),
     memory = M.getMemories (S.getSectionWithId sections MemoryID),
-    exports = E.getExports (S.getSectionWithId sections ExportID)
-  }
+    exports = E.getExports (S.getSectionWithId sections ExportID)}
   where
     sections = S.getSections bytes
     codeSection = S.getSectionWithId sections CodeID
