@@ -59,14 +59,22 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release upload ${{ needs.release-create.outputs.release }} "./koaky-exe.exe#koaky-windows.exe"
+          gh release upload ${{ needs.release-create.outputs.release }} "./lvtc/lvtc-exe.exe#lvtc-windows.exe"
+          gh release upload ${{ needs.release-create.outputs.release }} "./lvtrun/lvtrun-exe.exe#lvtrun-windows.exe"
 
-      - name: Upload To Artifact
+      - name: Upload To Artifact lvtc
         if: github.ref != 'refs/heads/main'
         uses: actions/upload-artifact@v3
         with:
-          name: koaky.exe
-          path: ./koaky.exe
+          name: lvtc-windows.exe
+          path: ./lvtc/lvtc-exe.exe
+
+      - name: Upload To Artifact lvtrun
+        if: github.ref != 'refs/heads/main'
+        uses: actions/upload-artifact@v3
+        with:
+          name: lvtrun-windows.exe
+          path: ./lvtrun/lvtrun-exe.exe
 
   release-linux:
     runs-on: ubuntu-latest
@@ -89,21 +97,31 @@ jobs:
         run: make
 
       - name: Rename
-        run: mv koaky-exe koaky-linux
+        run: |
+          mv lvtc/lvtc-exe lvtc-linux
+          mv lvtrun/lvtrun-exe lvtrun-linux
 
       - name: Upload To Release
         if: github.ref == 'refs/heads/main'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release upload ${{ needs.release-create.outputs.release }} "./koaky-linux"
+          gh release upload ${{ needs.release-create.outputs.release }} "./lvtc-linux"
+          gh release upload ${{ needs.release-create.outputs.release }} "./lvtrun-linux"
 
-      - name: Upload To Artifact
+      - name: Upload To Artifact lvtc
         if: github.ref != 'refs/heads/main'
         uses: actions/upload-artifact@v3
         with:
-          name: koaky-linux
-          path: ./koaky-linux
+          name: lvtc-linux
+          path: ./lvtc-linux
+
+      - name: Upload To Artifact lvtrun
+        if: github.ref != 'refs/heads/main'
+        uses: actions/upload-artifact@v3
+        with:
+          name: lvtrun-linux
+          path: ./lvtrun-linux
 
   release-macos:
     runs-on: macos-latest
@@ -126,18 +144,28 @@ jobs:
         run: make
 
       - name: Rename
-        run: mv koaky-exe koaky-macos
+        run: |
+          mv lvtc/lvtc-exe lvtc-macos
+          mv lvtrun/lvtrun-exe lvtrun-macos
 
       - name: Upload To Release
         if: github.ref == 'refs/heads/main'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release upload ${{ needs.release-create.outputs.release }} "./koaky-macos"
+          gh release upload ${{ needs.release-create.outputs.release }} "./lvtc-macos"
+          gh release upload ${{ needs.release-create.outputs.release }} "./lvtrun-macos"
 
-      - name: Upload To Artifact
+      - name: Upload To Artifact lvtc
         if: github.ref != 'refs/heads/main'
         uses: actions/upload-artifact@v3
         with:
-          name: koaky-macos
-          path: ./koaky-macos
+          name: lvtc-macos
+          path: ./lvtc-macos
+
+      - name: Upload To Artifact lvtrun
+        if: github.ref != 'refs/heads/main'
+        uses: actions/upload-artifact@v3
+        with:
+          name: lvtrun-macos
+          path: ./lvtrun-macos

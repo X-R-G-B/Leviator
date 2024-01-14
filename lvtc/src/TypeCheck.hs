@@ -68,7 +68,7 @@ assertTypeAndValue t v env = checkValueType t (findValueType v env)
 assertMTypeAndValue :: Maybe Type -> Value -> Env -> Bool
 assertMTypeAndValue Nothing _ _ = False
 assertMTypeAndValue (Just t) v env = assertTypeAndValue t v env
-
+sFu
 isTypeValid :: Type -> Bool
 isTypeValid "Int" = True
 isTypeValid "Bool" = True

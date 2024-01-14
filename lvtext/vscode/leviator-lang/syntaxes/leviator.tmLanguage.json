@@ -1,0 +1,112 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "Leviator",
+	"patterns": [
+		{
+			"include": "#keywords"
+		},
+		{
+			"include": "#string"
+		},
+		{
+			"include": "#storage"
+		},
+		{
+			"include": "#constant"
+		},
+		{
+			"include": "#entity"
+		},
+		{
+			"include": "#variable"
+		},
+		{
+			"include": "#comment"
+		}
+	],
+	"repository": {
+		"keywords": {
+			"patterns": [
+				{
+					"name": "keyword.control.leviator",
+					"match": "\\b(if|else|while|foreach|break)\\b"
+				},
+				{
+					"name": "keyword.other.leviator",
+					"match": "(<-|->)"
+				},
+				{
+					"name": "keyword.operator.leviator",
+					"match": "(\\+|-|%|\\*|!=|==|<|>|<=|>=|=|/(?!/))"
+				}
+			]
+		},
+		"storage": {
+			"patterns": [
+				{
+					"name": "storage.type.leviator",
+					"match": "\\b(struct|fn|Int|Char|Float|Bool|Void|StringView)\\b"
+				}
+			]
+		},
+		"entity": {
+			"patterns": [
+				{
+					"name": "entity.name.tag.leviator",
+					"match": "\\b(start)\\b"
+				},
+				{
+					"name": "entity.name.function",
+					"match": "\\b([a-zA-Z_][a-zA-Z0-9_]*)\\b\\("
+				}
+			]
+		},
+		"constant": {
+			"patterns": [
+				{
+					"name": "constant.language.leviator",
+					"match": "\\b(True|False)\\b"
+				},
+				{
+					"name": "constant.numeric.leviator",
+					"match": "\\b([0-9]+)\\b"
+				}
+			]
+		},
+		"string": {
+			"patterns": [
+				{
+					"name": "string.quoted.double.leviator",
+					"begin": "\"",
+					"end": "\""
+				},
+				{
+					"name": "string.quoted.single.leviator",
+					"begin": "'",
+					"end": "'"
+				}
+			]
+		},
+		"variable": {
+			"patterns": [
+				{
+					"name": "variable.other.leviator",
+					"match": "\\b([a-zA-Z_][a-zA-Z0-9_]*)\\b"
+				},
+				{
+					"name": "variable.parameter",
+					"match": "@"
+				}
+			]
+		},
+		"comment": {
+			"patterns": [
+				{
+					"name": "comment.line.double-slash.leviator",
+					"match": "//.*"
+				}
+			]
+		}
+	},
+	"scopeName": "source.lvt"
+}
