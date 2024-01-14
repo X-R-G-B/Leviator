@@ -7,7 +7,8 @@
 
 module Main (main) where
 
-import Lib
+import AST
+import TypeCheck
 
 main :: IO ()
-main = someFunc
+main = return ()

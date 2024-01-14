@@ -9,6 +9,7 @@ module AST
   ( Type
   , Value (..)
   , Var
+  , Symbol
   , FuncCall
   , FuncPrototype
   , FuncDeclaration

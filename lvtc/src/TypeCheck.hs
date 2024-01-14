@@ -5,99 +5,178 @@
 -- Type checker
 -}
 
-module Lib
-    ( someFunc
+module TypeCheck
+    ( typeCheck
     ) where
 
 import AST
+import Debug.Trace
 
---checkCondition :: Condition -> TypeEnv -> Maybe TypeEnv
---checkCondition (Symbol s, xs, ys) env =
---checkCondition (Type t, xs, ys) env =
---checkCondition (FuncCall (symbol, values), xs, ys) env = checkBoolFunc (checkFuncCall (FuncCall (symbol, values)) env) xs ys
---checkCondition _ _ = Nothing
+data Env = Env FuncPrototype [VarAssignation] [FuncPrototype]
 
-findVarInParams :: Value -> [Var] -> Maybe Type
-findVarInParams (Var s) ((Var s, t):xs)
-  | s == s = Just t
-  | otherwise = findVarInParams (Var s) xs
-findVarInParams _ [] = Nothing
+findVarInParams :: Symbol -> [Var] -> Env -> Maybe Type
+findVarInParams _ [] _ = Nothing
+findVarInParams s ((s', t):xs) env
+  | s == s' = Just t
+  | otherwise = findVarInParams s xs env
 
-findVarIn
+findVarInVar :: Symbol -> [VarAssignation] -> Env -> Maybe Type
+findVarInVar _ [] _ = Nothing
+findVarInVar s ((s', v):xs) env
+  | s == s' = findValueType v env
+  | otherwise = findVarInVar s xs env
 
-findValueType :: Value -> [Var] -> [VarAssignation] -> [FuncDeclaration] -> Maybe Type
-findSymbol (Var s) params vars env = (findVarParams (Var s) params) <|> ()
+findTypeReturnFunc :: Symbol -> [FuncPrototype] -> Maybe FuncPrototype
+findTypeReturnFunc _ [] = Nothing
+findTypeReturnFunc s ((s', ps, t):xs)
+  | s == s' = Just (s', ps, t)
+  | otherwise = findTypeReturnFunc s xs
+
+getValueType :: Value -> Maybe Type
+getValueType (Integer _) = Just "Int"
+getValueType (Boolean _) = Just "Bool"
+getValueType (StringView _) = Just "String"
+getValueType _ = Nothing
+
+checkFuncType :: [Value] -> Env -> Maybe FuncPrototype -> Maybe Type
+checkFuncType _ _ Nothing = Nothing
+checkFuncType [] _ _ = Nothing
+checkFuncType callParams (Env proto params env) (Just (_, ps, t))
+  | checkVarsTypes callParams (Just ps) (Env proto params env) = Just t
+  | otherwise = Nothing
+
+handleFinders :: Maybe Type -> Symbol -> Env -> Maybe Type
+handleFinders _ _ (Env (_, [], _) [] _) = Nothing
+handleFinders Nothing s (Env proto vars env) = findVarInVar s vars (Env proto vars env)
+handleFinders (Just t) _ _ = Just t
+
+findValueType :: Value -> Env -> Maybe Type
+findValueType (Var s) (Env (ps, params, t) vars env) =
+  handleFinders (findVarInParams s params (Env (ps, params, t) vars env)) s (Env (ps, params, t) vars env)
+findValueType (FuncValue (s, vs)) (Env proto vars env) = checkFuncType vs (Env proto vars env) (findTypeReturnFunc s env)
+findValueType v _ = getValueType v
 
 checkValueType :: Type -> Maybe Type -> Bool
 checkValueType _ Nothing = False
 checkValueType t (Just t') = t == t'
 
-assertTypeAndValue :: Type -> Value -> [Var] -> [VarAssignation] -> [FuncDeclaration] -> Bool
-assertTypeAndValue _ (Var s) [] [] [] = False
-assertTypeAndValue "Int" (Integer _) _ = True
-assertTypeAndValue "Bool" (Boolean _) _ = True
-assertTypeAndValue t v params vars env = checkValueType $ t (findValueType v params vars env)
-assertTypeAndValue _ _ _ = False
+assertTypeAndValue :: Type -> Value -> Env -> Bool
+assertTypeAndValue _ (Var _) (Env (_, [], _) [] _) = False
+assertTypeAndValue _ (FuncValue _) (Env (_, _, _) _ []) = False
+assertTypeAndValue t v env = checkValueType t (findValueType v env)
+
+assertMTypeAndValue :: Maybe Type -> Value -> Env -> Bool
+assertMTypeAndValue Nothing _ _ = False
+assertMTypeAndValue (Just t) v env = assertTypeAndValue t v env
 
 isTypeValid :: Type -> Bool
 isTypeValid "Int" = True
 isTypeValid "Bool" = True
 isTypeValid _ = False
 
-checkVars :: [Value] -> Maybe [Var] -> [Var] -> [VarAssignation] -> [FuncDeclaration] -> Bool
-checkVarsTypes [] _ _ _ _ = False
-checkVarsTypes _ [] _ _ _ = False
-checkVarsTypes values param _ _ _ | length fst /= length scd = False
-checkVarsTypes [(fs v)] [(ss t)] params vars env = assertTypeAndValue t v params vars env
-checkVarsTypes ((fs v):xs) ((ss t):ys) params vars env
-  | assertTypeAndValue t v params vars env = checkVars xs ys params vars env
+checkVarsTypes :: [Value] -> Maybe [Var] -> Env -> Bool
+checkVarsTypes [] _ _ = False
+checkVarsTypes _ Nothing _ = False
+checkVarsTypes values (Just param) _ | length values /= length param = False
+checkVarsTypes [v] (Just [(_, t)]) env = assertTypeAndValue t v env
+checkVarsTypes (v:vs) (Just ((_, t):xs)) env
+  | assertTypeAndValue t v env = checkVarsTypes vs (Just xs) env
   | otherwise = False
+checkVarsTypes _ _ _ = False
 
-findFunc :: Symbol -> [FuncDeclaration] -> Maybe [Var]
-findFunc s [] = Nothing
-findFunc s ((FuncDeclaration (FuncPrototype s params _) _):xs) | s == s = Just params
+findFunc :: Symbol -> [FuncPrototype] -> Maybe [Var]
+findFunc _ [] = Nothing
+findFunc s ((s', params, _):_) | s == s' = Just params
 findFunc s (_:xs) = findFunc s xs
 
-checkCall :: FuncPrototype -> FuncCall -> [VarAssignation] -> [FuncDeclaration] -> [Instructions] -> Maybe [FuncDeclaration]
-checkCall (FuncPrototype s params t) (symbol, values) vars env xs
-  | s == symbol && checkVars values (Just params) params vars env =
-    checkInstructions (FuncPrototype s param t) xs env vars
-  | otherwise = Nothing
-checkCall (FuncPrototype _ params t) (s, values) vars env xs
-  | checkVars values (findFunc s env) params vars env =
-    checkInstructions (FuncPrototype s param t) xs env vars
+checkCall :: FuncCall -> Env -> [Instruction] -> Bool
+checkCall (symbol, values) (Env (s, params, t) vars env) xs
+  | s == symbol && checkVarsTypes values (Just params) (Env (s, params, t) vars env) ||
+    checkVarsTypes values (findFunc symbol env) (Env (s, params, t) vars env) =
+    checkInstructions xs (Env (s, params, t) vars env)
+  | otherwise = False
 
-checkInstructions :: FuncPrototype -> [Instructions] -> [FuncDeclaration] -> [VarAssignation] -> Maybe [FuncDeclaration]
-checkInstructions prototype ((Call func):xs) env vars = checkCall prototype func vars env xs
-checkInstructions prototype ((Return ret):xs) env vars = checkReturn prototype ret vars env xs
-checkInstructions prototype ((Declaration declaration):xs) env vars = checkDeclaration prototype declaration vars env xs
-checkInstructions prototype ((Assignation assignation):xs) env vars = checkAssignation prototype declaration vars env xs
-checkInstructions prototype ((Condition assignation):xs) env vars = checkAssignation prototype declaration vars env xs
-checkInstructions _ _ _ = Nothing
+checkReturn :: Value -> Env -> [Instruction] -> Bool
+checkReturn v (Env (s, params, t) vars env) xs
+  | assertTypeAndValue t v (Env (s, params, t) vars env) =
+    checkInstructions xs (Env (s, params, t) vars env)
+checkReturn _ _ _ = False
+
+checkDeclaration :: VarDeclaration -> Env -> [Instruction] -> Bool
+checkDeclaration ((s, t), v) (Env proto vars env) xs |
+  assertTypeAndValue t v (Env proto vars env) =
+  checkInstructions xs (Env proto ((s, v):vars) env)
+checkDeclaration _ _ _ = False
+
+checkAssignation :: VarAssignation -> Env -> [Instruction] -> Bool
+checkAssignation (s, v) env xs | assertMTypeAndValue (findValueType (Var s) env) v env =
+  checkInstructions xs env
+checkAssignation _ _ _ = False
+
+checkCondition :: Condition -> Env -> [Instruction] -> Bool
+checkCondition (v, fst_, snd_) env xs
+  | assertTypeAndValue "Bool" v env && checkInstructions fst_ env &&
+    checkInstructions snd_ env = checkInstructions xs env
+checkCondition _ _ _ = False
+
+checkInstructions :: [Instruction] -> Env -> Bool
+checkInstructions [] _ = True
+checkInstructions ((Call func):xs) env = checkCall func env xs
+checkInstructions ((Return ret):xs) env = checkReturn ret env xs
+checkInstructions ((Declaration declaration):xs) env = checkDeclaration declaration env xs
+checkInstructions ((Assignation assignation):xs) env = checkAssignation assignation env xs
+checkInstructions ((Cond condition):xs) env = checkCondition condition env xs
 
 checkVarTypes :: [Var] -> Bool
-checkVarTypes [] = False
+checkVarTypes [] = True
 checkVarTypes [x] = isTypeValid (snd x)
 checkVarTypes (x:xs) | isTypeValid (snd x) = checkVarTypes xs
 
-checkFunction :: FuncDeclaration -> [FuncDeclaration] -> Maybe [FuncDeclaration]
-checkFunction (FuncDeclaration (FuncPrototype _ args _) _) | not (checkVarTypes args) = Nothing
-checkFunction (FuncDeclaration (FuncPrototype _ _ t) _) | not (isTypeValid t) = Nothing
-checkFunction (FuncDeclaration prototype instructions) env = checkInstructions prototype instructions env []
+checkFunction :: FuncDeclaration -> [FuncPrototype] -> Bool
+checkFunction ((_, args, _), _) _ | not (checkVarTypes args) = False
+checkFunction ((_, _, t), _) _ | not (isTypeValid t) = False
+checkFunction (prototype, instructions) env
+  | checkInstructions instructions (Env prototype [] env) = True
+checkFunction _ _ = False
 
-checkNotExisting :: FuncDeclaration -> [FuncDeclaration] -> Bool
+checkNotExisting :: FuncDeclaration -> [FuncPrototype] -> Bool
 checkNotExisting _ [] = True
-checkNotExisting (FuncDeclaration (FuncPrototype s _ _) _) ((FuncDeclaration (FuncPrototype ls _ _) _):xs)
+checkNotExisting ((s, args, t), instr) ((ls, _, _):xs)
     | s == ls = False
-    | otherwise = checkNotExisting (FuncDeclaration (FuncPrototype s _ _) _) xs
+    | otherwise = checkNotExisting ((s, args, t), instr) xs
 
-checkDeclarations :: [FuncDeclaration] -> Maybe [FuncDeclaration] -> Maybe [FuncDeclaration]
-checkDeclarations _ Nothing = Nothing
-checkDeclarations ((FuncDeclaration func):xs) (Just env)
+receiveCheckFuncRes :: Bool -> [FuncDeclaration] -> FuncDeclaration -> [FuncPrototype] -> Bool
+receiveCheckFuncRes True xs (prototype, _) env = checkDeclarations xs (Just (prototype:env))
+receiveCheckFuncRes _ _ _ _ = False
+
+checkDeclarations :: [FuncDeclaration] -> Maybe [FuncPrototype] -> Bool
+checkDeclarations _ Nothing = False
+checkDeclarations [] (Just _) = True
+checkDeclarations (func:xs) (Just env)
   | checkNotExisting func env =
-    checkDeclarations xs (checkFunction func env)
-  | otherwise = Nothing
-checkDeclarations _ _ = Nothing
+   receiveCheckFuncRes (checkFunction func env) xs func env
+  | otherwise =  False
 
-handleTypeCheck :: [FuncDeclaration] -> Maybe [FuncDeclaration]
-handleTypeCheck expressions = checkDeclarations expressions (Just [])
+createCalcPrototype :: Symbol -> Type -> FuncPrototype
+createCalcPrototype s t = (s, [("x", t), ("y", t)], "Int")
+
+createCompPrototype :: Symbol -> Type -> FuncPrototype
+createCompPrototype s t = (s, [("x", t), ("y", t)], "Bool")
+
+createCompPolyMorph :: Symbol -> [Type] -> [FuncPrototype]
+createCompPolyMorph _ [] = []
+createCompPolyMorph s (x:xs) = createCompPrototype s x : createCompPolyMorph s xs
+
+createCompOp :: [Symbol] -> [FuncPrototype]
+createCompOp [] = []
+createCompOp (x:xs) = createCompPolyMorph x ["Int", "Bool"] ++ createCompOp xs
+
+createCalcOp :: [Symbol] -> [FuncPrototype]
+createCalcOp [] = []
+createCalcOp (x:xs) = createCalcPrototype x "Int" : createCalcOp xs
+
+defaultEnv :: Maybe [FuncPrototype]
+defaultEnv = Just (createCalcOp ["+", "-", "*", "%", "/"] ++ createCompOp ["==", "!=", "<", ">", "<=", ">="])
+
+typeCheck :: [FuncDeclaration] -> Bool
+typeCheck expressions = checkDeclarations expressions defaultEnv
