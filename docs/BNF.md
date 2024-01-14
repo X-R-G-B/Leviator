@@ -27,7 +27,7 @@
 <parameter> ::= <identifier> ": " <type>
 <type> ::= <upperLetter> <char2>
 <instruction> ::= <instructionIns> ";\n"
-<instructionIns> ::= <declaration> | <assignment> | <functionCall> | <return> | <condition>
+<instructionIns> ::= <declaration> | <assignment> | <functionCall> | <return> | <condition> | <while>
 <declaration> ::= "@" <type> " " <identifier> " = " <value>
 <assignment> ::= <identifier> " = " <value>
 <functionCall> ::= <identifier> "(" <varParamList>* ")"
@@ -39,6 +39,7 @@
 <conditionIfElse> ::= <conditionIf> <conditionElse>
 <conditionIf> ::= "if (" <value> ")\n{\n" <instruction>* "}\n"
 <conditionElse> ::= "else\n{\n" <instruction>* "}\n"
+<while> ::= "while (" <value> ")\n{\n" <instruction>* "}\n"
 
 <character> ::= "'" <char1> "'"
 <bool> ::= "True" | "False"
