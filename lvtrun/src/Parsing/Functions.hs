@@ -27,8 +27,7 @@ parseFunctionsIndex idtfier maxIdx cntent
     Function {
       funcType = typeIdx,
       funcIdx = idtfier,
-      body = [],
-      locals = []
+      body = [], locals = []
     } : parseFunctionsIndex (idtfier + 1) maxIdx rest
   where (typeIdx, rest) = getLEB128ToI32 cntent
 
