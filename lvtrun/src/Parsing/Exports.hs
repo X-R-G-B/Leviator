@@ -11,17 +11,16 @@ module Parsing.Exports
 )
 where
 
-import qualified Data.ByteString.Lazy as Bs
-import Control.Exception (throw)
-import Data.Int (Int64, Int32)
-import Data.Word (Word8)
-import Numeric (showHex)
 import Data.Char (chr)
+import Data.Word (Word8)
 import Control.Monad (when)
+import Data.Int (Int64, Int32)
+import Control.Exception (throw)
+import qualified Data.ByteString.Lazy as Bs
 
-import Leb128
-import Errors
 import Types
+import Leb128 (getLEB128ToI64, getLEB128ToI32)
+import Errors (CustomException(WasmError))
 
 isExportValid :: Word8 -> Bool
 isExportValid 0x00 = True
@@ -59,7 +58,7 @@ parseExports idx maxIdx content
     export : parseExports (idx + 1) maxIdx rest3
 
 getExports :: Section -> [Export]
-getExports (Section ExportID _ content) = do
-  let (exprtsNb, rest) = getExportNb content
-  parseExports 0 exprtsNb rest
+getExports (Section ExportID _ content) = parseExports 0 exprtsNb rest
+  where
+    (exprtsNb, rest) = getExportNb content
 getExports _ = throw $ WasmError "getExports: bad section"
