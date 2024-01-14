@@ -26,7 +26,7 @@ import Run.Stack (Stack, stackPush, stackPop, stackTop, pushResults)
 goToEndInstruction :: CurrentExec -> CurrentExec
 goToEndInstruction cexec
   | ceInstIdx cexec >= length (ceInstructions cexec) =
-    throw $ WasmError "goToEndInstruction: missing end instruction"
+    throw $ RuntimeError "goToEndInstruction: missing end instruction"
   | currentOpCode == End = cexec { ceInstIdx = (ceInstIdx cexec) }
   | otherwise = goToEndInstruction (incrementInstIdx cexec)
   where
@@ -40,49 +40,49 @@ execOpCode _ cEx (I32Eqz) = do
   case value of
     I_32 0 -> cEx { ceStack = stackPush (ceStack cEx) (I_32 1) }
     I_32 _ -> cEx { ceStack = stackPush (ceStack cEx) (I_32 0) }
-    _ -> throw $ WasmError "exec I32eqz: bad type"
+    _ -> throw $ RuntimeError "exec I32eqz: bad type"
 execOpCode _ cEx (I32Eq) = do
   let (value2, newStack1) = stackPop (ceStack cEx)
   let (value1, newStack2) = stackPop newStack1
   case (value1, value2) of
     (I_32 val1, I_32 val2) -> cEx { ceStack = stackPush newStack2 (I_32 (if val1 == val2 then 1 else 0)) }
-    _ -> throw $ WasmError "exec I32Eq: bad type"
+    _ -> throw $ RuntimeError "exec I32Eq: bad type"
 execOpCode _ cEx (I32Add) = do
   let (value2, newStack1) = stackPop (ceStack cEx)
   let (value1, newStack2) = stackPop newStack1
   case (value1, value2) of
     (I_32 val1, I_32 val2) -> cEx { ceStack = stackPush newStack2 (I_32 (val1 + val2)) }
-    _ -> throw $ WasmError "exec I32Add: bad type"
+    _ -> throw $ RuntimeError "exec I32Add: bad type"
 execOpCode _ cEx (I32Sub) = do
   let (value2, newStack1) = stackPop (ceStack cEx)
   let (value1, newStack2) = stackPop newStack1
   case (value1, value2) of
     (I_32 val1, I_32 val2) -> cEx { ceStack = stackPush newStack2 (I_32 (val1 - val2)) }
-    _ -> throw $ WasmError "exec I32Sub: bad type"
+    _ -> throw $ RuntimeError "exec I32Sub: bad type"
 execOpCode _ cEx (I32Mul) = do
   let (value2, newStack1) = stackPop (ceStack cEx)
   let (value1, newStack2) = stackPop newStack1
   case (value1, value2) of
     (I_32 val1, I_32 val2) -> cEx { ceStack = stackPush newStack2 (I_32 (val1 * val2)) }
-    _ -> throw $ WasmError "exec I32Mul: bad type"
+    _ -> throw $ RuntimeError "exec I32Mul: bad type"
 execOpCode _ cEx (I32Divs) = do
   let (value2, newStack1) = stackPop (ceStack cEx)
   let (value1, newStack2) = stackPop newStack1
   case (value1, value2) of
-    (I_32 _, I_32 0) -> throw $ WasmError "exec I32Divs: division by zero"
+    (I_32 _, I_32 0) -> throw $ RuntimeError "exec I32Divs: division by zero"
     (I_32 val1, I_32 val2) -> cEx { ceStack = stackPush newStack2 (I_32 (val1 `div` val2)) }
-    _ -> throw $ WasmError "exec I32Divs: bad type"
+    _ -> throw $ RuntimeError "exec I32Divs: bad type"
 execOpCode _ cEx (BrIf labelIdx) = case stackTop (ceStack cEx) of
     I_32 0 -> cEx
     I_32 _ -> cEx { ceInstIdx = (fromIntegral labelIdx) }
-    _ -> throw $ WasmError "exec brIf: bad type"
+    _ -> throw $ RuntimeError "exec brIf: bad type"
 execOpCode vm cEx (Call funcIdx) = do
   let newVm = execFunctionWithIdx vm funcIdx (ceStack cEx)
   let newStack = pushResults (ceStack cEx) (vmStack newVm) (ceResults (currentExec newVm))
   cEx { ceStack = newStack }
 execOpCode _ cEx (End) = cEx { crBlockIndents = (crBlockIndents cEx) - 1 }
 execOpCode _ cEx (Return) = cEx { crBlockIndents = (crBlockIndents cEx) - 1 }
-execOpCode _ cEx (Unreachable) = throw $ WasmError "execOpCode: unreachable"
+execOpCode _ cEx (Unreachable) = throw $ RuntimeError "execOpCode: unreachable"
 execOpCode _ cEx (GetLocal localIdx) = do
   let value = getLocalFromId (ceLocals cEx) localIdx
   cEx { ceStack = stackPush (ceStack cEx) value }
@@ -93,15 +93,15 @@ execOpCode _ cEx (SetLocal localIdx) = do
 execOpCode _ cEx (If) = case stackTop (ceStack cEx) of
     I_32 0 -> goToEndInstruction cEx
     I_32 1 -> cEx { crBlockIndents = (crBlockIndents cEx) + 1 }
-    I_32 _ -> throw $ WasmError "execOpCode: bad if statement"
-    _ -> throw $ WasmError "execOpCode: bad type"
+    I_32 _ -> throw $ RuntimeError "execOpCode: bad if statement"
+    _ -> throw $ RuntimeError "execOpCode: bad type"
 execOpCode _ cEx _ = cEx
 
 execOpCodes :: VM -> [Instruction] -> CurrentExec
 execOpCodes vm [] = currentExec vm
 execOpCodes vm instructions
   | ceInstIdx cEx >= length instructions = cEx
-  | ceInstIdx cEx < 0 = throw $ WasmError "execOpCodes: bad index"
+  | ceInstIdx cEx < 0 = throw $ RuntimeError "execOpCodes: bad index"
   | (instructions !! ceInstIdx cEx) == End && crBlockIndents cEx == 0 = cEx
   | (instructions !! ceInstIdx cEx) == Return = cEx { ceInstIdx = (length instructions) }
   | otherwise = do

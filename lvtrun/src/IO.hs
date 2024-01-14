@@ -12,6 +12,7 @@ module IO
 where
 
 import qualified Data.ByteString.Lazy as BSL (readFile)
+
 import Types
 
 getFileContent :: String -> IO FileContent

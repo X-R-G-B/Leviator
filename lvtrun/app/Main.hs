@@ -8,9 +8,10 @@
 module Main (main) where
 
 import Control.Exception (try)
-import Errors
-import Loader
-import Run.Start
+
+import Loader (loadModule)
+import Errors (handleException)
+import Run.Start (startExecution)
 
 main :: IO ()
 main = try (startExecution =<< loadModule) >>= \result ->

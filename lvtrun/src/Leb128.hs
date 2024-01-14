@@ -12,9 +12,9 @@ module Leb128
 )
 where
 
-import Data.Binary.Get
-import Data.Bits
 import Data.Int (Int64, Int32)
+import Data.Binary.Get (Get, getWord8, runGet)
+import Data.Bits ((.&.), (.|.), shiftL, testBit)
 import qualified Data.ByteString.Lazy as BS (ByteString, drop)
 
 --------------------- TO INT64 ---------------------
@@ -30,9 +30,9 @@ getLEB128ToI64' = do
     False -> return (value, 1)
 
 getLEB128ToI64 :: BS.ByteString -> (Int64, BS.ByteString)
-getLEB128ToI64 bytes = do
-  let (value, size) = runGet getLEB128ToI64' bytes
-  (value, BS.drop size bytes)
+getLEB128ToI64 bytes = (value, BS.drop size bytes)
+  where
+    (value, size) = runGet getLEB128ToI64' bytes
 
 --------------------- TO INT32 ---------------------
 
@@ -47,6 +47,6 @@ getLEB128ToI32' = do
     False -> return (value, 1)
 
 getLEB128ToI32 :: BS.ByteString -> (Int32, BS.ByteString)
-getLEB128ToI32 bytes = do
-  let (value, size) = runGet getLEB128ToI32' bytes
-  (value, BS.drop size bytes)
+getLEB128ToI32 bytes = (value, BS.drop size bytes)
+  where
+    (value, size) = runGet getLEB128ToI32' bytes

@@ -12,13 +12,13 @@ module OpCodes
 )
 where
 
-import qualified Data.ByteString.Lazy as BSL
-import Control.Exception (throw)
 import Data.Word (Word8)
+import Control.Exception (throw)
+import qualified Data.ByteString.Lazy as BSL
 
-import Leb128
-import Types
-import Errors
+import Errors (CustomException(..))
+import Leb128 (getLEB128ToI32, getLEB128ToI64)
+import Types (Instruction(..), MemArg(..), BlockType(..))
 
 extractOpCode :: BSL.ByteString -> ([Word8], BSL.ByteString)
 extractOpCode bytes = case BSL.unpack bytes of

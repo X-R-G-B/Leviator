@@ -14,10 +14,10 @@ where
 import System.Environment (getArgs)
 import Control.Exception (throw)
 
-import Parsing.Parser
-import Types
-import IO
-import Errors
+import Types (WasmModule)
+import IO (getFileContent)
+import Parsing.Parser (parseModule)
+import Errors (CustomException(..))
 
 getFilePath :: IO String
 getFilePath = getArgs >>= \args ->
