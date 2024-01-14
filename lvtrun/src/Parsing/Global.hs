@@ -58,12 +58,12 @@ extractExpression content = (expression, rest)
     rest = BSL.drop (fromIntegral (idx + 1)) content
 
 parseGlobal :: BSL.ByteString -> (Global, BSL.ByteString)
-parseGlobal content = do
-    let globalType = getTypeFromByte (head $ BSL.unpack content)
-    let mutability = parseMutability (head $ BSL.unpack $ BSL.drop 1 content)
-    let (expression, rest) = extractExpression (BSL.drop 2 content)
-    let instructions = parseInstructions expression
-    (Global globalType mutability instructions, rest)
+parseGlobal content = (Global globalType mutability instructions, rest)
+  where
+    globalType = getTypeFromByte (head $ BSL.unpack content)
+    mutability = parseMutability (head $ BSL.unpack $ BSL.drop 1 content)
+    (expression, rest) = extractExpression (BSL.drop 2 content)
+    instructions = parseInstructions expression
 
 parseGlobals :: Int64 -> Int64 -> BSL.ByteString -> [Global]
 parseGlobals idx maxIdx content
