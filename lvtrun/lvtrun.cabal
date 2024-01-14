@@ -25,7 +25,26 @@ source-repository head
 
 library
   exposed-modules:
-      Lib
+      Errors
+      IO
+      Leb128
+      OpCodes
+      Parsing.Code
+      Parsing.Exports
+      Parsing.Functions
+      Parsing.FuncTypes
+      Parsing.Global
+      Parsing.Header
+      Parsing.Memory
+      Parsing.Parser
+      Parsing.Sections
+      Run.Functions
+      Run.Locals
+      Run.Stack
+      Run.Start
+      Run.Types
+      Run.Vm
+      Types
   other-modules:
       Paths_lvtrun
   autogen-modules:
@@ -35,11 +54,14 @@ library
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
+    , binary
+    , bytestring
   default-language: Haskell2010
 
 executable lvtrun-exe
   main-is: Main.hs
   other-modules:
+      Loader
       Paths_lvtrun
   autogen-modules:
       Paths_lvtrun
@@ -48,6 +70,8 @@ executable lvtrun-exe
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , binary
+    , bytestring
     , lvtrun
   default-language: Haskell2010
 
@@ -63,5 +87,7 @@ test-suite lvtrun-test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , binary
+    , bytestring
     , lvtrun
   default-language: Haskell2010
