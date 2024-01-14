@@ -9,6 +9,7 @@ module AST
   ( Type
   , Value (..)
   , Var
+  , Symbol
   , FuncCall
   , FuncPrototype
   , FuncDeclaration
@@ -16,10 +17,9 @@ module AST
   , VarDeclaration
   , VarAssignation
   , Condition
-  , Symbol
-  , IsFuncExport
+  , Export
   , WhileBlock
-  ) where
+) where
 
 import Data.Int (Int32)
 
@@ -59,9 +59,9 @@ instance Eq Value where
 
 type Var = (Symbol, Type)
 
-type IsFuncExport = Bool
+type Export = Bool
 
-type FuncPrototype = (IsFuncExport, Symbol, [Var], Type)
+type FuncPrototype = (Export, Symbol, [Var], Type)
 
 type FuncDeclaration = (FuncPrototype, [Instruction])
 

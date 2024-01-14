@@ -310,7 +310,7 @@ parseFuncVars =
         <|> parseFuncVar)
     <* parseChar ')'
 
-parseFuncName :: Parser (IsFuncExport, Symbol)
+parseFuncName :: Parser (Export, Symbol)
 parseFuncName =
     ((\x -> (True, x)) <$> (parseString "export fn " *> parseVarName))
     <|> ((\x -> (False, x)) <$> (parseString "fn " *> parseVarName))

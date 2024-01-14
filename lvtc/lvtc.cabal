@@ -37,6 +37,7 @@ library
       Parser
       ParseUtil
       ShuntingYard
+      TypeCheck
       Wasm
       WasmUtils
       WatAST
@@ -82,6 +83,7 @@ test-suite lvtc-test
       UTLexeme
       UTParseLvt
       UTShuntingYard
+      UTTypeCheck
       UTWasm
       UTWat
       UTWatLike
