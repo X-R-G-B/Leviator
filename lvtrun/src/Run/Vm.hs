@@ -130,15 +130,12 @@ execFunctionWithIdx vm funcIdx currentStack =
       ceParams = params funcTypee, ceResults = results funcTypee}
 
 runMain :: VM -> FuncIdx -> Stack
-runMain vm funcIdx =
-  pushResults [] (vmStack newVm) (ceResults (currentExec newVm))
+runMain vm funcIdx = pushResults[](vmStack newVm)(ceResults(currentExec newVm))
   where
     function = getFunctionFromId funcIdx (functions (wasmModule vm))
     funcTypee = getFuncTypeFromId (funcType function) (types (wasmModule vm))
     cexec = createEmptyExec {
       ceLocals = createEmptyLocals [] (locals function),
       ceInstructions = body function,
-      ceParams = params funcTypee,
-      ceResults = results funcTypee
-    }
+      ceParams = params funcTypee, ceResults = results funcTypee}
     newVm = execFunction vm { currentExec = cexec }
