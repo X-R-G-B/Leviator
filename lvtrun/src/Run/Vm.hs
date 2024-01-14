@@ -78,6 +78,35 @@ execI32Divs cEx@(CurrentExec {ceStack = stack}) =
       cEx { ceStack = stackPush newStack (I_32 (val1 `div` val2)) }
     _ -> throw $ RuntimeError "exec I32divs: bad type"
 
+execGetLocal :: CurrentExec -> LocalIdx -> CurrentExec
+execGetLocal cEx localIdx = cEx { ceStack =
+    stackPush (ceStack cEx) (getLocalFromId (ceLocals cEx) localIdx)}
+
+execSetLocal :: CurrentExec -> LocalIdx -> CurrentExec
+execSetLocal cEx localIdx = cEx { ceStack = newStack,
+  ceLocals = setLocalWithId 0 (ceLocals cEx) value localIdx}
+  where (value, newStack) = stackPop (ceStack cEx)
+
+execBrIf :: CurrentExec -> CurrentExec
+execBrIf cEx@(CurrentExec {ceStack = stack}) =
+  case (stackTop stack) of
+    I_32 0 -> cEx
+    I_32 _ -> cEx { ceInstIdx = (ceInstIdx cEx) }
+    _ -> throw $ RuntimeError "exec brIf: bad type"
+
+execCall :: VM -> CurrentExec -> FuncIdx -> CurrentExec
+execCall vm cEx funcIdx = do
+  let newVm = execFunctionWithIdx vm funcIdx (ceStack cEx)
+  let newStack = pushResults (ceStack cEx) (vmStack newVm) (ceResults (currentExec newVm))
+  cEx { ceStack = newStack }
+
+execIf :: CurrentExec -> CurrentExec
+execIf cEx@(CurrentExec {ceStack = stack}) = case stackTop stack of
+  I_32 0 -> goToEndInstruction cEx
+  I_32 1 -> cEx { crBlockIndents = (crBlockIndents cEx) + 1 }
+  I_32 _ -> throw $ RuntimeError "execIf: bad if statement"
+  _ -> throw $ RuntimeError "execIf: bad type"
+
 execOpCode :: VM -> CurrentExec -> Instruction -> CurrentExec
 execOpCode _ cEx (Unreachable) = throw $ RuntimeError "execOpCode: unreachable"
 execOpCode _ cEx (End) = decrementBlockIdx cEx
@@ -90,26 +119,11 @@ execOpCode _ cEx (I32Add) = execI32Add cEx
 execOpCode _ cEx (I32Sub) = execI32Sub cEx
 execOpCode _ cEx (I32Mul) = execI32Mul cEx
 execOpCode _ cEx (I32Divs) = execI32Divs cEx
-execOpCode _ cEx (BrIf labelIdx) = case stackTop (ceStack cEx) of
-    I_32 0 -> cEx
-    I_32 _ -> cEx { ceInstIdx = (fromIntegral labelIdx) }
-    _ -> throw $ RuntimeError "exec brIf: bad type"
-execOpCode vm cEx (Call funcIdx) = do
-  let newVm = execFunctionWithIdx vm funcIdx (ceStack cEx)
-  let newStack = pushResults (ceStack cEx) (vmStack newVm) (ceResults (currentExec newVm))
-  cEx { ceStack = newStack }
-execOpCode _ cEx (GetLocal localIdx) = do
-  let value = getLocalFromId (ceLocals cEx) localIdx
-  cEx { ceStack = stackPush (ceStack cEx) value }
-execOpCode _ cEx (SetLocal localIdx) = do
-  let (value, newStack) = stackPop (ceStack cEx)
-  let newLocals = setLocalWithId 0 (ceLocals cEx) value localIdx
-  cEx { ceStack = newStack, ceLocals = newLocals }
-execOpCode _ cEx (If) = case stackTop (ceStack cEx) of
-    I_32 0 -> goToEndInstruction cEx
-    I_32 1 -> cEx { crBlockIndents = (crBlockIndents cEx) + 1 }
-    I_32 _ -> throw $ RuntimeError "execOpCode: bad if statement"
-    _ -> throw $ RuntimeError "execOpCode: bad type"
+execOpCode _ cEx (GetLocal localIdx) = execGetLocal cEx localIdx
+execOpCode _ cEx (SetLocal localIdx) = execSetLocal cEx localIdx
+execOpCode _ cEx (BrIf labelIdx) = execBrIf cEx
+execOpCode vm cEx (Call funcIdx) = execCall vm cEx funcIdx
+execOpCode _ cEx (If) = execIf cEx
 execOpCode _ cEx _ = cEx
 
 execOpCodes :: VM -> [Instruction] -> CurrentExec
