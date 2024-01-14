@@ -12,9 +12,10 @@ module Run.Start
 where
 
 import Types
-import Run.Vm
-import Run.Functions
-import Run.Stack
+import Run.Vm (runMain)
+import Run.Stack (Stack)
+import Run.Types (createVm)
+import Run.Functions (getStartFunctionId)
 
 exitCorrectly :: Stack -> IO ()
 exitCorrectly [] = putStrLn "Exit correctly with code: 0"

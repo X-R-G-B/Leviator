@@ -17,8 +17,8 @@ where
 import Data.Int (Int32)
 import Control.Exception (throw)
 
-import Types
-import Errors
+import Errors (CustomException(..))
+import Types (Export(..), ExportDesc(..), Function(..), FuncType(..))
 
 getStartFunctionId :: [Export] -> Int32
 getStartFunctionId [] = throw $ WasmError "No start function"

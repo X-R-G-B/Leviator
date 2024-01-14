@@ -42,6 +42,7 @@ library
       Run.Locals
       Run.Stack
       Run.Start
+      Run.Types
       Run.Vm
       Types
   other-modules:

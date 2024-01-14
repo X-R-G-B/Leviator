@@ -18,8 +18,8 @@ where
 
 import Control.Exception (throw)
 
-import Types (Value(..), TypeName(..))
 import Errors (CustomException(..))
+import Types (Value(..), TypeName(..))
 
 type Stack = [Value]
 

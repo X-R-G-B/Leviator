@@ -17,58 +17,11 @@ import Data.Word (Word8)
 import Control.Exception (throw)
 
 import Types
-import Errors
-import Run.Functions
-import Run.Stack
+import Run.Types
 import Run.Locals
-
-data CurrentExec = CurrentExec {
-  ceLocals :: Locals,
-  ceStack :: Stack,
-  ceInstructions :: [Instruction],
-  ceInstIdx :: Int,
-  ceLabels :: [Int],
-  ceParams :: [TypeName],
-  ceResults :: [TypeName],
-  crBlockIndents :: Int
-} deriving (Show)
-
-data InstMemory = Memory {
-  memRange :: Limit,
-  memData :: [Word8]
-} deriving (Show)
-
-data VM = VM {
-  vmStack :: Stack,
-  currentExec :: CurrentExec,
-  vmMemory :: InstMemory,
-  wasmModule :: WasmModule
-}
-
-instance Show VM where
-  show vm = "VM { vmStack = " ++ show (vmStack vm) ++ ", currentExec = " ++ show (currentExec vm) ++ " }"
-
-createVm :: WasmModule -> VM
-createVm wasmMod = VM {
-  vmStack = [],
-  currentExec = CurrentExec {
-    ceLocals = [],
-    ceStack = [],
-    ceInstructions = [],
-    ceParams = [],
-    ceResults = []
-  },
-  vmMemory = Memory {
-    memRange = Limit 0 Nothing,
-    memData = []
-  },
-  wasmModule = wasmMod
-}
-
-incrementInstIdx :: CurrentExec -> CurrentExec
-incrementInstIdx cEx = cEx { ceInstIdx = ceInstIdx cEx + 1 }
-
----------------------------
+import Errors (CustomException(..))
+import Run.Functions (getFunctionFromId, getFuncTypeFromId)
+import Run.Stack (Stack, stackPush, stackPop, stackTop, pushResults)
 
 execOpCode :: VM -> CurrentExec -> Instruction -> CurrentExec
 execOpCode _ cEx (I32Const val) = cEx { ceStack = stackPush (ceStack cEx) (I_32 val) }

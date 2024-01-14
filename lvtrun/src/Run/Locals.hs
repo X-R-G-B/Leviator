@@ -19,8 +19,8 @@ import Data.Int (Int32)
 import Control.Exception (throw)
 
 import Types
-import Errors
-import Run.Stack
+import Errors (CustomException(..))
+import Run.Stack (Stack, stackPop, stackPopN)
 
 type Locals = [Value]
 
@@ -66,15 +66,16 @@ createLocalsParams (F64:xs) (F_64 val:xs2) =
   (F_64 val : createLocalsParams xs xs2)
 createLocalsParams _ _ = throw $ WasmError "createLocalsParams: bad type"
 
+initLocalsParams' :: (Locals, Stack) -> [TypeName] -> (Locals, Stack)
+initLocalsParams' ([], newStack) _ = ([], newStack)
+initLocalsParams' (values, newStack) params =
+  (createLocalsParams params (reverse values), newStack)
+
 initLocalsParams :: [TypeName] -> Stack -> (Locals, Stack)
 initLocalsParams [] stack = ([], stack)
 initLocalsParams params stack 
   | length params > length stack = throw $ WasmError "initLocalsParam: bad nb"
-  | otherwise = do
-    let (values, newStack) = stackPopN stack (length params)
-    let reversedValues = reverse values
-    let newLocals = createLocalsParams params reversedValues
-    (newLocals, newStack)
+  | otherwise = initLocalsParams' (stackPopN stack (length params)) params
 
 initLocals :: [Local] -> [TypeName] -> Stack -> (Locals, Stack)
 initLocals localVarTypes paramTypes stack = do
