@@ -126,7 +126,7 @@ export fn start() -> Int
 
 - **Operators**
 
-```
+```python
 a + b
 a - b
 a * b
@@ -137,4 +137,11 @@ a < b
 a <= b
 a > b
 a >= b
+```
+
+- **Priority of Operators**
+
+```c
+// realy peticuliar buut we use { for ( and } for )
+{a + B} * c
 ```

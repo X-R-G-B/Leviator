@@ -93,7 +93,7 @@ parseOperatorOp :: Parser Value
 parseOperatorOp =
     Var
         <$> (parseString "+" <|> parseString "-" <|> parseString "*"
-            <|> parseString "/" <|> parseString "(" <|> parseString ")"
+            <|> parseString "/" <|> parseString "{" <|> parseString "}"
             <|> parseString "==" <|> parseString "!=" <|> parseString "<"
             <|> parseString ">" <|> parseString "<=" <|> parseString ">=")
 
