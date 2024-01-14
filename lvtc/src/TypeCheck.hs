@@ -215,5 +215,6 @@ checkStart (((_, _, _, _), _):xs) = checkStart xs
 checkStart [] = False
 
 typeCheck :: [FuncDeclaration] -> Bool
-typeCheck expressions | checkStart expressions = checkDeclarations expressions defaultEnv
+typeCheck expressions | checkStart expressions =
+  checkDeclarations expressions defaultEnv
 typeCheck _ = False
