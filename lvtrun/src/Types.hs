@@ -130,6 +130,9 @@ data Instruction =
   | MemorySize
   | MemoryGrow
   deriving (Eq)
+--IF/ELSE
+--LOOP
+--BR
 
 instance Show Instruction where
   show Unreachable = "\n\t\t\t\tunreachable"

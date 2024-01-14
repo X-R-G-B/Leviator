@@ -109,6 +109,41 @@ execIf cEx@(CurrentExec {ceStack = stack}) = case stackTop stack of
   I_32 _ -> throw $ RuntimeError "execIf: bad if statement"
   _ -> throw $ RuntimeError "execIf: bad type"
 
+execI32GtS :: CurrentExec -> CurrentExec
+execI32GtS cEx@(CurrentExec {ceStack = stack}) =
+  case (stackPopN stack 2) of
+    ([I_32 val2, I_32 val1], newStack) -> case (val1 > val2) of
+      True -> cEx { ceStack = stackPush newStack (I_32 1) }
+      False -> cEx { ceStack = stackPush newStack (I_32 0) }
+
+execI32GeS :: CurrentExec -> CurrentExec
+execI32GeS cEx@(CurrentExec {ceStack = stack}) =
+  case (stackPopN stack 2) of
+    ([I_32 val2, I_32 val1], newStack) -> case (val1 >= val2) of
+      True -> cEx { ceStack = stackPush newStack (I_32 1) }
+      False -> cEx { ceStack = stackPush newStack (I_32 0) }
+
+execI32LtS :: CurrentExec -> CurrentExec
+execI32LtS cEx@(CurrentExec {ceStack = stack}) =
+  case (stackPopN stack 2) of
+    ([I_32 val2, I_32 val1], newStack) -> case (val1 < val2) of
+      True -> cEx { ceStack = stackPush newStack (I_32 1) }
+      False -> cEx { ceStack = stackPush newStack (I_32 0) }
+
+execI32LeS :: CurrentExec -> CurrentExec
+execI32LeS cEx@(CurrentExec {ceStack = stack}) =
+  case (stackPopN stack 2) of
+    ([I_32 val2, I_32 val1], newStack) -> case (val1 <= val2) of
+      True -> cEx { ceStack = stackPush newStack (I_32 1) }
+      False -> cEx { ceStack = stackPush newStack (I_32 0) }
+
+execI32GtU :: CurrentExec -> CurrentExec
+execI32GtU cEx@(CurrentExec {ceStack = stack}) =
+  case (stackPopN stack 2) of
+    ([I_32 val2, I_32 val1], newStack) -> case ((fromIntegral val1) > (fromIntegral val2)) of
+      True -> cEx { ceStack = stackPush newStack (I_32 1) }
+      False -> cEx { ceStack = stackPush newStack (I_32 0) }
+
 execOpCode :: VM -> CurrentExec -> Instruction -> CurrentExec
 execOpCode _ cEx (Unreachable) = throw $ RuntimeError "execOpCode: unreachable"
 execOpCode _ cEx (End) = decrementBlockIdx cEx
@@ -126,7 +161,16 @@ execOpCode _ cEx (SetLocal localIdx) = execSetLocal cEx localIdx
 execOpCode _ cEx (BrIf labelIdx) = execBrIf cEx
 execOpCode vm cEx (Call funcIdx) = execCall vm cEx funcIdx
 execOpCode _ cEx (If) = execIf cEx
+execOpCode _ cEx (I32Gts) = execI32GtS cEx
+execOpCode _ cEx (I32Ges) = execI32GeS cEx
+execOpCode _ cEx (I32Lts) = execI32LtS cEx
+execOpCode _ cEx (I32Les) = execI32LeS cEx
+execOpCode _ cEx (I32Gtu) = execI32GtU cEx
 execOpCode _ cEx _ = cEx
+
+--IF/ELSE
+--LOOP
+--BR
 
 execOpCodes :: VM -> [Instruction] -> CurrentExec
 execOpCodes vm [] = currentExec vm
