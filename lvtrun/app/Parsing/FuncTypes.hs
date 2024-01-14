@@ -21,7 +21,7 @@ import Errors
 import Types
 
 getVectorSize :: Bs.ByteString -> (Int64, Bs.ByteString)
-getVectorSize content = extractLEB128 content
+getVectorSize content = getLEB128ToI64 content
 
 extractTypes :: (Int64, Bs.ByteString) -> ([TypeName], Bs.ByteString)
 extractTypes (0, content) = ([], content)
@@ -44,6 +44,6 @@ parseFuncTypes idx maxIdx content
 
 getFuncTypes :: Section -> [FuncType]
 getFuncTypes (Section TypeID _ content) = do
-  let (vecSize, rest) = extractLEB128 content
+  let (vecSize, rest) = getLEB128ToI64 content
   parseFuncTypes 0 vecSize rest
 getFuncTypes _ = throw $ WasmError "getFuncTypes: bad section"

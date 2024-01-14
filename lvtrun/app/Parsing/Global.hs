@@ -69,47 +69,47 @@ createInstruction [0x4a] bytes = (I32Gts, bytes)
 createInstruction [0x46] bytes = (I32Eqz, bytes)
 createInstruction [0x47] bytes = (I32Ne, bytes)
 createInstruction [0x10] bytes = do
-  let (value, rest) = extractLEB1282 bytes
+  let (value, rest) = getLEB128ToI32 bytes
   (Call value, rest)
 createInstruction [0x41] bytes = do
-  let (value, rest) = extractLEB1282 bytes
+  let (value, rest) = getLEB128ToI32 bytes
   (I32Const value, rest)
 createInstruction [0x42] bytes = do
-  let (value, rest) = extractLEB128 bytes
+  let (value, rest) = getLEB128ToI64 bytes
   (I64Const value, rest)
 createInstruction [0x43] bytes = do
-  let (value, rest) = extractLEB128 bytes
+  let (value, rest) = getLEB128ToI64 bytes
   (F32Const (fromIntegral value), rest)
 createInstruction [0x44] bytes = do
-  let (value, rest) = extractLEB128 bytes
+  let (value, rest) = getLEB128ToI64 bytes
   (F64Const (fromIntegral value), rest)
 createInstruction [0x28] bytes = do
-  let (align, rest) = extractLEB1282 bytes
-  let (offset, rest2) = extractLEB1282 rest
+  let (align, rest) = getLEB128ToI32 bytes
+  let (offset, rest2) = getLEB128ToI32 rest
   (I32Load (MemArg align offset), rest2)
 createInstruction [0x29] bytes = do
-  let (align, rest) = extractLEB1282 bytes
-  let (offset, rest2) = extractLEB1282 rest
+  let (align, rest) = getLEB128ToI32 bytes
+  let (offset, rest2) = getLEB128ToI32 rest
   (I64Load (MemArg align offset), rest2)
 createInstruction [0x36] bytes = do
-  let (align, rest) = extractLEB1282 bytes
-  let (offset, rest2) = extractLEB1282 rest
+  let (align, rest) = getLEB128ToI32 bytes
+  let (offset, rest2) = getLEB128ToI32 rest
   (I32Store (MemArg align offset), rest2)
 createInstruction [0x37] bytes = do
-  let (align, rest) = extractLEB1282 bytes
-  let (offset, rest2) = extractLEB1282 rest
+  let (align, rest) = getLEB128ToI32 bytes
+  let (offset, rest2) = getLEB128ToI32 rest
   (I64Store (MemArg align offset), rest2)
 createInstruction [0x20] bytes = do
-  let (value, rest) = extractLEB1282 bytes
+  let (value, rest) = getLEB128ToI32 bytes
   (GetLocal value, rest)
 createInstruction [0x24] bytes = do
-  let (value, rest) = extractLEB1282 bytes
+  let (value, rest) = getLEB128ToI32 bytes
   (SetGlobal value, rest)
 createInstruction [0x23] bytes = do
-  let (value, rest) = extractLEB1282 bytes
+  let (value, rest) = getLEB128ToI32 bytes
   (GetGlobal value, rest)
 createInstruction [0x21] bytes = do
-  let (value, rest) = extractLEB1282 bytes
+  let (value, rest) = getLEB128ToI32 bytes
   (SetLocal value, rest)
 createInstruction [0x3f, 0x00] bytes = (MemorySize, bytes)
 createInstruction [0x40, 0x00] bytes = (MemoryGrow, bytes)
@@ -166,6 +166,6 @@ parseGlobals idx maxIdx content
 
 getGlobals :: Section -> [Global]
 getGlobals (Section GlobalID _ content) = do
-  let (vecSize, rest) = extractLEB128 content
+  let (vecSize, rest) = getLEB128ToI64 content
   parseGlobals 0 vecSize rest
 getGlobals _ = throw $ WasmError "getGlobals: bad section"

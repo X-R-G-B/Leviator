@@ -43,8 +43,8 @@ getSectionId bytes = case head (BSL.unpack $ BSL.take 1 bytes) of
 extractSection :: BSL.ByteString -> (Section, BSL.ByteString)
 extractSection bytes = do
   let sectionId = getSectionId bytes
-  let (size, rest) = extractLEB128 (BSL.drop 1 bytes)
-  let (content, rest2) = BSL.splitAt (fromIntegral size) rest
+  let (size, rest) = getLEB128ToI64 (BSL.drop 1 bytes)
+  let (content, rest2) = BSL.splitAt size rest
   (Section sectionId (fromIntegral size) content, rest2)
 
 extractSections :: BSL.ByteString -> [Section]

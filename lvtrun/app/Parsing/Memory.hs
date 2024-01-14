@@ -21,17 +21,17 @@ import Errors
 parseMinMax :: BS.ByteString -> Memory
 parseMinMax content
   | endBs /= BS.empty = throw $ WasmError "parseMinMax: bad memory section"
-  | otherwise = Limit {lMin = fromIntegral min, lMax = Just (fromIntegral max)}
+  | otherwise = Limit {lMin = min, lMax = Just max}
   where
-    (min, rest) = extractLEB128 content
-    (max, endBs) = extractLEB128 rest
+    (min, rest) = getLEB128ToI32 content
+    (max, endBs) = getLEB128ToI32 rest
 
 parseMin :: BS.ByteString -> Memory
 parseMin content
   | endBs /= BS.empty = throw $ WasmError "parseMin: bad memory section"
-  | otherwise = Limit {lMin = fromIntegral min, lMax = Nothing}
+  | otherwise = Limit {lMin = min, lMax = Nothing}
   where
-    (min, endBs) = extractLEB128 content
+    (min, endBs) = getLEB128ToI32 content
 
 parseMemory :: BS.ByteString -> Memory
 parseMemory content

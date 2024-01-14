@@ -31,7 +31,7 @@ isExportValid 0x03 = True
 isExportValid _ = False
 
 getExportNb :: Bs.ByteString -> (Int64, Bs.ByteString)
-getExportNb content = extractLEB128 content
+getExportNb content = getLEB128ToI64 content
 
 word8ToString :: [Word8] -> String
 word8ToString = map (chr . fromIntegral)
@@ -48,14 +48,14 @@ parseExports idx maxIdx content
   | idx >= (fromIntegral maxIdx) = []
   | Bs.length content == 0 = []
   | otherwise = do
-    let (nameLen, rest) = extractLEB128 content
+    let (nameLen, rest) = getLEB128ToI64 content
     when (nameLen == 0) (throw $ WasmError "parseExports: bad export")
     when (Bs.length rest == 0) (throw $ WasmError "parseExports: bad export")
-    let (name, rest2) = Bs.splitAt (fromIntegral nameLen) rest
+    let (name, rest2) = Bs.splitAt nameLen rest
     when (Bs.length rest2 == 0) (throw $ WasmError "parseExports: bad export")
     let exportType = head (Bs.unpack rest2)
-    let (exportValue, rest3) = extractLEB128 (Bs.drop 1 rest2)
-    let export = createExport (Bs.unpack name) exportType (fromIntegral exportValue)
+    let (exportValue, rest3) = getLEB128ToI32 (Bs.drop 1 rest2)
+    let export = createExport (Bs.unpack name) exportType exportValue
     export : parseExports (idx + 1) maxIdx rest3
 
 printHex :: [Word8] -> String

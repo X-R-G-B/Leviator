@@ -25,11 +25,11 @@ parseFunctionsIndex idx maxIdx content
   | idx > (fromIntegral maxIdx) = []
   | BSL.length content == 0 = []
   | otherwise = do
-    let (typeIdx, rest) = extractLEB1282 content
+    let (typeIdx, rest) = getLEB128ToI32 content
     Function {funcType = fromIntegral typeIdx, funcIdx = idx, body = []} : parseFunctionsIndex (idx + 1) maxIdx rest
 
 getFunctions :: Section -> [Function]
 getFunctions (Section FunctionID _ content) = do
-  let (vecSize, rest) = extractLEB128 content
+  let (vecSize, rest) = getLEB128ToI64 content
   parseFunctionsIndex 0 vecSize rest
 getFunctions _ = throw $ WasmError "getFunctions: bad section"

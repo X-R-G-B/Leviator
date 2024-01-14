@@ -28,8 +28,8 @@ diviseBytes :: BSL.ByteString -> [BSL.ByteString]
 diviseBytes bytes
   | BSL.length bytes == 0 = []
   | otherwise = do
-    let (size, rest) = extractLEB128 bytes
-    let (code, rest2) = BSL.splitAt (fromIntegral size) rest
+    let (size, rest) = getLEB128ToI64 bytes
+    let (code, rest2) = BSL.splitAt size rest
     code : diviseBytes rest2
 
 createLocal :: LocalIdx -> TypeName -> Local
@@ -39,9 +39,9 @@ extractLocal :: Int64 -> BSL.ByteString -> ([Local], BSL.ByteString)
 extractLocal id bytes
   | BSL.length bytes == 0 = throw $ WasmError "extractLocal: bad section"
   | otherwise = do
-    let (nbOfThisType, rest) = extractLEB1282 bytes
+    let (nbOfThisType, rest) = getLEB128ToI64 bytes
     let typee = getTypeFromByte (head (BSL.unpack (BSL.take 1 rest)))
-    let locals = map (\x -> createLocal (fromIntegral id) typee) [0..(fromIntegral nbOfThisType - 1)]
+    let locals = map (\x -> createLocal (fromIntegral id) typee) [0..nbOfThisType - 1]
     (locals, BSL.drop 1 rest)
 
 extractLocals :: Int64 -> Int64 -> BSL.ByteString -> ([Local], BSL.ByteString)
@@ -125,56 +125,56 @@ createInstruction [0x4e] bytes = (I32Ges, bytes)
 createInstruction [0x4c] bytes = (I32Les, bytes)
 createInstruction [0x71] bytes = (I32And, bytes)
 createInstruction [0x0d] bytes = do
-  let (value, rest) = extractLEB1282 bytes
+  let (value, rest) = getLEB128ToI32 bytes
   (BrIf value, rest)
 createInstruction [0x0c] bytes = do
-  let (value, rest) = extractLEB1282 bytes
+  let (value, rest) = getLEB128ToI32 bytes
   (Br value, rest)
 createInstruction [0x22] bytes = do
-  let (value, rest) = extractLEB1282 bytes
+  let (value, rest) = getLEB128ToI32 bytes
   (LocalTee value, rest)
 createInstruction [0x10] bytes = do
-  let (value, rest) = extractLEB1282 bytes
+  let (value, rest) = getLEB128ToI32 bytes
   (Call value, rest)
 createInstruction [0x41] bytes = do
-  let (value, rest) = extractLEB1282 bytes
+  let (value, rest) = getLEB128ToI32 bytes
   (I32Const value, rest)
 createInstruction [0x42] bytes = do
-  let (value, rest) = extractLEB128 bytes
+  let (value, rest) = getLEB128ToI64 bytes
   (I64Const value, rest)
 createInstruction [0x43] bytes = do
-  let (value, rest) = extractLEB128 bytes
+  let (value, rest) = getLEB128ToI64 bytes
   (F32Const (fromIntegral value), rest)
 createInstruction [0x44] bytes = do
-  let (value, rest) = extractLEB128 bytes
+  let (value, rest) = getLEB128ToI64 bytes
   (F64Const (fromIntegral value), rest)
 createInstruction [0x28] bytes = do
-  let (align, rest) = extractLEB1282 bytes
-  let (offset, rest2) = extractLEB1282 rest
+  let (align, rest) = getLEB128ToI32 bytes
+  let (offset, rest2) = getLEB128ToI32 rest
   (I32Load (MemArg offset align), rest2)
 createInstruction [0x29] bytes = do
-  let (align, rest) = extractLEB1282 bytes
-  let (offset, rest2) = extractLEB1282 rest
+  let (align, rest) = getLEB128ToI32 bytes
+  let (offset, rest2) = getLEB128ToI32 rest
   (I64Load (MemArg offset align), rest2)
 createInstruction [0x36] bytes = do
-  let (align, rest) = extractLEB1282 bytes
-  let (offset, rest2) = extractLEB1282 rest
+  let (align, rest) = getLEB128ToI32 bytes
+  let (offset, rest2) = getLEB128ToI32 rest
   (I32Store (MemArg offset align), rest2)
 createInstruction [0x37] bytes = do
-  let (align, rest) = extractLEB1282 bytes
-  let (offset, rest2) = extractLEB1282 rest
+  let (align, rest) = getLEB128ToI32 bytes
+  let (offset, rest2) = getLEB128ToI32 rest
   (I64Store (MemArg offset align), rest2)
 createInstruction [0x20] bytes = do
-  let (value, rest) = extractLEB1282 bytes
+  let (value, rest) = getLEB128ToI32 bytes
   (GetLocal value, rest)
 createInstruction [0x24] bytes = do
-  let (value, rest) = extractLEB1282 bytes
+  let (value, rest) = getLEB128ToI32 bytes
   (SetGlobal value, rest)
 createInstruction [0x23] bytes = do
-  let (value, rest) = extractLEB1282 bytes
+  let (value, rest) = getLEB128ToI32 bytes
   (GetGlobal value, rest)
 createInstruction [0x21] bytes = do
-  let (value, rest) = extractLEB1282 bytes
+  let (value, rest) = getLEB128ToI32 bytes
   (SetLocal value, rest)
 createInstruction [0x3f, 0x00] bytes = (MemorySize, bytes)
 createInstruction [0x40, 0x00] bytes = (MemoryGrow, bytes)
@@ -205,7 +205,7 @@ showBytes bytes = do
 
 parseFunction :: BSL.ByteString -> Function -> Function
 parseFunction bytes func = do
-  let (nbLocalsTypes, rest) = extractLEB128 bytes
+  let (nbLocalsTypes, rest) = getLEB128ToI64 bytes
   let (locals, rest2) = extractLocals 0 nbLocalsTypes rest
   func {locals = locals, body = extractCode rest2}
 
@@ -217,7 +217,7 @@ parseFunctions (x:xs) (y:ys) = parseFunction x y : parseFunctions xs ys
 
 getFuncCode :: Section -> [Function] -> [Function]
 getFuncCode (Section CodeID _ content) functions = do
-  let (nbFunc, rest) = extractLEB128 content
+  let (nbFunc, rest) = getLEB128ToI64 content
   let funcCodes = diviseBytes rest
   if (fromIntegral nbFunc) /= length functions
     then throw $ WasmError "getFuncCode: bad section"
