@@ -21,6 +21,7 @@ import WatLikeToWat (watsLikeToWat)
 import Wasm (Wasm)
 import WatToWasm (watToWasm)
 import WriteWasm (writeWasm)
+import TypeCheck (typeCheck)
 import Args
 
 import System.Directory (listDirectory)
@@ -90,9 +91,9 @@ getAllFunc v (x : expressions) = p v >> getAllFunc v expressions
 checkAst :: Bool -> IO [FuncDeclaration] -> IO [FuncDeclaration]
 checkAst _ funcsIo =
     funcsIo
-        >>= (\funcs -> case Just funcs of
-            Just f -> return f
-            Nothing -> fail "Invalid Code")
+        >>= (\funcs -> case typeCheck funcs of
+            True -> return funcs
+            False -> fail "Invalid Code")
 
 transformToWatLike :: Bool -> IO [FuncDeclaration] -> IO [FuncDeclare]
 transformToWatLike v funcsIo =

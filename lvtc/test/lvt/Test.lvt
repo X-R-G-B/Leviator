@@ -1,4 +1,4 @@
-export fn start() -> Char
+export fn start() -> Int
 {
     @Int a = 0 + 1;
     @Int b = a - 1;
