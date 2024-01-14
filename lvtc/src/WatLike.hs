@@ -74,6 +74,12 @@ modifyAll' x varsIndex funcsIndex = (x, varsIndex, funcsIndex)
 
 ---
 
+transformType :: Type -> Type
+transformType "Void" = "Int"
+transformType "Char" = "Int"
+transformType "Bool" = "Int"
+transformType x = x
+
 modifyAll :: [Instruction] -> [Index] -> [Index]
             -> ([Instruction], [Index], [Index])
 modifyAll [] varsIndex funcsIndex = ([], varsIndex, funcsIndex)
@@ -126,12 +132,6 @@ modifyAll ((While (vValue, ins)):xs) vsInd fsInd =
         (insWhile, vsInd'', fsInd'') = modifyAll ins vsInd' fsInd'
         newWhile = While (vValue', insWhile)
         (ins', vsInd''', fsInd''') = modifyAll xs vsInd'' fsInd''
-
-transformType :: Type -> Type
-transformType "Void" = "Int"
-transformType "Char" = "Int"
-transformType "Bool" = "Int"
-transformType x = x
 
 registerParams :: FuncDeclare -> FuncDeclare
 registerParams (((isExp, fName, [], typ), ins), varsIndex, oName) =
@@ -244,7 +244,7 @@ instructionToWatLike
     (varsIndex', ins' ++ [newDeclaration])
     where
         (varsIndex', ins', vValue') = valueToWatLike vValue oldFuncs varsIndex
-        newDeclaration = Declaration ((vName, vTyp), vValue')
+        newDeclaration = Declaration ((vName, transformType vTyp), vValue')
 instructionToWatLike
     (Assignation (vName, vValue)) oldFuncs varsIndex =
     (varsIndex', ins' ++ [newAssignation])
