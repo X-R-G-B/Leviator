@@ -119,6 +119,13 @@ modifyAll ((Cond (vValue, insIf, insElse)):xs) vsInd fsInd =
         (insElse', vsInd''', fsInd''') = modifyAll insElse vsInd'' fsInd''
         newCond = Cond (vValue', insIf', insElse')
         (ins', vsInd'''', fsInd'''') = modifyAll xs vsInd''' fsInd'''
+modifyAll ((While (vValue, ins)):xs) vsInd fsInd =
+    (newWhile:ins', vsInd''', fsInd''')
+    where
+        (vValue', vsInd', fsInd') = modifyAll' vValue vsInd fsInd
+        (insWhile, vsInd'', fsInd'') = modifyAll ins vsInd' fsInd'
+        newWhile = While (vValue', insWhile)
+        (ins', vsInd''', fsInd''') = modifyAll xs vsInd'' fsInd''
 
 transformType :: Type -> Type
 transformType "Void" = "Int"
@@ -266,6 +273,13 @@ instructionToWatLike
         (vsInd''', vInsFalse') =
             instructionsToWatLike vInsFalse oldFuncs vsInd''
         newCond = Cond (vValCond', vInsTrue', vInsFalse')
+instructionToWatLike
+    (While (vValCond, vIns)) oldFuncs vsInd =
+    (vsInd'', insCond ++ [newWhile])
+    where
+        (vsInd', insCond, vValCond') = valueToWatLike vValCond oldFuncs vsInd
+        (vsInd'', vIns') = instructionsToWatLike vIns oldFuncs vsInd'
+        newWhile = While (vValCond', vIns' ++ insCond)
 
 instructionsToWatLike :: [Instruction] -> ([FuncDeclare], [Index])
                     -> [Index] -> ([Index], [Instruction])

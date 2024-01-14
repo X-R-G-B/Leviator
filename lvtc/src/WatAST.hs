@@ -41,6 +41,8 @@ data OpCode =
     | If IfType
     | Else
     | End
+    | Loop IfType
+    | Br Int32
     deriving (Show, Eq)
 
 data Type =
