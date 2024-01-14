@@ -102,10 +102,32 @@ execCall vm cEx funcIdx = cEx { ceStack = newStack }
     currentStack = ceStack cEx
     res = ceResults (currentExec newVm)
 
+doesElseExist' :: [Instruction] -> Bool
+doesElseExist' [] = False
+doesElseExist' (Else:_) = True
+doesElseExist' (_:rest) = doesElseExist' rest
+
+doesElseExist :: CurrentExec -> Bool
+doesElseExist cEx = doesElseExist' (drop (ceInstIdx cEx) (ceInstructions cEx))
+
+getElseIndex' :: [Instruction] -> Int -> Int
+getElseIndex' [] _ = throw $ RuntimeError "getElseIndex: missing else"
+getElseIndex' (Else:_) idx = idx
+getElseIndex' (_:rest) idx = getElseIndex' rest (idx + 1)
+
+getElseIndex :: CurrentExec -> Int
+getElseIndex cEx = getElseIndex' (drop (ceInstIdx cEx) (ceInstructions cEx)) 0
+
+executeElse :: CurrentExec -> CurrentExec
+executeElse cEx@(CurrentExec {ceStack = stack}) =
+  case doesElseExist cEx of
+    False -> cEx
+    True -> cEx { ceInstIdx = getElseIndex cEx }
+
 execIf :: CurrentExec -> CurrentExec
 execIf cEx@(CurrentExec {ceStack = stack}) = case stackTop stack of
   I_32 0 -> goToEndInstruction cEx
-  I_32 1 -> addLabel (cEx { crBlockIndents = (crBlockIndents cEx) + 1 })
+  I_32 1 -> executeElse (addLabel (cEx { crBlockIndents = (crBlockIndents cEx) + 1 }))
   I_32 _ -> throw $ RuntimeError "execIf: bad if statement"
   _ -> throw $ RuntimeError "execIf: bad type"
 
@@ -175,7 +197,8 @@ execOpCode _ cEx (I32Gtu) = execI32GtU cEx
 execOpCode _ cEx (Block _) = incrementBlockIndent (addLabel cEx)
 execOpCode _ cEx (Br labelIdx) = execBr cEx labelIdx
 execOpCode _ cEx (Loop) = incrementBlockIndent (addLabel cEx)
-execOpCode _ cEx _ = cEx
+execOpCode _ cEx (Else) = throw $ RuntimeError "elseWithoutIf"
+execOpCode _ cEx _ = throw $ RuntimeError "execOpCode: not implemented"
 
 execOpCodes :: VM -> [Instruction] -> CurrentExec
 execOpCodes vm [] = currentExec vm

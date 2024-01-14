@@ -117,6 +117,7 @@ data Instruction =
   | I32Leu
   | I32Eq
   | I32Lts
+  | Else
   | I32Gts
   | I32Les
   | I32Ges
