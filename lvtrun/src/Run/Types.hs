@@ -66,7 +66,8 @@ createVm wasmMod = VM { vmStack = [],
 }
 
 goToLabel :: CurrentExec -> LabelIdx -> CurrentExec
-goToLabel cEx labelIdx = cEx {ceInstIdx = fromIntegral (getLabelOpIdx cEx labelIdx)}
+goToLabel cEx labelIdx =
+  cEx {ceInstIdx = fromIntegral (getLabelOpIdx cEx labelIdx)}
 
 getLabelOpIdx :: CurrentExec -> LabelIdx -> Int
 getLabelOpIdx cEx labelIdx

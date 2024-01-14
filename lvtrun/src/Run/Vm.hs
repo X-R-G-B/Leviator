@@ -140,9 +140,10 @@ execI32LeS cEx@(CurrentExec {ceStack = stack}) =
 execI32GtU :: CurrentExec -> CurrentExec
 execI32GtU cEx@(CurrentExec {ceStack = stack}) =
   case (stackPopN stack 2) of
-    ([I_32 val2, I_32 val1], newStack) -> case ((fromIntegral val1) > (fromIntegral val2)) of
-      True -> cEx { ceStack = stackPush newStack (I_32 1) }
-      False -> cEx { ceStack = stackPush newStack (I_32 0) }
+    ([I_32 val2, I_32 val1], newStack) ->
+      case ((fromIntegral val1) > (fromIntegral val2)) of
+        True -> cEx { ceStack = stackPush newStack (I_32 1) }
+        False -> cEx { ceStack = stackPush newStack (I_32 0) }
 
 incrementBlockIndent :: CurrentExec -> CurrentExec
 incrementBlockIndent cEx = cEx { crBlockIndents = (crBlockIndents cEx) + 1 }
@@ -175,12 +176,6 @@ execOpCode _ cEx (Block _) = incrementBlockIndent (addLabel cEx)
 execOpCode _ cEx (Br labelIdx) = execBr cEx labelIdx
 execOpCode _ cEx (Loop) = incrementBlockIndent (addLabel cEx)
 execOpCode _ cEx _ = cEx
-
---IF/ELSE
---LOOP
---BR
-
-
 
 execOpCodes :: VM -> [Instruction] -> CurrentExec
 execOpCodes vm [] = currentExec vm
