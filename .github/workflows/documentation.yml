@@ -48,6 +48,10 @@ jobs:
         if: steps.filter.outputs.docs == 'true' || steps.filter.outputs.docs2 == 'true' || steps.filter.outputs.workflow == 'true' || github.ref == 'refs/heads/main'
         run: mdbook build
 
+      - name: Copy OnlineRunner
+        if: steps.filter.outputs.docs == 'true' || steps.filter.outputs.docs2 == 'true' || steps.filter.outputs.workflow == 'true' || github.ref == 'refs/heads/main'
+        run: cp ./lvtext/webrunner/index.html ./book/OnlineVm.html
+
       - name: Setup Pages
         if: github.ref == 'refs/heads/main'
         uses: actions/configure-pages@v3

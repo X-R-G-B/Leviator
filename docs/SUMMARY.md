@@ -8,3 +8,4 @@ made in Haskell.
 [Byte Code Spec Ex](ByteCodeSpecEx.md)
 [Syntax Highlighting Extension](SyntaxHighlighting.md)
 [BNF](BNF.md)
+[Online VM](OnlineVM.md)
