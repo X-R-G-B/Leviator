@@ -14,6 +14,10 @@ $(TARGET):
 	"$(MAKE)" -C "$(LVT_COMPILER)"
 	"$(MAKE)" -C "$(LVT_RUNER)"
 
+debug:
+	"$(MAKE)" -C "$(LVT_COMPILER)" debug
+	"$(MAKE)" -C "$(LVT_RUNER)" debug
+
 clean:
 	"$(MAKE)" -C "$(LVT_COMPILER)" clean
 	"$(MAKE)" -C "$(LVT_RUNER)" clean

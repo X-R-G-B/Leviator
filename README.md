@@ -13,11 +13,17 @@
 // This is a comment
 ```
 
+- **Alias**
+
+```
+alias A = Int;
+```
+
 - **Variables Declaration**
 
 ```hs
 @Int a = 1;
-@String b = "hello";
+@StringView b = "hello";
 ```
 
 - **Variables Assignment**
@@ -79,21 +85,6 @@ fn add(a: Int, b: Int, c: Int) -> Int
 };
 ```
 
-- **Generic Functions**
-
-```rust
-fn add[A](a: A, b: A) -> A
-{
-    <- a + b;
-};
-```
-
-- **Generic Functions Call**
-
-```rust
-add[Int](1, 2);
-```
-
 - **Conditions**
 
 ```c
@@ -123,18 +114,11 @@ while (i < 10)
 };
 ```
 
-- **Imports**
-
-```c
-// Circular imports are not allowed
-import "path/to/file.lvt"
-```
-
 - **Entrypoint**
 
 ```rust
 // If you don't have this function, the program will not be run
-fn start() -> Int
+export fn start() -> Int
 {
     <- 0;
 };
@@ -142,51 +126,22 @@ fn start() -> Int
 
 - **Operators**
 
-```
+```python
 a + b
 a - b
 a * b
 a / b
 a == b
 a != b
+a < b
+a <= b
+a > b
+a >= b
 ```
 
-- **Structs**
-
-```c
-struct Point
-{
-    x: Int,
-    y: Int,
-};
-```
-
-- **Structs Initialization**
-```
-@Point p = {1, 2};
-```
-
-- **Structs Access**
-```
-p:x
-```
-
-- **Nested Structs**
-```
-struct Rect
-{
-    Point size; 
-    Point pos; 
-};
-@Rect r = {{1, 2}, {3, 4}};
-r:size:x
-```
-
-- **Generic Structs**
+- **Priority of Operators**
 
 ```c
-struct Rect[A]
-{
-    attribute: A,
-};
+// realy peticuliar buut we use { for ( and } for )
+{a + B} * c
 ```

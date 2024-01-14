@@ -1,0 +1,14 @@
+fn factorial(n: Int) -> Int
+{
+    @Int a = n - 1;
+    if (a == 0)
+    {
+        <- 1;
+    };
+    <- n * factorial(a);
+};
+
+export fn start() -> Int
+{
+    <- factorial(5);
+};

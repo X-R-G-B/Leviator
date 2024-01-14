@@ -21,6 +21,9 @@ all: $(TARGET)
 $(TARGET):
 	stack build --copy-bins --local-bin-path .
 
+debug:
+	stack build --trace --copy-bins --local-bin-path .
+
 clean:
 	stack clean
 
