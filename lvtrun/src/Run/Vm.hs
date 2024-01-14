@@ -104,11 +104,11 @@ execOpCodes vm instructions
   | ceInstIdx cEx < 0 = throw $ RuntimeError "execOpCodes: bad index"
   | (instructions !! ceInstIdx cEx) == End && crBlockIndents cEx == 0 = cEx
   | (instructions !! ceInstIdx cEx) == Return = cEx { ceInstIdx = (length instructions) }
-  | otherwise = do
-    let newCEx = execOpCode vm cEx (instructions !! ceInstIdx cEx)
-    let newVm = vm { currentExec = (incrementInstIdx newCEx) }
-    execOpCodes newVm instructions
-  where cEx = currentExec vm
+  | otherwise = execOpCodes newVm instructions
+  where
+    cEx = currentExec vm
+    newCEx = execOpCode vm cEx (instructions !! ceInstIdx cEx)
+    newVm = vm { currentExec = (incrementInstIdx newCEx) }
 
 execFunction :: VM -> VM
 execFunction vm = vm { currentExec = newCEx, vmStack = stackWithRes }
