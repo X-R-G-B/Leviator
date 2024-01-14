@@ -21,7 +21,8 @@ data Action = ShowHelp | ShowVersion | Run
 data Args = Args {
     action :: Action,
     folderPath :: String,
-    outFile :: String
+    outFile :: String,
+    verbose :: Bool
 }
 
 parseArgs' :: [String] -> Args -> Either Args String
@@ -39,6 +40,8 @@ parseArgs' ("-o":x:xs) args =
     parseArgs' xs (args {outFile = x})
 parseArgs' ["-o"] _ =
     Right "Missing argument for -o"
+parseArgs' ("--verbose":xs) args =
+    parseArgs' xs (args {verbose = True})
 parseArgs' (('-':xs):_) _ =
     Right ("Unknown option: " ++ xs)
 parseArgs' (x:xs) args =
@@ -48,7 +51,7 @@ parseArgs :: [String] -> IO (Either Args String)
 parseArgs args =
     getCurrentDirectory >>= \path ->
     return (parseArgs' args (Args {
-        action = Run, folderPath = path, outFile = "out.wasm"
+        action = Run, folderPath = path, outFile = "out.wasm", verbose = False
     }))
 
 hLine1 :: String
@@ -72,9 +75,11 @@ hLine9 = part1 ++ part2
     where
         part1 = "\tFOLDER\n\t\tTake all Leviator"
         part2 = " source code recursively from FOLDER\n"
+hLine10 :: String
+hLine10 = "\t--verbose\n\t\tVerbose mode\n"
 
 printHelp :: IO ()
 printHelp =
     putStr hLine1 >> putStr hLine2 >> putStr hLine3 >> putStr hLine4
     >> putStr hLine5 >> putStr hLine6 >> putStr hLine7 >> putStr hLine8
-    >> putStr hLine9
+    >> putStr hLine9 >> putStr hLine10

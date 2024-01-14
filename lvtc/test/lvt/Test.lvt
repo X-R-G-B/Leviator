@@ -1,9 +1,10 @@
-fn abc(a: Int) -> Int
+fn factorial(n: Int) -> Int
 {
-    <- a;
+    @Int a = n - 1;
+    <- (n * factorial(a));
 };
 
 export fn start() -> Int
 {
-    <- abc(1);
+    <- factorial(5);
 };

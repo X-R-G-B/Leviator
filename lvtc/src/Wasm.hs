@@ -25,6 +25,11 @@ module Wasm
 import WatAST (OpCode (..))
 import Data.Int (Int32)
 
+pad :: String -> String
+pad [] = []
+pad ('\n':xs) = '\n':' ':' ' : pad xs
+pad (x:xs) = x : pad xs
+
 data VariableType =
     I32
     deriving (Show, Eq)
@@ -37,7 +42,17 @@ data TypeSectionType =
         nbResults :: Int,
         results :: [VariableType]
     }
-    deriving (Show, Eq)
+    deriving (Eq)
+
+instance Show TypeSectionType where
+    show (Func hF nP p nR r) =
+        "Func {\n"
+        ++ "  headerFunc: " ++ show hF ++ "\n"
+        ++ "  nbParams: " ++ show nP ++ "\n"
+        ++ "  params: " ++ show p ++ "\n"
+        ++ "  nbResults: " ++ show nR ++ "\n"
+        ++ "  results: " ++ show r ++ "\n"
+        ++ "}"
 
 data TypeSection =
     TS {
@@ -46,7 +61,16 @@ data TypeSection =
         nbTypes :: Int,
         types :: [TypeSectionType]
     }
-    deriving (Show, Eq)
+    deriving (Eq)
+
+instance Show TypeSection where
+    show (TS hT sT nT t) =
+        "TS {\n"
+        ++ "  headerTS: " ++ show hT ++ "\n"
+        ++ "  sizeTS: " ++ show sT ++ "\n"
+        ++ "  nbTypes: " ++ show nT ++ "\n"
+        ++ "  types: " ++ pad (pad (show t)) ++ "\n"
+        ++ "}"
 
 data FunctionSection =
     FS {
@@ -55,7 +79,16 @@ data FunctionSection =
         nbFuncs :: Int,
         funcs :: [Int]
     }
-    deriving (Show, Eq)
+    deriving (Eq)
+
+instance Show FunctionSection where
+    show (FS hF sF nF f) =
+        "FS {\n"
+        ++ "  headerFS: " ++ show hF ++ "\n"
+        ++ "  sizeFS: " ++ show sF ++ "\n"
+        ++ "  nbFuncs: " ++ show nF ++ "\n"
+        ++ "  funcs: " ++ pad (pad (show f)) ++ "\n"
+        ++ "}"
 
 data MemorySectionLimits =
     MSL {
@@ -63,7 +96,15 @@ data MemorySectionLimits =
         minMS :: Int,
         maxMS :: Int
     }
-    deriving (Show, Eq)
+    deriving (Eq)
+
+instance Show MemorySectionLimits where
+    show (MSL hM mMi mMa) =
+        "MSL {\n"
+        ++ "  hasMax: " ++ show hM ++ "\n"
+        ++ "  minMS: " ++ show mMi ++ "\n"
+        ++ "  maxMS: " ++ show mMa ++ "\n"
+        ++ "}"
 
 data MemorySection =
     MS {
@@ -72,7 +113,16 @@ data MemorySection =
         nbLimits :: Int,
         limits :: [MemorySectionLimits]
     }
-    deriving (Show, Eq)
+    deriving (Eq)
+
+instance Show MemorySection where
+    show (MS hM sM nL l) =
+        "MS {\n"
+        ++ "  headerMS: " ++ show hM ++ "\n"
+        ++ "  sizeMS: " ++ show sM ++ "\n"
+        ++ "  nbLimits: " ++ show nL ++ "\n"
+        ++ "  limits: " ++ pad (pad (show l)) ++ "\n"
+        ++ "}"
 
 data ExportSectionExportType =
     FuncExport
@@ -88,7 +138,16 @@ data ExportSectionExport =
         typeESE :: ExportSectionExportType,
         indexESE :: Int
     }
-    deriving (Show, Eq)
+    deriving (Eq)
+
+instance Show ExportSectionExport where
+    show (ESE nL n t i) =
+        "ESE {\n"
+        ++ "  nameLength: " ++ show nL ++ "\n"
+        ++ "  name: " ++ show n ++ "\n"
+        ++ "  typeESE: " ++ show t ++ "\n"
+        ++ "  indexESE: " ++ show i ++ "\n"
+        ++ "}"
 
 data ExportSection =
     ES {
@@ -97,7 +156,16 @@ data ExportSection =
         nbExports :: Int,
         exports :: [ExportSectionExport]
     }
-    deriving (Show, Eq)
+    deriving (Eq)
+
+instance Show ExportSection where
+    show (ES hE sE nE e) =
+        "ES {\n"
+        ++ "  headerES: " ++ show hE ++ "\n"
+        ++ "  sizeES: " ++ show sE ++ "\n"
+        ++ "  nbExports: " ++ show nE ++ "\n"
+        ++ "  exports: " ++ pad (pad (show e)) ++ "\n"
+        ++ "}"
 
 type CodeSectionCodeLocals = (Int32, VariableType)
 
@@ -109,7 +177,17 @@ data CodeSectionCode =
         bodyCSC :: [OpCode],
         endCSC :: Int
     }
-    deriving (Show, Eq)
+    deriving (Eq)
+
+instance Show CodeSectionCode where
+    show (CSC sL nL l b e) =
+        "CSC {\n"
+        ++ "  sizeCSC: " ++ show sL ++ "\n"
+        ++ "  nbLocals: " ++ show nL ++ "\n"
+        ++ "  locals: " ++ pad (pad (show l)) ++ "\n"
+        ++ "  bodyCSC: " ++ pad (pad (show b)) ++ "\n"
+        ++ "  endCSC: " ++ show e ++ "\n"
+        ++ "}"
 
 data CodeSection =
     CS {
@@ -118,7 +196,16 @@ data CodeSection =
         nbCodes :: Int,
         codes :: [CodeSectionCode]
     }
-    deriving (Show, Eq)
+    deriving (Eq)
+
+instance Show CodeSection where
+    show (CS hC sC nC c) =
+        "CS {\n"
+        ++ "  headerCS: " ++ show hC ++ "\n"
+        ++ "  sizeCS: " ++ show sC ++ "\n"
+        ++ "  nbCodes: " ++ show nC ++ "\n"
+        ++ "  codes: " ++ pad (pad (show c)) ++ "\n"
+        ++ "}"
 
 data Wasm =
     Wasm {
@@ -130,4 +217,16 @@ data Wasm =
         exportSection :: ExportSection,
         codeSection :: CodeSection
     }
-    deriving (Show, Eq)
+    deriving (Eq)
+
+instance Show Wasm where
+    show (Wasm h v t f m e c) =
+        "Wasm {\n"
+        ++ "  headerWasm: " ++ pad (show h) ++ "\n"
+        ++ "  versionWasm: " ++ pad (show v) ++ "\n"
+        ++ "  typeSection: " ++ pad (show t) ++ "\n"
+        ++ "  functionSection: " ++ pad (show f) ++ "\n"
+        ++ "  memorySection: " ++ pad (show m) ++ "\n"
+        ++ "  exportSection: " ++ pad (show e) ++ "\n"
+        ++ "  codeSection: " ++ pad (show c) ++ "\n"
+        ++ "}"

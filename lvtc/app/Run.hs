@@ -32,65 +32,99 @@ getExpressionFromFile path =
     readFile path
     >>= (\str ->
         case runParser (proceedAlias <$> parseAllExpression) str of
-            Nothing -> fail "Invalid expression"
+            Nothing -> fail ("Invalid expression found in file: " ++ show path)
             Just (expression, _) -> return expression)
 
-getFilesExpression :: [FilePath] -> IO [Expression]
-getFilesExpression (file:files) =
-    getExpressionFromFile file
-        >>= (\expFile -> getFilesExpression files
+getFilesExpression :: Bool -> [FilePath] -> IO [Expression]
+getFilesExpression v (file:files) =
+    p v
+    >> getExpressionFromFile file
+        >>= (\expFile -> getFilesExpression v files
             >>= (\expFiles -> return (expFile ++ expFiles)))
-getFilesExpression [] = return []
+    where
+        p True = putStrLn ("Parsing expressions from: " ++ show file ++ "...")
+        p False = return ()
+getFilesExpression _ [] = return []
 
-selectGoodFiles :: FilePath -> [FilePath] -> IO [FilePath]
-selectGoodFiles _ [] = return []
-selectGoodFiles folder (file:files)
+selectGoodFiles :: Bool -> FilePath -> [FilePath] -> IO [FilePath]
+selectGoodFiles _ _ [] = return []
+selectGoodFiles v folder (file:files)
     | ".lvt" `isSuffixOf` trueFile =
-            putStrLn ("- " ++ trueFile)
-            >> selectGoodFiles folder files
+            p v
+            >> selectGoodFiles v folder files
                 >>= (\others -> return (trueFile : others))
-    | otherwise = selectGoodFiles folder files
+    | otherwise = selectGoodFiles v folder files
     where
         trueFile = joinPath [folder, file]
+        p True = putStrLn ("- " ++ show trueFile)
+        p False = return ()
 
-listAllFiles :: FilePath -> IO [FilePath]
-listAllFiles path = listDirectory path >>= selectGoodFiles path
+listAllFiles :: Bool -> FilePath -> IO [FilePath]
+listAllFiles v path =
+    p v
+    >> listDirectory path >>= selectGoodFiles v path
+    where
+        p True = putStrLn ("Compiling Folder: " ++ show path)
+        p False = return ()
 
-getAllFunc :: [Expression] -> IO [FuncDeclaration]
-getAllFunc [] = return []
-getAllFunc ((Expression.Function str):expressions) =
+getAllFunc :: Bool -> [Expression] -> IO [FuncDeclaration]
+getAllFunc _ [] = return []
+getAllFunc v ((Expression.Function str):expressions) =
     case runParser parseFuncDeclaration str of
-        Nothing -> fail ("Parser Error: `" ++ str ++ "`")
+        Nothing -> fail ("Parser Error: " ++ show str)
         Just (func, _) ->
-            getAllFunc expressions >>= \funcs -> return (func:funcs)
-getAllFunc (_ : expressions) = getAllFunc expressions
+            getAllFunc v expressions >>= \funcs -> return (func:funcs)
+getAllFunc v (x : expressions) = p v >> getAllFunc v expressions
+    where
+        p True = putStrLn ("Ignoring" ++ show x)
+        p False = return ()
 
 -- TODO: replace with the function of gui
-checkAst :: IO [FuncDeclaration] -> IO [FuncDeclaration]
-checkAst funcsIo =
+checkAst :: Bool -> IO [FuncDeclaration] -> IO [FuncDeclaration]
+checkAst _ funcsIo =
     funcsIo
         >>= (\funcs -> case Just funcs of
             Just f -> return f
             Nothing -> fail "Invalid Code")
 
-transformToWatLike :: IO [FuncDeclaration] -> IO [FuncDeclare]
-transformToWatLike funcsIo =
-    funcsIo
-        >>= (\funcs -> return (aSTToWatLike funcs))
+transformToWatLike :: Bool -> IO [FuncDeclaration] -> IO [FuncDeclare]
+transformToWatLike v funcsIo =
+    p v
+    >> funcsIo
+        >>= return . aSTToWatLike
+    where
+        p True = putStrLn "Transforming Leviator AST to IR (WatLike)..."
+        p False = return ()
 
-transformToWat :: IO [FuncDeclare] -> IO [FuncDef]
-transformToWat funcsIo = funcsIo >>= return . watsLikeToWat
+transformToWat :: Bool -> IO [FuncDeclare] -> IO [FuncDef]
+transformToWat v funcsIo =
+    p v
+    >> funcsIo
+        >>= return . watsLikeToWat
+    where
+        p True = putStrLn "Transforming IR (WatLike) to IR (Wat)..."
+        p False = return ()
 
-transformToWasm :: IO [FuncDef] -> IO Wasm
-transformToWasm funcsIo = funcsIo >>= return . watToWasm
+transformToWasm :: Bool -> IO [FuncDef] -> IO Wasm
+transformToWasm v funcsIo =
+    p v
+    >> funcsIo
+        >>= return . watToWasm
+    where
+        p True = putStrLn "Transforming IR (Wat) to Wasm..."
+        p False = return ()
+
+showDebug :: Bool -> Wasm -> IO ()
+showDebug True wasm = print wasm
+showDebug False _ = return ()
 
 run :: Args -> IO ()
-run (Args Run fPath oFile) = putStrLn ("Compiling from: " ++ fPath) >>
-    transformedWasm >>= \wasm -> writeWasm wasm oFile
+run (Args Run fPath oFile v) =
+    transformedWasm >>= \wasm -> (showDebug v wasm >> writeWasm wasm oFile)
     where
-        expressions = listAllFiles fPath >>= getFilesExpression
-        funcs = expressions >>= getAllFunc
-        transformedWatLike = transformToWatLike (checkAst funcs)
-        transformedWat = transformToWat (transformedWatLike)
-        transformedWasm = transformToWasm (transformedWat)
+        expressions = listAllFiles v fPath >>= getFilesExpression v
+        funcs = expressions >>= getAllFunc v
+        transformedWatLike = transformToWatLike v (checkAst v funcs)
+        transformedWat = transformToWat v transformedWatLike
+        transformedWasm = transformToWasm v transformedWat
 run _ = fail "Invalid option called"
