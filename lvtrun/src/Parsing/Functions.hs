@@ -23,13 +23,13 @@ parseFunctionsIndex :: Int32 -> Int64 -> BSL.ByteString -> [Function]
 parseFunctionsIndex idx maxIdx content
   | idx > (fromIntegral maxIdx) = []
   | BSL.length content == 0 = []
-  | otherwise = do
-    let (typeIdx, rest) = getLEB128ToI32 content
+  | otherwise =
     Function {
       funcType = fromIntegral typeIdx,
       funcIdx = idx,
       body = []
     } : parseFunctionsIndex (idx + 1) maxIdx rest
+  where (typeIdx, rest) = getLEB128ToI32 content
 
 getFunctions :: Section -> [Function]
 getFunctions (Section FunctionID _ content) = do

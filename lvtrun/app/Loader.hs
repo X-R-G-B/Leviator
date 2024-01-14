@@ -20,14 +20,12 @@ import IO
 import Errors
 
 getFilePath :: IO String
-getFilePath = do
-  args <- getArgs
+getFilePath = getArgs >>= \args ->
   case args of
     [path] -> return path
     _ -> throw $ UsageError "Usage: ./run <file.wasm>"
 
 loadModule :: IO WasmModule
-loadModule = do
-  filePath <- getFilePath
+loadModule = getFilePath >>= \filePath ->
   getFileContent filePath >>= \bytes ->
     return $ parseModule bytes

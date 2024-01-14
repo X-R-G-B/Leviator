@@ -36,7 +36,6 @@ module Types
   SectionID(..),
   Section(..),
   Memory(..),
-  OpCode,
   Local(..),
   BlockType(..),
   Value(..)
@@ -60,46 +59,30 @@ type DataIdx = Int32
 type LocalIdx = Int32
 type LabelIdx = Int32
 
--- Common
-
 type FileContent = BSL.ByteString
 
-data TypeName =
-  I32 |
-  I64 |
-  F32 |
-  F64
-  deriving (Show, Eq, Enum)
+type Memory = Limit
 
-getTypeFromByte :: Word8 -> TypeName
-getTypeFromByte 0x7f = I32
-getTypeFromByte 0x7e = I64
-getTypeFromByte 0x7d = F32
-getTypeFromByte 0x7c = F64
-getTypeFromByte _ = throw $ WasmError "GetTypeFromByte: bad type"
+data TypeName =
+  I32
+  | I64
+  | F32
+  | F64
+  deriving (Show, Eq, Enum)
 
 data Limit = Limit {
   lMin :: Int32,
   lMax :: Maybe Int32
-}
-
-instance Show Limit where
-  show limit = "[\n\tmin: " ++ (show $ lMin limit) ++ "\n\tmax: " ++ (show $ lMax limit) ++ "\n]"
-
------------------------
+} deriving (Show, Eq)
 
 data MemArg = MemArg {
   offset :: Int32,
   align :: Int32
-}
+} deriving (Show)
 
 instance Eq MemArg where
-  (==) memArg1 memArg2 = (offset memArg1) == (offset memArg2) && (align memArg1) == (align memArg2)
-
-instance Show MemArg where
-  show memArg = "[\n\toffset: " ++ (show $ offset memArg) ++ "\n\talign: " ++ (show $ align memArg) ++ "\n]"
-
-type OpCode = [Word8]
+  (==) memArg1 memArg2 = (offset memArg1) == (offset memArg2)
+    && (align memArg1) == (align memArg2)
 
 data BlockType =
   EmptyType
@@ -196,6 +179,23 @@ data Value =
   | F_64 Double
   deriving (Eq)
 
+data SectionID =
+  CustomID
+  | TypeID
+  | ImportID
+  | FunctionID
+  | TableID
+  | MemoryID
+  | GlobalID
+  | ExportID
+  | StartID
+  | ElementID
+  | CodeID
+  | DataID
+  | DataCountID
+  | InvalidID
+  deriving (Show, Eq)
+
 instance Show Value where
   show (I_32 val) = show val
   show (I_64 val) = show val
@@ -231,8 +231,6 @@ data Function = Function {
   body :: [Instruction]
 } deriving (Show)
 
-type Memory = Limit
-
 data Mutability = Const | Var deriving (Show)
 
 data Global = Global {
@@ -262,23 +260,6 @@ data ModHeader = ModHeader {
   version :: BSL.ByteString
 } deriving (Show)
 
-data SectionID =
-  CustomID
-  | TypeID
-  | ImportID
-  | FunctionID
-  | TableID
-  | MemoryID
-  | GlobalID
-  | ExportID
-  | StartID
-  | ElementID
-  | CodeID
-  | DataID
-  | DataCountID
-  | InvalidID
-  deriving (Show, Eq)
-
 data Section = Section {
   identifier :: SectionID,
   size :: Int,
@@ -306,3 +287,10 @@ instance Show WasmModule where
     "- Memory: " ++ (show $ memory wasmMod) ++ "\n" ++
     "- Globals: " ++ (show $ globals wasmMod) ++ "\n" ++
     "- Exports: " ++ (show $ exports wasmMod) ++ "\n"
+
+getTypeFromByte :: Word8 -> TypeName
+getTypeFromByte 0x7f = I32
+getTypeFromByte 0x7e = I64
+getTypeFromByte 0x7d = F32
+getTypeFromByte 0x7c = F64
+getTypeFromByte _ = throw $ WasmError "GetTypeFromByte: bad type"
