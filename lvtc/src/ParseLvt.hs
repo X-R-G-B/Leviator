@@ -24,6 +24,7 @@ module ParseLvt
     parseDeclaration,
     parseAssignation,
     parseCond,
+    parseWhile,
     -- Function
     parseFuncDeclaration
 ) where
@@ -269,9 +270,19 @@ parseCond = Parser f
                     Nothing -> Nothing
                     Just (ifBlock, ys) -> runParser (parseCond' val ifBlock) ys
 
+parseWhileComp :: Parser Value
+parseWhileComp = parseString "while(" *> parseValue <* parseString ")"
+
+parseWhileBlock :: Parser [Instruction]
+parseWhileBlock = parseString "{" *> parseInstructions <* parseString "}"
+
+parseWhile :: Parser Instruction
+parseWhile = While <$> ((,) <$> parseWhileComp <*> parseWhileBlock)
+
 parseInstruction :: Parser Instruction
 parseInstruction =
     (parseCond
+    <|> parseWhile
     <|> parseReturn
     <|> parseDeclaration
     <|> parseAssignation

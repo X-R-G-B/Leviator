@@ -1,7 +1,7 @@
 [book]
-title = "Koaky (Yet Another Programming Language)"
+title = "Leviator (Yet Another Programming Language)"
 authors = ["@Saverio976", "@TTENSHII", "@guillaumeAbel"]
-description = "Documentation of Koaky"
+description = "Documentation of Leviator"
 src = "docs"
 
 [build]
@@ -10,8 +10,8 @@ create-missing = false
 use-default-preprocessors = true
 
 [output.html]
-git-repository-url = "https://github.com/X-R-G-B/koak"
-edit-url-template = "https://github.com/X-R-G-B/koak/edit/main/{path}"
+git-repository-url = "https://github.com/X-R-G-B/Leviator"
+edit-url-template = "https://github.com/X-R-G-B/Leviator/edit/main/{path}"
 
 [output.html.search]
 enable = true

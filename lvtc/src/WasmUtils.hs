@@ -181,6 +181,8 @@ getSizeOpCode (LocalSet _) = 2
 getSizeOpCode (I32Const _) = 2
 getSizeOpCode (Call _) = 2
 getSizeOpCode (If _) = 2
+getSizeOpCode (Loop _) = 2
+getSizeOpCode (Br _) = 2
 getSizeOpCode _ = 1
 
 fillBlankCodeSectionCode :: CodeSectionCode -> CodeSectionCode
@@ -254,6 +256,8 @@ opCodeByte (Call _) = 0x10
 opCodeByte (If EmptyType) = 0x04
 opCodeByte Else = 0x05
 opCodeByte End = 0x0b
+opCodeByte (Loop EmptyType) = 0x03
+opCodeByte (Br _) = 0x0c
 
 ifTypeByte :: IfType -> Int
 ifTypeByte EmptyType = 0x40

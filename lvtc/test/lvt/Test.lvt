@@ -1,14 +1,8 @@
-fn factorial(n: Int) -> Int
+export fn start() -> Char
 {
-    @Int a = n - 1;
-    if (a == 0)
-    {
-        <- 1;
-    };
-    <- n * factorial(a);
-};
-
-export fn start() -> Int
-{
-    <- factorial(5);
+    @Int a = 0 + 1;
+    @Int b = a - 1;
+    @Int c = a * b;
+    @Int d = c / a;
+    <- d;
 };
