@@ -116,11 +116,17 @@ codeSectionCodeLocalsToByte (a, b) =
 
 opCodeToByte :: OpCode -> B.ByteString
 opCodeToByte (LocalGet a) =
-    B.pack [fromIntegral (opCodeByte (LocalGet a)), fromIntegral a]
+    extendBytes
+        (B.pack [fromIntegral (opCodeByte (LocalGet a))])
+        [B.pack (map fromIntegral (leb128Encode (fromIntegral a)))]
 opCodeToByte (LocalSet a) =
-    B.pack [fromIntegral (opCodeByte (LocalSet a)), fromIntegral a]
+    extendBytes
+        (B.pack [fromIntegral (opCodeByte (LocalSet a))])
+        [B.pack (map fromIntegral (leb128Encode (fromIntegral a)))]
 opCodeToByte (I32Const a) =
-    B.pack [fromIntegral (opCodeByte (I32Const a)), fromIntegral a]
+    extendBytes
+        (B.pack [fromIntegral (opCodeByte (I32Const a))])
+        [B.pack (map fromIntegral (leb128Encode (fromIntegral a)))]
 opCodeToByte (Call a) =
     B.pack [fromIntegral (opCodeByte (Call a)), fromIntegral a]
 opCodeToByte (If a) =

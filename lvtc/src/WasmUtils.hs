@@ -176,10 +176,10 @@ getDefaultCodeSectionCode = CSC {
 }
 
 getSizeOpCode :: OpCode -> Int
-getSizeOpCode (LocalGet _) = 2
-getSizeOpCode (LocalSet _) = 2
-getSizeOpCode (I32Const _) = 2
-getSizeOpCode (Call _) = 2
+getSizeOpCode (LocalGet n) = 1 + length (leb128Encode (fromIntegral n))
+getSizeOpCode (LocalSet n) = 1 + length (leb128Encode (fromIntegral n))
+getSizeOpCode (I32Const n) = 1 + length (leb128Encode (fromIntegral n))
+getSizeOpCode (Call n) = 1 + length (leb128Encode (fromIntegral n))
 getSizeOpCode (If _) = 2
 getSizeOpCode (Loop _) = 2
 getSizeOpCode (Br _) = 2
