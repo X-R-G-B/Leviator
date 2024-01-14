@@ -121,6 +121,7 @@ data Instruction =
   | I32Les
   | I32Ges
   | I32Ne
+  | Loop
   | LocalTee LocalIdx
   | BrIf LabelIdx
   | If
@@ -173,6 +174,7 @@ instance Show Instruction where
   show (Br idx) = "\n\t\t\t\tbr " ++ (show idx)
   show End = "\n\t\t\t\tend"
   show (Block blockType) = "\n\t\t\t\tblock " ++ (show blockType)
+  show (Loop) = "\n\t\t\t\tloop"
 
 -- Module section
 

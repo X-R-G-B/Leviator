@@ -105,7 +105,7 @@ execCall vm cEx funcIdx = cEx { ceStack = newStack }
 execIf :: CurrentExec -> CurrentExec
 execIf cEx@(CurrentExec {ceStack = stack}) = case stackTop stack of
   I_32 0 -> goToEndInstruction cEx
-  I_32 1 -> cEx { crBlockIndents = (crBlockIndents cEx) + 1 }
+  I_32 1 -> addLabel (cEx { crBlockIndents = (crBlockIndents cEx) + 1 })
   I_32 _ -> throw $ RuntimeError "execIf: bad if statement"
   _ -> throw $ RuntimeError "execIf: bad type"
 
@@ -144,13 +144,18 @@ execI32GtU cEx@(CurrentExec {ceStack = stack}) =
       True -> cEx { ceStack = stackPush newStack (I_32 1) }
       False -> cEx { ceStack = stackPush newStack (I_32 0) }
 
+incrementBlockIndent :: CurrentExec -> CurrentExec
+incrementBlockIndent cEx = cEx { crBlockIndents = (crBlockIndents cEx) + 1 }
+
+execBr :: CurrentExec -> LabelIdx -> CurrentExec
+execBr cEx labelIdx = goToLabel cEx labelIdx
+
 execOpCode :: VM -> CurrentExec -> Instruction -> CurrentExec
 execOpCode _ cEx (Unreachable) = throw $ RuntimeError "execOpCode: unreachable"
 execOpCode _ cEx (End) = decrementBlockIdx cEx
 execOpCode _ cEx (Return) = decrementBlockIdx cEx
 execOpCode _ cEx (I32Const val) = execI32Const cEx val
 execOpCode _ cEx (I32Eqz) = execI32Eqz cEx
-execOpCode _ cEx (Block _) = cEx { crBlockIndents = (crBlockIndents cEx) + 1 }
 execOpCode _ cEx (I32Eq) = execI32Eq cEx
 execOpCode _ cEx (I32Add) = execI32Add cEx
 execOpCode _ cEx (I32Sub) = execI32Sub cEx
@@ -166,11 +171,16 @@ execOpCode _ cEx (I32Ges) = execI32GeS cEx
 execOpCode _ cEx (I32Lts) = execI32LtS cEx
 execOpCode _ cEx (I32Les) = execI32LeS cEx
 execOpCode _ cEx (I32Gtu) = execI32GtU cEx
+execOpCode _ cEx (Block _) = incrementBlockIndent (addLabel cEx)
+execOpCode _ cEx (Br labelIdx) = execBr cEx labelIdx
+execOpCode _ cEx (Loop) = incrementBlockIndent (addLabel cEx)
 execOpCode _ cEx _ = cEx
 
 --IF/ELSE
 --LOOP
 --BR
+
+
 
 execOpCodes :: VM -> [Instruction] -> CurrentExec
 execOpCodes vm [] = currentExec vm

@@ -21,7 +21,6 @@ import Leb128 (getLEB128ToI32, getLEB128ToI64)
 import Types (Instruction(..), MemArg(..), BlockType(..))
 
 extractOpCode' :: [Word8] -> ([Word8], BSL.ByteString)
-extractOpCode' (0x03:rest) = ([0x03], BSL.pack rest) 
 extractOpCode' (0x11:rest) = ([0x11], BSL.pack rest)
 extractOpCode' (0x00:rest) = ([0x00], BSL.pack rest)
 extractOpCode' (0x0b:rest) = ([0x0b], BSL.pack rest)
@@ -61,13 +60,13 @@ extractOpCode' (0x47:rest) = ([0x47], BSL.pack rest)
 extractOpCode' (0x3f:0x00:rest) = ([0x3f, 0x00], BSL.pack rest)
 extractOpCode' (0x40:0x00:rest) = ([0x40, 0x00], BSL.pack rest)
 extractOpCode' (0x04:0x40:rest) = ([0x04, 0x40], BSL.pack rest)
-extractOpCode' _ = throw $ WasmError "ExtractOpCode: bad opcode"
+extractOpCode' (0x03:0x40:rest) = ([0x03, 0x40], BSL.pack rest)
+extractOpCode' idx = throw $ WasmError "ExtractOpCode: bad opcode"
 
 extractOpCode :: BSL.ByteString -> ([Word8], BSL.ByteString)
 extractOpCode bytes = extractOpCode' (BSL.unpack bytes)
 
 createInstruction :: [Word8] -> BSL.ByteString -> (Instruction, BSL.ByteString)
-createInstruction [0x03] bytes = (Nop, bytes)
 createInstruction [0x11] bytes = (Nop, bytes)
 createInstruction [0x00] bytes = (Unreachable, bytes)
 createInstruction [0x01] bytes = (Nop, bytes)
@@ -89,6 +88,7 @@ createInstruction [0x4e] bytes = (I32Ges, bytes)
 createInstruction [0x4c] bytes = (I32Les, bytes)
 createInstruction [0x71] bytes = (I32And, bytes)
 createInstruction [0x04, 0x40] bytes = (If, bytes)
+createInstruction [0x03, 0x40] bytes = (Loop, bytes)
 createInstruction [0x3f, 0x00] bytes = (MemorySize, bytes)
 createInstruction [0x40, 0x00] bytes = (MemoryGrow, bytes)
 createInstruction [0x0d] bytes = (\(value, rest) ->
