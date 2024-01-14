@@ -91,6 +91,19 @@ execOpCode _ cEx (I32Sub) = do
   case (value1, value2) of
     (I_32 val1, I_32 val2) -> cEx { ceStack = stackPush newStack2 (I_32 (val1 - val2)) }
     _ -> throw $ WasmError "exec I32Sub: bad type"
+execOpCode _ cEx (I32Mul) = do
+  let (value2, newStack1) = stackPop (ceStack cEx)
+  let (value1, newStack2) = stackPop newStack1
+  case (value1, value2) of
+    (I_32 val1, I_32 val2) -> cEx { ceStack = stackPush newStack2 (I_32 (val1 * val2)) }
+    _ -> throw $ WasmError "exec I32Mul: bad type"
+execOpCode _ cEx (I32Divs) = do
+  let (value2, newStack1) = stackPop (ceStack cEx)
+  let (value1, newStack2) = stackPop newStack1
+  case (value1, value2) of
+    (I_32 _, I_32 0) -> throw $ WasmError "exec I32Divs: division by zero"
+    (I_32 val1, I_32 val2) -> cEx { ceStack = stackPush newStack2 (I_32 (val1 `div` val2)) }
+    _ -> throw $ WasmError "exec I32Divs: bad type"
 execOpCode _ cEx (BrIf labelIdx) = do
   let (value, newStack) = stackPop (ceStack cEx)
   case value of
