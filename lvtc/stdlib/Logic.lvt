@@ -1,0 +1,40 @@
+fn or(a: Bool, b: Bool) -> Bool
+{
+    if (a)
+    {
+        <- True;
+    };
+    <- b;
+};
+
+fn and(a: Bool, b: Bool) -> Bool
+{
+    if (a)
+    {
+        <- b;
+    };
+    <- False;
+};
+
+fn not(a: Bool) -> Bool
+{
+    if (a)
+    {
+        <- False;
+    };
+    <- True;
+};
+
+fn xor(a: Bool, b: Bool) -> Bool
+{
+    if (a)
+    {
+        <- not(b);
+    };
+    <- b;
+};
+
+fn nand(a: Bool, b: Bool) -> Bool
+{
+    <- not(and(a, b));
+};

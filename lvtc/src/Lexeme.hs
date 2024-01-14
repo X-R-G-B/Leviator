@@ -13,6 +13,7 @@ module Lexeme
 replaceN :: Int -> String -> String
 replaceN _ [] = []
 replaceN 0 ('"':xs) = '"' : replaceN 1 xs
+replaceN 1 ('\\':'0':xs) = '\0' : replaceN 1 xs
 replaceN 1 ('\\':'n':xs) = '\n' : replaceN 1 xs
 replaceN 1 ('\\':'t':xs) = '\t' : replaceN 1 xs
 replaceN 1 ('\\':'v':xs) = '\v' : replaceN 1 xs

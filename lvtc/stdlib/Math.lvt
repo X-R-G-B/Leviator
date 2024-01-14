@@ -1,0 +1,57 @@
+fn mod(a: Int, b: Int) -> Int
+{
+    @Int res = a;
+    @Int q = a / b;
+    @Int r = q * b;
+    res = res - r;
+    <- res;
+};
+
+fn square(a: Int) -> Int
+{
+    <- a * a;
+};
+
+fn cube(a: Int) -> Int
+{
+    <- a * a * a;
+};
+
+fn pow(a: Int, b: Int) -> Int
+{
+    @Int res = 1;
+    @Int i = 0;
+
+    while (i < b)
+    {
+        res = res * a;
+        i = i + 1;
+    };
+    <- res;
+};
+
+fn factorial(a: Int) -> Int
+{
+    @Int res = 1;
+    @Int i = 2;
+
+    while (i <= a)
+    {
+        res = res * i;
+        i = i + 1;
+    };
+    <- res;
+};
+
+fn factorialRec(a: Int) -> Int
+{
+    if (a == 0)
+    {
+        <- 1;
+    };
+    if (a == 1)
+    {
+        <- 1;
+    };
+    <- a * factorialRec(a - 1);
+};

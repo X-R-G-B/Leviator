@@ -1,0 +1,30 @@
+fn intToBool(a: Int) -> Bool
+{
+    if (a == 1)
+    {
+        <- True;
+    };
+    <- False;
+};
+
+fn boolToInt(a: Bool) -> Int
+{
+    if (a)
+    {
+        <- 1;
+    };
+    <- 0;
+};
+
+fn charToInt(a: Char) -> Int
+{
+    @Char i = '\0';
+    @Int res = 0;
+
+    while (i < a)
+    {
+        res = res + 1;
+        i = i + 1;
+    };
+    <- res;
+};

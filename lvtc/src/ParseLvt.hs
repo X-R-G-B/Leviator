@@ -95,8 +95,8 @@ parseOperatorOp =
     Var
         <$> (parseString "+" <|> parseString "-" <|> parseString "*"
             <|> parseString "/" <|> parseString "{" <|> parseString "}"
-            <|> parseString "==" <|> parseString "!=" <|> parseString "<"
-            <|> parseString ">" <|> parseString "<=" <|> parseString ">=")
+            <|> parseString "==" <|> parseString "!=" <|> parseString "<=" 
+            <|> parseString ">=" <|> parseString "<" <|> parseString ">")
 
 parseOperator' :: ShuntingYardState -> Parser ShuntingYardState
 parseOperator' sys =
