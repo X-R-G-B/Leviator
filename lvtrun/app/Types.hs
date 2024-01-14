@@ -38,7 +38,8 @@ module Types
   Memory(..),
   OpCode,
   Local(..),
-  BlockType(..)
+  BlockType(..),
+  Value(..)
 ) where
 
 import Data.Int (Int32, Int64)
@@ -189,6 +190,13 @@ instance Show Instruction where
   show _ = throw $ WasmError "Show Instruction: bad instruction"
 
 -- Module section
+
+data Value =
+  I_32 Int32
+  | I_64 Int64
+  | F_32 Float
+  | F_64 Double
+  deriving (Show)
 
 data Local = Local {
   lcIdx :: LocalIdx,

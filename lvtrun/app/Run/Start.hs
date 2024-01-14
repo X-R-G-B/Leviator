@@ -6,9 +6,9 @@
 -}
 
 module Run.Start
-  (
-    start
-  )
+(
+  startExecution
+)
 where
 
 import Data.Int (Int32, Int64)
@@ -19,5 +19,5 @@ import Errors
 import Run.Vm
 import Run.Functions
 
-start :: WasmModule -> IO ()
-start wasmMod = startExecution (createVm wasmMod) (getStartFunctionId (exports wasmMod))
+startExecution :: WasmModule -> IO ()
+startExecution wasmMod = startExecution2 (createVm wasmMod) (getStartFunctionId (exports wasmMod))

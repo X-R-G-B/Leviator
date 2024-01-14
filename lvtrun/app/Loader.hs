@@ -11,10 +11,23 @@ module Loader
 )
 where
 
+import System.Environment (getArgs)
+import Control.Exception (throw)
+
 import Parsing.Parser
 import Types
 import IO
+import Errors
 
-loadModule :: String -> IO WasmModule
-loadModule path = getFileContent path >>= \bytes ->
-  return $ parseModule bytes
+getFilePath :: IO String
+getFilePath = do
+  args <- getArgs
+  case args of
+    [path] -> return path
+    _ -> throw $ UsageError "Usage: ./run <file.wasm>"
+
+loadModule :: IO WasmModule
+loadModule = do
+  filePath <- getFilePath
+  getFileContent filePath >>= \bytes ->
+    return $ parseModule bytes

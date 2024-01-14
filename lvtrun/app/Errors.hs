@@ -6,18 +6,19 @@
 -}
  
 module Errors
-  (
-    CustomException(..),
-    handleException
-  )
+(
+  CustomException(..),
+  handleException
+)
 where
 
 import Control.Exception (Exception(..), SomeException, displayException)
 
 data CustomException =
-    ParseError String |
-    WasmError String |
-    RuntimeError String
+    ParseError String
+    | WasmError String
+    | RuntimeError String
+    | UsageError String
   deriving (Show, Eq)
 
 instance Exception CustomException

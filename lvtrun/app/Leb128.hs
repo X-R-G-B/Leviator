@@ -6,11 +6,11 @@
 -}
 
 module Leb128
-  (
-    getLEB128,
-    extractLEB128,
-    extractLEB1282,
-  )
+(
+  getLEB128,
+  extractLEB128,
+  extractLEB1282,
+)
 where
 
 import Data.Binary.Get
@@ -42,9 +42,8 @@ extractLEB128' = do
 --function that returns the value and the rest of the bytestring
 extractLEB128 :: BS.ByteString -> (Int64, BS.ByteString)
 extractLEB128 bytes = do
-    let (value, size) = runGet extractLEB128' bytes
-    (value, BS.drop size bytes)
-
+  let (value, size) = runGet extractLEB128' bytes
+  (value, BS.drop size bytes)
 
 extractLEB1282' :: Get (Int32, Int64)
 extractLEB1282' = do
@@ -58,5 +57,5 @@ extractLEB1282' = do
 
 extractLEB1282 :: BS.ByteString -> (Int32, BS.ByteString)
 extractLEB1282 bytes = do
-    let (value, size) = runGet extractLEB1282' bytes
-    (value, BS.drop size bytes)
+  let (value, size) = runGet extractLEB1282' bytes
+  (value, BS.drop size bytes)
