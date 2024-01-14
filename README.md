@@ -13,6 +13,12 @@
 // This is a comment
 ```
 
+- **Alias**
+
+```
+alias A = Int;
+```
+
 - **Variables Declaration**
 
 ```hs
