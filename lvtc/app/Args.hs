@@ -22,7 +22,8 @@ data Args = Args {
     action :: Action,
     folderPath :: String,
     outFile :: String,
-    verbose :: Bool
+    verbose :: Bool,
+    folders :: [String]
 }
 
 parseArgs' :: [String] -> Args -> Either Args String
@@ -42,6 +43,10 @@ parseArgs' ["-o"] _ =
     Right "Missing argument for -o"
 parseArgs' ("--verbose":xs) args =
     parseArgs' xs (args {verbose = True})
+parseArgs' ("--lib":x:xs) args =
+    parseArgs' xs (args {folders = x : folders args})
+parseArgs' ("-l":x:xs) args =
+    parseArgs' xs (args {folders = x : folders args})
 parseArgs' (('-':xs):_) _ =
     Right ("Unknown option: " ++ xs)
 parseArgs' (x:xs) args =
@@ -51,7 +56,8 @@ parseArgs :: [String] -> IO (Either Args String)
 parseArgs args =
     getCurrentDirectory >>= \path ->
     return (parseArgs' args (Args {
-        action = Run, folderPath = path, outFile = "out.wasm", verbose = False
+        action = Run, folderPath = path, outFile = "out.wasm",
+        verbose = False, folders = []
     }))
 
 hLine1 :: String
@@ -77,9 +83,11 @@ hLine9 = part1 ++ part2
         part2 = " source code recursively from FOLDER\n"
 hLine10 :: String
 hLine10 = "\t--verbose\n\t\tVerbose mode\n"
+hLine11 :: String
+hLine11 = "\t-l, --lib\n\t\tAdd folder to compiled Leviator source code\n"
 
 printHelp :: IO ()
 printHelp =
     putStr hLine1 >> putStr hLine2 >> putStr hLine3 >> putStr hLine4
     >> putStr hLine5 >> putStr hLine6 >> putStr hLine7 >> putStr hLine8
-    >> putStr hLine9 >> putStr hLine10
+    >> putStr hLine9 >> putStr hLine10 >> putStr hLine11

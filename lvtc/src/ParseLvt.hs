@@ -24,6 +24,7 @@ module ParseLvt
     parseDeclaration,
     parseAssignation,
     parseCond,
+    parseWhile,
     -- Function
     parseFuncDeclaration
 ) where
@@ -94,8 +95,8 @@ parseOperatorOp =
     Var
         <$> (parseString "+" <|> parseString "-" <|> parseString "*"
             <|> parseString "/" <|> parseString "{" <|> parseString "}"
-            <|> parseString "==" <|> parseString "!=" <|> parseString "<"
-            <|> parseString ">" <|> parseString "<=" <|> parseString ">=")
+            <|> parseString "==" <|> parseString "!=" <|> parseString "<=" 
+            <|> parseString ">=" <|> parseString "<" <|> parseString ">")
 
 parseOperator' :: ShuntingYardState -> Parser ShuntingYardState
 parseOperator' sys =
@@ -269,9 +270,19 @@ parseCond = Parser f
                     Nothing -> Nothing
                     Just (ifBlock, ys) -> runParser (parseCond' val ifBlock) ys
 
+parseWhileComp :: Parser Value
+parseWhileComp = parseString "while(" *> parseValue <* parseString ")"
+
+parseWhileBlock :: Parser [Instruction]
+parseWhileBlock = parseString "{" *> parseInstructions <* parseString "}"
+
+parseWhile :: Parser Instruction
+parseWhile = While <$> ((,) <$> parseWhileComp <*> parseWhileBlock)
+
 parseInstruction :: Parser Instruction
 parseInstruction =
     (parseCond
+    <|> parseWhile
     <|> parseReturn
     <|> parseDeclaration
     <|> parseAssignation
@@ -299,7 +310,7 @@ parseFuncVars =
         <|> parseFuncVar)
     <* parseChar ')'
 
-parseFuncName :: Parser (IsFuncExport, Symbol)
+parseFuncName :: Parser (Export, Symbol)
 parseFuncName =
     ((\x -> (True, x)) <$> (parseString "export fn " *> parseVarName))
     <|> ((\x -> (False, x)) <$> (parseString "fn " *> parseVarName))

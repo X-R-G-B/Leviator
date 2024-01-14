@@ -21,6 +21,7 @@ import WatLikeToWat (watsLikeToWat)
 import Wasm (Wasm)
 import WatToWasm (watToWasm)
 import WriteWasm (writeWasm)
+import TypeCheck (typeCheck)
 import Args
 
 import System.Directory (listDirectory)
@@ -67,6 +68,13 @@ listAllFiles v path =
         p True = putStrLn ("Compiling Folder: " ++ show path)
         p False = return ()
 
+listsAllFiles :: Bool -> [FilePath] -> IO [FilePath]
+listsAllFiles _ [] = return []
+listsAllFiles v (f:fs) =
+    listAllFiles v f
+        >>= (\files -> listsAllFiles v fs
+            >>= (\others -> return (files ++ others)))
+
 getAllFunc :: Bool -> [Expression] -> IO [FuncDeclaration]
 getAllFunc _ [] = return []
 getAllFunc v ((Expression.Function str):expressions) =
@@ -83,9 +91,9 @@ getAllFunc v (x : expressions) = p v >> getAllFunc v expressions
 checkAst :: Bool -> IO [FuncDeclaration] -> IO [FuncDeclaration]
 checkAst _ funcsIo =
     funcsIo
-        >>= (\funcs -> case Just funcs of
-            Just f -> return f
-            Nothing -> fail "Invalid Code")
+        >>= (\funcs -> case typeCheck funcs of
+            True -> return funcs
+            False -> fail "Invalid Code")
 
 transformToWatLike :: Bool -> IO [FuncDeclaration] -> IO [FuncDeclare]
 transformToWatLike v funcsIo =
@@ -119,10 +127,10 @@ showDebug True wasm = print wasm
 showDebug False _ = return ()
 
 run :: Args -> IO ()
-run (Args Run fPath oFile v) =
+run (Args Run fPath oFile v fPaths) =
     transformedWasm >>= \wasm -> (showDebug v wasm >> writeWasm wasm oFile)
     where
-        expressions = listAllFiles v fPath >>= getFilesExpression v
+        expressions = listsAllFiles v (fPath:fPaths) >>= getFilesExpression v
         funcs = expressions >>= getAllFunc v
         transformedWatLike = transformToWatLike v (checkAst v funcs)
         transformedWat = transformToWat v transformedWatLike

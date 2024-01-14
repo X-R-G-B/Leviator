@@ -102,12 +102,77 @@ execCall vm cEx funcIdx = cEx { ceStack = newStack }
     currentStack = ceStack cEx
     res = ceResults (currentExec newVm)
 
+doesElseExist' :: [Instruction] -> Bool
+doesElseExist' [] = False
+doesElseExist' (Else:_) = True
+doesElseExist' (_:rest) = doesElseExist' rest
+
+doesElseExist :: CurrentExec -> Bool
+doesElseExist cEx = doesElseExist' (drop (ceInstIdx cEx) (ceInstructions cEx))
+
+getElseIndex' :: [Instruction] -> Int -> Int
+getElseIndex' [] _ = throw $ RuntimeError "getElseIndex: missing else"
+getElseIndex' (Else:_) idx = idx
+getElseIndex' (_:rest) idx = getElseIndex' rest (idx + 1)
+
+getElseIndex :: CurrentExec -> Int
+getElseIndex cEx = getElseIndex' (drop (ceInstIdx cEx) (ceInstructions cEx)) 0
+
+executeElse :: CurrentExec -> CurrentExec
+executeElse cEx@(CurrentExec {ceStack = stack}) =
+  case doesElseExist cEx of
+    False -> cEx
+    True -> cEx { ceInstIdx = getElseIndex cEx }
+
 execIf :: CurrentExec -> CurrentExec
 execIf cEx@(CurrentExec {ceStack = stack}) = case stackTop stack of
   I_32 0 -> goToEndInstruction cEx
-  I_32 1 -> cEx { crBlockIndents = (crBlockIndents cEx) + 1 }
+  I_32 1 ->
+    executeElse (addLabel (cEx { crBlockIndents = (crBlockIndents cEx) + 1 }))
   I_32 _ -> throw $ RuntimeError "execIf: bad if statement"
   _ -> throw $ RuntimeError "execIf: bad type"
+
+execI32GtS :: CurrentExec -> CurrentExec
+execI32GtS cEx@(CurrentExec {ceStack = stack}) =
+  case (stackPopN stack 2) of
+    ([I_32 val2, I_32 val1], newStack) -> case (val1 > val2) of
+      True -> cEx { ceStack = stackPush newStack (I_32 1) }
+      False -> cEx { ceStack = stackPush newStack (I_32 0) }
+
+execI32GeS :: CurrentExec -> CurrentExec
+execI32GeS cEx@(CurrentExec {ceStack = stack}) =
+  case (stackPopN stack 2) of
+    ([I_32 val2, I_32 val1], newStack) -> case (val1 >= val2) of
+      True -> cEx { ceStack = stackPush newStack (I_32 1) }
+      False -> cEx { ceStack = stackPush newStack (I_32 0) }
+
+execI32LtS :: CurrentExec -> CurrentExec
+execI32LtS cEx@(CurrentExec {ceStack = stack}) =
+  case (stackPopN stack 2) of
+    ([I_32 val2, I_32 val1], newStack) -> case (val1 < val2) of
+      True -> cEx { ceStack = stackPush newStack (I_32 1) }
+      False -> cEx { ceStack = stackPush newStack (I_32 0) }
+
+execI32LeS :: CurrentExec -> CurrentExec
+execI32LeS cEx@(CurrentExec {ceStack = stack}) =
+  case (stackPopN stack 2) of
+    ([I_32 val2, I_32 val1], newStack) -> case (val1 <= val2) of
+      True -> cEx { ceStack = stackPush newStack (I_32 1) }
+      False -> cEx { ceStack = stackPush newStack (I_32 0) }
+
+execI32GtU :: CurrentExec -> CurrentExec
+execI32GtU cEx@(CurrentExec {ceStack = stack}) =
+  case (stackPopN stack 2) of
+    ([I_32 val2, I_32 val1], newStack) ->
+      case ((fromIntegral val1) > (fromIntegral val2)) of
+        True -> cEx { ceStack = stackPush newStack (I_32 1) }
+        False -> cEx { ceStack = stackPush newStack (I_32 0) }
+
+incrementBlockIndent :: CurrentExec -> CurrentExec
+incrementBlockIndent cEx = cEx { crBlockIndents = (crBlockIndents cEx) + 1 }
+
+execBr :: CurrentExec -> LabelIdx -> CurrentExec
+execBr cEx labelIdx = goToLabel cEx labelIdx
 
 execOpCode :: VM -> CurrentExec -> Instruction -> CurrentExec
 execOpCode _ cEx (Unreachable) = throw $ RuntimeError "execOpCode: unreachable"
@@ -115,7 +180,6 @@ execOpCode _ cEx (End) = decrementBlockIdx cEx
 execOpCode _ cEx (Return) = decrementBlockIdx cEx
 execOpCode _ cEx (I32Const val) = execI32Const cEx val
 execOpCode _ cEx (I32Eqz) = execI32Eqz cEx
-execOpCode _ cEx (Block _) = cEx { crBlockIndents = (crBlockIndents cEx) + 1 }
 execOpCode _ cEx (I32Eq) = execI32Eq cEx
 execOpCode _ cEx (I32Add) = execI32Add cEx
 execOpCode _ cEx (I32Sub) = execI32Sub cEx
@@ -126,7 +190,16 @@ execOpCode _ cEx (SetLocal localIdx) = execSetLocal cEx localIdx
 execOpCode _ cEx (BrIf labelIdx) = execBrIf cEx
 execOpCode vm cEx (Call funcIdx) = execCall vm cEx funcIdx
 execOpCode _ cEx (If) = execIf cEx
-execOpCode _ cEx _ = cEx
+execOpCode _ cEx (I32Gts) = execI32GtS cEx
+execOpCode _ cEx (I32Ges) = execI32GeS cEx
+execOpCode _ cEx (I32Lts) = execI32LtS cEx
+execOpCode _ cEx (I32Les) = execI32LeS cEx
+execOpCode _ cEx (I32Gtu) = execI32GtU cEx
+execOpCode _ cEx (Block _) = incrementBlockIndent (addLabel cEx)
+execOpCode _ cEx (Br labelIdx) = execBr cEx labelIdx
+execOpCode _ cEx (Loop) = incrementBlockIndent (addLabel cEx)
+execOpCode _ cEx (Else) = throw $ RuntimeError "elseWithoutIf"
+execOpCode _ cEx _ = throw $ RuntimeError "execOpCode: not implemented"
 
 execOpCodes :: VM -> [Instruction] -> CurrentExec
 execOpCodes vm [] = currentExec vm
