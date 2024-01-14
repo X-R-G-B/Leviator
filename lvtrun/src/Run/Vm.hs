@@ -111,40 +111,34 @@ execOpCodes vm instructions
   where cEx = currentExec vm
 
 execFunction :: VM -> VM
-execFunction vm = do
-  let newCEx = execOpCodes vm (ceInstructions (currentExec vm))
-  vm { currentExec = newCEx, vmStack = (pushResults (vmStack vm) (ceStack newCEx) (ceResults newCEx)) }
+execFunction vm = vm { currentExec = newCEx, vmStack = stackWithRes }
+  where
+    newCEx = execOpCodes vm (ceInstructions (currentExec vm))
+    stackWithRes = pushResults (vmStack vm) (ceStack newCEx)
+      (ceResults newCEx)
 
 execFunctionWithIdx :: VM -> FuncIdx -> Stack -> VM
-execFunctionWithIdx vm funcIdx currentStack = do
-  let function = getFunctionFromId funcIdx (functions (wasmModule vm))
-  let funcTypee = getFuncTypeFromId (funcType function) (types (wasmModule vm))
-  let (newLocals, newStack) = initLocals (locals function) (params funcTypee) currentStack
-  let cexec = CurrentExec {
-    ceLocals = newLocals,
-    ceStack = newStack,
-    ceInstructions = body function,
-    ceInstIdx = 0,
-    ceLabels = [],
-    ceParams = params funcTypee,
-    ceResults = results funcTypee,
-    crBlockIndents = 0
-  }
+execFunctionWithIdx vm funcIdx currentStack =
   execFunction vm { currentExec = cexec }
+  where
+    function = getFunctionFromId funcIdx (functions (wasmModule vm))
+    funcTypee = getFuncTypeFromId (funcType function) (types (wasmModule vm))
+    (newLocals, newStack) =
+      initLocals (locals function) (params funcTypee) currentStack
+    cexec = createEmptyExec {
+      ceLocals = newLocals, ceStack = newStack, ceInstructions = body function,
+      ceParams = params funcTypee, ceResults = results funcTypee}
 
 runMain :: VM -> FuncIdx -> Stack
-runMain vm funcIdx = do
-  let function = getFunctionFromId funcIdx (functions (wasmModule vm))
-  let funcTypee = getFuncTypeFromId (funcType function) (types (wasmModule vm))
-  let cexec = CurrentExec {
-    ceLocals = createEmptyLocals [] (locals function),
-    ceStack = [],
-    ceInstructions = body function,
-    ceInstIdx = 0,
-    ceLabels = [],
-    ceParams = params funcTypee,
-    ceResults = results funcTypee,
-    crBlockIndents = 0
-  }
-  let newVm = execFunction vm { currentExec = cexec }
+runMain vm funcIdx =
   pushResults [] (vmStack newVm) (ceResults (currentExec newVm))
+  where
+    function = getFunctionFromId funcIdx (functions (wasmModule vm))
+    funcTypee = getFuncTypeFromId (funcType function) (types (wasmModule vm))
+    cexec = createEmptyExec {
+      ceLocals = createEmptyLocals [] (locals function),
+      ceInstructions = body function,
+      ceParams = params funcTypee,
+      ceResults = results funcTypee
+    }
+    newVm = execFunction vm { currentExec = cexec }

@@ -11,7 +11,8 @@ module Run.Types
   InstMemory(..),
   VM(..),
   createVm,
-  incrementInstIdx
+  incrementInstIdx,
+  createEmptyExec
 )
 where
 
@@ -58,3 +59,15 @@ createVm wasmMod = VM { vmStack = [],
 
 incrementInstIdx :: CurrentExec -> CurrentExec
 incrementInstIdx cEx = cEx { ceInstIdx = ceInstIdx cEx + 1 }
+
+createEmptyExec :: CurrentExec
+createEmptyExec = CurrentExec {
+  ceLocals = [],
+  ceStack = [],
+  ceInstructions = [],
+  ceInstIdx = 0,
+  ceLabels = [],
+  ceParams = [],
+  ceResults = [],
+  crBlockIndents = 0
+}
