@@ -132,9 +132,6 @@ data Instruction =
   | MemorySize
   | MemoryGrow
   deriving (Eq)
---IF/ELSE
---LOOP
---BR
 
 instance Show Instruction where
   show Unreachable = "\n\t\t\t\tunreachable"
@@ -176,6 +173,7 @@ instance Show Instruction where
   show End = "\n\t\t\t\tend"
   show (Block blockType) = "\n\t\t\t\tblock " ++ (show blockType)
   show (Loop) = "\n\t\t\t\tloop"
+  show (Else) = "\n\t\t\t\telse"
 
 -- Module section
 
