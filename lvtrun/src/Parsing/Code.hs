@@ -12,8 +12,8 @@ module Parsing.Code
 where
 
 import Data.Int (Int64)
-import Control.Exception (throw)
 import Control.Monad (when)
+import Control.Exception (throw)
 import qualified Data.ByteString.Lazy as BSL
 
 import Types
@@ -80,10 +80,9 @@ parseFunctions _ [] = throw $ WasmError "parseFunctions: bad section"
 parseFunctions (x:xs) (y:ys) = parseFunction x y : parseFunctions xs ys
 
 getFuncCode :: Section -> [Function] -> [Function]
-getFuncCode (Section CodeID _ content) functions = do
-  let (nbFunc, rest) = getLEB128ToI64 content
-  let funcCodes = diviseBytes rest
-  when (nbFunc /= fromIntegral (length funcCodes)) $
-    throw $ WasmError "getFuncCode: bad section"
+getFuncCode (Section CodeID _ content) functions =
   parseFunctions funcCodes functions
+  where
+    (nbFunc, rest) = getLEB128ToI64 content
+    funcCodes = diviseBytes rest
 getFuncCode _ _ = throw $ WasmError "getFuncCode: bad section"
