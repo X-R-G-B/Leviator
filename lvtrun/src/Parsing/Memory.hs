@@ -18,28 +18,28 @@ import Leb128 (getLEB128ToI32)
 import Errors (CustomException(..))
 
 parseMinMax :: BS.ByteString -> Memory
-parseMinMax content
+parseMinMax cntent
   | endBs /= BS.empty = throw $ WasmError "parseMinMax: bad memory section"
-  | otherwise = Limit {lMin = min, lMax = Just max}
+  | otherwise = Limit {lMin = memMin, lMax = Just memMax}
   where
-    (min, rest) = getLEB128ToI32 content
-    (max, endBs) = getLEB128ToI32 rest
+    (memMin, rest) = getLEB128ToI32 cntent
+    (memMax, endBs) = getLEB128ToI32 rest
 
 parseMin :: BS.ByteString -> Memory
-parseMin content
+parseMin cntent
   | endBs /= BS.empty = throw $ WasmError "parseMin: bad memory section"
-  | otherwise = Limit {lMin = min, lMax = Nothing}
+  | otherwise = Limit {lMin = memMin, lMax = Nothing}
   where
-    (min, endBs) = getLEB128ToI32 content
+    (memMin, endBs) = getLEB128ToI32 cntent
 
 parseMemory :: BS.ByteString -> Memory
-parseMemory content
-  | head (BS.unpack content) == 0x01 = parseMinMax (BS.drop 1 content)
-  | head (BS.unpack content) == 0x00 = parseMin (BS.drop 1 content)
+parseMemory cntent
+  | head (BS.unpack cntent) == 0x01 = parseMinMax (BS.drop 1 cntent)
+  | head (BS.unpack cntent) == 0x00 = parseMin (BS.drop 1 cntent)
   | otherwise = throw $ WasmError "parseMemory: bad memory section"
 
 getMemories :: Section -> Memory
-getMemories (Section MemoryID _ content)
-  | head (BS.unpack content) == 0x01 = parseMemory (BS.drop 1 content)
+getMemories (Section MemoryID _ cntent)
+  | head (BS.unpack cntent) == 0x01 = parseMemory (BS.drop 1 cntent)
   | otherwise = throw $ WasmError "getMemories: v1 allow 1 memory only"
 getMemories _ = throw $ WasmError "getMemories: bad memory section"
