@@ -1,0 +1,14 @@
+fn recursive(n: Int) -> Int
+{
+    @Int a = n - 1;
+    if (a == 0)
+    {
+        <- 1;
+    };
+    <- (n * recursive(a));
+};
+
+export fn start() -> Int
+{
+    <- recursive(5);
+};
