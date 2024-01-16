@@ -12,7 +12,6 @@ module Parsing.Code
 where
 
 import Data.Int (Int64)
-import Control.Monad (when)
 import Control.Exception (throw)
 import qualified Data.ByteString.Lazy as BSL
 
@@ -26,29 +25,29 @@ diviseBytes bytes
   | BSL.length bytes == 0 = []
   | otherwise = code : diviseBytes rest2
   where
-    (size, rest) = getLEB128ToI64 bytes
-    (code, rest2) = BSL.splitAt size rest
+    (sze, rest) = getLEB128ToI64 bytes
+    (code, rest2) = BSL.splitAt sze rest
 
 createLocal :: LocalIdx -> TypeName -> Local
 createLocal idx typee = Local {lcIdx = idx, lcType = typee}
 
 extractLocal :: Int64 -> BSL.ByteString -> ([Local], BSL.ByteString)
-extractLocal id bytes
+extractLocal idtf bytes
   | BSL.length bytes == 0 = throw $ WasmError "extractLocal: bad section"
-  | otherwise = (locals, BSL.drop 1 rest)
+  | otherwise = (lcals, BSL.drop 1 rest)
   where
     (nb, rest) = getLEB128ToI64 bytes
     typee = getTypeFromByte (head (BSL.unpack (BSL.take 1 rest)))
-    locals = map (\x -> createLocal (fromIntegral id) typee) [0..nb - 1]
+    lcals = map (\_ -> createLocal (fromIntegral idtf) typee) [0..nb - 1]
 
 extractLocals :: Int64 -> Int64 -> BSL.ByteString -> ([Local], BSL.ByteString)
-extractLocals id idMax bytes
-  | id >= idMax = ([], bytes)
+extractLocals idtf idMax bytes
+  | idtf >= idMax = ([], bytes)
   | BSL.length bytes == 0 = ([], bytes)
-  | otherwise = (local ++ locals, rest2)
+  | otherwise = (local ++ lcals, rest2)
   where
-    (local, rest) = extractLocal id bytes
-    (locals, rest2) = extractLocals (id + 1) idMax rest
+    (local, rest) = extractLocal idtf bytes
+    (lcals, rest2) = extractLocals (idtf + 1) idMax rest
 
 -------------------------
 
@@ -80,9 +79,9 @@ parseFunctions _ [] = throw $ WasmError "parseFunctions: bad section"
 parseFunctions (x:xs) (y:ys) = parseFunction x y : parseFunctions xs ys
 
 getFuncCode :: Section -> [Function] -> [Function]
-getFuncCode (Section CodeID _ content) functions =
-  parseFunctions funcCodes functions
+getFuncCode (Section CodeID _ cntent) fctns =
+  parseFunctions funcCodes fctns
   where
-    (nbFunc, rest) = getLEB128ToI64 content
+    (_, rest) = getLEB128ToI64 cntent
     funcCodes = diviseBytes rest
 getFuncCode _ _ = throw $ WasmError "getFuncCode: bad section"

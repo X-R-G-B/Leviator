@@ -20,29 +20,29 @@ import Leb128 (getLEB128ToI64)
 import Errors (CustomException(..))
 
 getVectorSize :: Bs.ByteString -> (Int64, Bs.ByteString)
-getVectorSize content = getLEB128ToI64 content
+getVectorSize cntent = getLEB128ToI64 cntent
 
 extractTypes :: (Int64, Bs.ByteString) -> ([TypeName], Bs.ByteString)
-extractTypes (0, content) = ([], content)
-extractTypes (idx, content) =
-  (getTypeFromByte (head $ Bs.unpack content) : types, rest)
-    where (types, rest) = extractTypes (idx - 1, Bs.drop 1 content)
+extractTypes (0, cntent) = ([], cntent)
+extractTypes (idx, cntent) =
+  (getTypeFromByte (head $ Bs.unpack cntent) : typs, rest)
+    where (typs, rest) = extractTypes (idx - 1, Bs.drop 1 cntent)
 
 parseFuncType :: Int32 -> Bs.ByteString -> (FuncType, Bs.ByteString)
-parseFuncType id content = (FuncType id params results, rest2)
+parseFuncType idtfier cntent = (FuncType idtfier prams res, rest2)
   where
-    (params, rest) = extractTypes (getVectorSize content)
-    (results, rest2) = extractTypes (getVectorSize rest)
+    (prams, rest) = extractTypes (getVectorSize cntent)
+    (res, rest2) = extractTypes (getVectorSize rest)
 
 parseFuncTypes :: Int32 -> Int64 -> Bs.ByteString -> [FuncType]
-parseFuncTypes idx maxIdx content
+parseFuncTypes idx maxIdx cntent
   | idx >= (fromIntegral maxIdx) = []
-  | head (Bs.unpack content) == 0x60 =
-    funcType : parseFuncTypes (idx + 1) maxIdx rest
+  | head (Bs.unpack cntent) == 0x60 =
+    fnType : parseFuncTypes (idx + 1) maxIdx rest
   | otherwise = throw $ WasmError "ParseFuncTypes: 0x60 expected for function"
-  where (funcType, rest) = parseFuncType idx (Bs.drop 1 content)
+  where (fnType, rest) = parseFuncType idx (Bs.drop 1 cntent)
 
 getFuncTypes :: Section -> [FuncType]
-getFuncTypes (Section TypeID _ content) = parseFuncTypes 0 vecSize rest
-  where (vecSize, rest) = getLEB128ToI64 content
+getFuncTypes (Section TypeID _ cntent) = parseFuncTypes 0 vecSize rest
+  where (vecSize, rest) = getLEB128ToI64 cntent
 getFuncTypes _ = throw $ WasmError "getFuncTypes: bad section"
