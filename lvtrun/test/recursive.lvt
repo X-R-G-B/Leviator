@@ -5,7 +5,7 @@ fn recursive(n: Int) -> Int
     {
         <- 1;
     };
-    <- (n * recursive(a));
+    <- n * recursive(a);
 };
 
 export fn start() -> Int
