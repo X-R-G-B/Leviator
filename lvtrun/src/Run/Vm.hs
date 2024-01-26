@@ -87,17 +87,17 @@ execSetLocal cEx localIdx = cEx { ceStack = newStack,
   ceLocals = setLocalWithId 0 (ceLocals cEx) value localIdx}
   where (value, newStack) = stackPop (ceStack cEx)
 
-execBrIf :: CurrentExec -> CurrentExec
-execBrIf cEx@(CurrentExec {ceStack = stack}) =
+execBrIf :: CurrentExec -> LabelIdx -> CurrentExec
+execBrIf cEx@(CurrentExec {ceStack = stack}) lbIdx =
   case (stackTop stack) of
-    I_32 0 -> cEx
-    I_32 _ -> cEx { ceInstIdx = (ceInstIdx cEx) }
-    _ -> throw $ RuntimeError "exec brIf: bad type"
+    I_32 0 -> incrementInstIdx cEx
+    I_32 1 -> goToLabel cEx lbIdx
+    _ -> throw $ RuntimeError "execBrIf: bad type"
 
 execCall :: VM -> CurrentExec -> FuncIdx -> CurrentExec
-execCall vm cEx funcIdx = cEx { ceStack = newStack }
+execCall vm cEx fnIdx = cEx { ceStack = newStack }
   where
-    newVm = execFunctionWithIdx vm funcIdx currentStack
+    newVm = execFunctionWithIdx vm fnIdx currentStack
     newStack = pushResults currentStack (vmStack newVm) res
     currentStack = ceStack cEx
     res = ceResults (currentExec newVm)
@@ -119,7 +119,7 @@ getElseIndex :: CurrentExec -> Int
 getElseIndex cEx = getElseIndex' (drop (ceInstIdx cEx) (ceInstructions cEx)) 0
 
 executeElse :: CurrentExec -> CurrentExec
-executeElse cEx@(CurrentExec {ceStack = stack}) =
+executeElse cEx =
   case doesElseExist cEx of
     False -> cEx
     True -> cEx { ceInstIdx = getElseIndex cEx }
@@ -138,6 +138,7 @@ execI32GtS cEx@(CurrentExec {ceStack = stack}) =
     ([I_32 val2, I_32 val1], newStack) -> case (val1 > val2) of
       True -> cEx { ceStack = stackPush newStack (I_32 1) }
       False -> cEx { ceStack = stackPush newStack (I_32 0) }
+    _ -> throw $ RuntimeError "exec I32GtS: bad type"
 
 execI32GeS :: CurrentExec -> CurrentExec
 execI32GeS cEx@(CurrentExec {ceStack = stack}) =
@@ -145,6 +146,7 @@ execI32GeS cEx@(CurrentExec {ceStack = stack}) =
     ([I_32 val2, I_32 val1], newStack) -> case (val1 >= val2) of
       True -> cEx { ceStack = stackPush newStack (I_32 1) }
       False -> cEx { ceStack = stackPush newStack (I_32 0) }
+    _ -> throw $ RuntimeError "exec I32GeS: bad type"
 
 execI32LtS :: CurrentExec -> CurrentExec
 execI32LtS cEx@(CurrentExec {ceStack = stack}) =
@@ -152,6 +154,7 @@ execI32LtS cEx@(CurrentExec {ceStack = stack}) =
     ([I_32 val2, I_32 val1], newStack) -> case (val1 < val2) of
       True -> cEx { ceStack = stackPush newStack (I_32 1) }
       False -> cEx { ceStack = stackPush newStack (I_32 0) }
+    _ -> throw $ RuntimeError "exec I32LtS: bad type"
 
 execI32LeS :: CurrentExec -> CurrentExec
 execI32LeS cEx@(CurrentExec {ceStack = stack}) =
@@ -159,14 +162,16 @@ execI32LeS cEx@(CurrentExec {ceStack = stack}) =
     ([I_32 val2, I_32 val1], newStack) -> case (val1 <= val2) of
       True -> cEx { ceStack = stackPush newStack (I_32 1) }
       False -> cEx { ceStack = stackPush newStack (I_32 0) }
+    _ -> throw $ RuntimeError "exec I32LeS: bad type"
 
 execI32GtU :: CurrentExec -> CurrentExec
 execI32GtU cEx@(CurrentExec {ceStack = stack}) =
   case (stackPopN stack 2) of
     ([I_32 val2, I_32 val1], newStack) ->
-      case ((fromIntegral val1) > (fromIntegral val2)) of
+      case (val2 > val1) of
         True -> cEx { ceStack = stackPush newStack (I_32 1) }
         False -> cEx { ceStack = stackPush newStack (I_32 0) }
+    _ -> throw $ RuntimeError "exec I32GtU: bad type"
 
 incrementBlockIndent :: CurrentExec -> CurrentExec
 incrementBlockIndent cEx = cEx { crBlockIndents = (crBlockIndents cEx) + 1 }
@@ -175,7 +180,7 @@ execBr :: CurrentExec -> LabelIdx -> CurrentExec
 execBr cEx labelIdx = goToLabel cEx labelIdx
 
 execOpCode :: VM -> CurrentExec -> Instruction -> CurrentExec
-execOpCode _ cEx (Unreachable) = throw $ RuntimeError "execOpCode: unreachable"
+execOpCode _ _ (Unreachable) = throw $ RuntimeError "execOpCode: unreachable"
 execOpCode _ cEx (End) = decrementBlockIdx cEx
 execOpCode _ cEx (Return) = decrementBlockIdx cEx
 execOpCode _ cEx (I32Const val) = execI32Const cEx val
@@ -187,8 +192,8 @@ execOpCode _ cEx (I32Mul) = execI32Mul cEx
 execOpCode _ cEx (I32Divs) = execI32Divs cEx
 execOpCode _ cEx (GetLocal localIdx) = execGetLocal cEx localIdx
 execOpCode _ cEx (SetLocal localIdx) = execSetLocal cEx localIdx
-execOpCode _ cEx (BrIf labelIdx) = execBrIf cEx
-execOpCode vm cEx (Call funcIdx) = execCall vm cEx funcIdx
+execOpCode _ cEx (BrIf labelIdx) = execBrIf cEx labelIdx 
+execOpCode vm cEx (Call fnIdx) = execCall vm cEx fnIdx
 execOpCode _ cEx (If) = execIf cEx
 execOpCode _ cEx (I32Gts) = execI32GtS cEx
 execOpCode _ cEx (I32Ges) = execI32GeS cEx
@@ -198,8 +203,8 @@ execOpCode _ cEx (I32Gtu) = execI32GtU cEx
 execOpCode _ cEx (Block _) = incrementBlockIndent (addLabel cEx)
 execOpCode _ cEx (Br labelIdx) = execBr cEx labelIdx
 execOpCode _ cEx (Loop) = incrementBlockIndent (addLabel cEx)
-execOpCode _ cEx (Else) = throw $ RuntimeError "elseWithoutIf"
-execOpCode _ cEx _ = throw $ RuntimeError "execOpCode: not implemented"
+execOpCode _ _ (Else) = throw $ RuntimeError "elseWithoutIf"
+execOpCode _ _ _ = throw $ RuntimeError "execOpCode: not implemented"
 
 execOpCodes :: VM -> [Instruction] -> CurrentExec
 execOpCodes vm [] = currentExec vm
@@ -222,10 +227,10 @@ execFunction vm = vm { currentExec = newCEx, vmStack = stackWithRes }
       (ceResults newCEx)
 
 execFunctionWithIdx :: VM -> FuncIdx -> Stack -> VM
-execFunctionWithIdx vm funcIdx currentStack =
+execFunctionWithIdx vm fnIdx currentStack =
   execFunction vm { currentExec = cexec }
   where
-    function = getFunctionFromId funcIdx (functions (wasmModule vm))
+    function = getFunctionFromId fnIdx (functions (wasmModule vm))
     funcTypee = getFuncTypeFromId (funcType function) (types (wasmModule vm))
     (newLocals, newStack) =
       initLocals (locals function) (params funcTypee) currentStack
@@ -234,9 +239,9 @@ execFunctionWithIdx vm funcIdx currentStack =
       ceParams = params funcTypee, ceResults = results funcTypee}
 
 runMain :: VM -> FuncIdx -> Stack
-runMain vm funcIdx = pushResults[](vmStack newVm)(ceResults(currentExec newVm))
+runMain vm fnIdx = pushResults[](vmStack newVm)(ceResults(currentExec newVm))
   where
-    function = getFunctionFromId funcIdx (functions (wasmModule vm))
+    function = getFunctionFromId fnIdx (functions (wasmModule vm))
     funcTypee = getFuncTypeFromId (funcType function) (types (wasmModule vm))
     cexec = createEmptyExec {
       ceLocals = createEmptyLocals [] (locals function),

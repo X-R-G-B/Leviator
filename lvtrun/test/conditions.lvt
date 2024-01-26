@@ -1,0 +1,16 @@
+export fn start() -> Int
+{
+    @Int one = 15;
+    @Int two = 5;
+    @Int three = 0;
+    if (one == 5)
+    {
+        three = 15;
+    };
+    if (two == 5)
+    {
+        three = 5;
+    };
+    // Return 5
+    <- three;
+};

@@ -1,0 +1,11 @@
+fn add(a: Int, b: Int) -> Int
+{
+    @Int one = a;
+    @Int two = b;
+    <- one + two;
+};
+
+export fn start() -> Int
+{
+    <- add(10, 5);
+};

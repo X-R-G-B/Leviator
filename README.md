@@ -3,9 +3,20 @@
     <h1>🐲 Leviator</h1>
     <p>The opinionated programing language</p>
     <br><br>
+    <p><i>Leviator is compiled to wasm binary format.</i></p>
 </div>
 
-## Documentation
+> [!NOTE]  
+> This is a student project (EPITECH school).
+> It is not intended to continue this project.
+
+## Language Syntax
+
+> [!IMPORTANT]  
+> StringView are not supported.
+
+> [!IMPORTANT]  
+> There is no list/array in this language.
 
 - **Comentary**
 

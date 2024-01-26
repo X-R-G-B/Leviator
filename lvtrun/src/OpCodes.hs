@@ -62,7 +62,7 @@ extractOpCode' (0x3f:0x00:rest) = ([0x3f, 0x00], BSL.pack rest)
 extractOpCode' (0x40:0x00:rest) = ([0x40, 0x00], BSL.pack rest)
 extractOpCode' (0x04:0x40:rest) = ([0x04, 0x40], BSL.pack rest)
 extractOpCode' (0x03:0x40:rest) = ([0x03, 0x40], BSL.pack rest)
-extractOpCode' idx = throw $ WasmError "ExtractOpCode: bad opcode"
+extractOpCode' _ = throw $ WasmError "ExtractOpCode: bad opcode"
 
 extractOpCode :: BSL.ByteString -> ([Word8], BSL.ByteString)
 extractOpCode bytes = extractOpCode' (BSL.unpack bytes)
@@ -117,16 +117,16 @@ createInstruction [0x21] bytes = (\(value, rest) ->
   (SetLocal value, rest)) (getLEB128ToI32 bytes)
 createInstruction [0x44] bytes = (\(value, rest) ->
   (F64Const (fromIntegral value), rest)) (getLEB128ToI64 bytes)
-createInstruction [0x28] bytes = (\(align, rest) ->
-  (\(offset, rest2) -> (I32Load (MemArg offset align), rest2))
+createInstruction [0x28] bytes = (\(alignn, rest) ->
+  (\(fset, rest2) -> (I32Load (MemArg fset alignn), rest2))
     (getLEB128ToI32 rest)) (getLEB128ToI32 bytes)
-createInstruction [0x29] bytes = (\(align, rest) ->
-  (\(offset, rest2) -> (I64Load (MemArg offset align), rest2))
+createInstruction [0x29] bytes = (\(alignn, rest) ->
+  (\(fset, rest2) -> (I64Load (MemArg fset alignn), rest2))
     (getLEB128ToI32 rest)) (getLEB128ToI32 bytes)
-createInstruction [0x36] bytes = (\(align, rest) ->
-  (\(offset, rest2) -> (I32Store (MemArg offset align), rest2))
+createInstruction [0x36] bytes = (\(alignn, rest) ->
+  (\(fset, rest2) -> (I32Store (MemArg fset alignn), rest2))
     (getLEB128ToI32 rest)) (getLEB128ToI32 bytes)
-createInstruction [0x37] bytes = (\(align, rest) ->
-  (\(offset, rest2) -> (I64Store (MemArg offset align), rest2))
+createInstruction [0x37] bytes = (\(alignn, rest) ->
+  (\(fset, rest2) -> (I64Store (MemArg fset alignn), rest2))
     (getLEB128ToI32 rest)) (getLEB128ToI32 bytes)
 createInstruction _ _ = throw $ WasmError "createInstruction: bad instruction"

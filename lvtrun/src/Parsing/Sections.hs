@@ -44,11 +44,11 @@ getSectionId :: BSL.ByteString -> SectionID
 getSectionId bytes = getSectionId' (head (BSL.unpack bytes))
 
 extractSection :: BSL.ByteString -> (Section, BSL.ByteString)
-extractSection bytes = (Section sectionId (fromIntegral size) content, rest2)
+extractSection bytes = (Section sectionId (fromIntegral sze) cntent, rest2)
   where
     sectionId = getSectionId bytes
-    (size, rest) = getLEB128ToI64 (BSL.drop 1 bytes)
-    (content, rest2) = BSL.splitAt size rest
+    (sze, rest) = getLEB128ToI64 (BSL.drop 1 bytes)
+    (cntent, rest2) = BSL.splitAt sze rest
 
 extractSections :: BSL.ByteString -> [Section]
 extractSections bytes
@@ -65,6 +65,6 @@ getSections bytes = header : sections
 
 getSectionWithId :: [Section] -> SectionID -> Section
 getSectionWithId [] _ = throw (WasmError "No section with this id")
-getSectionWithId (x:xs) id
-  | identifier x == id = x
-  | otherwise = getSectionWithId xs id
+getSectionWithId (x:xs) idtfier
+  | identifier x == idtfier = x
+  | otherwise = getSectionWithId xs idtfier

@@ -31,9 +31,9 @@ getStartFunctionId (x:xs)
 
 getFunctionFromId :: Int32 -> [Function] -> Function
 getFunctionFromId _ [] = throw $ RuntimeError "getFunctionFromId: bad id"
-getFunctionFromId id (x:xs)
-  | funcIdx x == id = x
-  | otherwise = getFunctionFromId id xs
+getFunctionFromId idtfier (x:xs)
+  | funcIdx x == idtfier = x
+  | otherwise = getFunctionFromId idtfier xs
 
 getStartFunction :: [Export] -> [Function] -> Function
 getStartFunction exports functions =
@@ -41,6 +41,6 @@ getStartFunction exports functions =
 
 getFuncTypeFromId :: Int32 -> [FuncType] -> FuncType
 getFuncTypeFromId _ [] = throw $ RuntimeError "getFuncTypeFromId: bad id"
-getFuncTypeFromId id (x:xs)
-  | typeId x == id = x
-  | otherwise = getFuncTypeFromId id xs
+getFuncTypeFromId idtfier (x:xs)
+  | typeId x == idtfier = x
+  | otherwise = getFuncTypeFromId idtfier xs
